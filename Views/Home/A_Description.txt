@@ -1,0 +1,56 @@
+﻿데이터베이스
+
+
+사용자(User) 테이블
+
+user_id (고유 식별자, PK)
+username (아이디)
+password (암호화된 비밀번호)
+email (이메일 주소)
+created_at (계정 생성일)
+updated_at (정보 수정일)
+is_active (계정 활성 여부, 탈퇴 또는 비활성 처리 시 false로 변경)
+
+
+
+상품(Product) 테이블
+
+product_id	고유 식별자 (PK)
+name	상품명
+description	상품 설명
+price	가격
+category_id	카테고리 ID (FK)
+created_at	등록일
+updated_at	수정일
+is_visible	노출 여부 (true/false)
+deleted_at	삭제일 (NULL 또는 삭제 시 날짜)
+
+
+
+카테고리(Category) 테이블
+
+category_id	고유 식별자 (PK)
+name	카테고리명
+description	카테고리 설명
+parent_category_id	상위 카테고리 ID (없으면 NULL)
+created_at	생성일
+updated_at	수정일
+is_active	활성 여부 (true/false)
+deleted_at	삭제일 (NULL 또는 삭제 시 날짜)
+
+
+
+미디어(Media) 테이블
+
+media_id	고유 식별자 (PK)
+product_id	상품 ID (FK)
+media_type	미디어 종류 (thumbnail, image, video 등)
+file_url	파일 경로 또는 URL
+sort_order	노출 순서
+created_at	등록일
+is_active	활성 여부 (true/false)
+deleted_at	삭제일 (NULL 또는 삭제 시 날짜)
+
+
+
+

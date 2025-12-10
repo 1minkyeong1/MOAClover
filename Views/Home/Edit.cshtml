@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "상품 수정";
+}
+
+<link rel="stylesheet" href="~/css/Edit.css" />
+
+<div class="wrap">
+    <div class="title">상품 수정</div>
+
+    <!-- 상품명 -->
+    <div class="input-box">
+        <label>상품명</label>
+        <input type="text" id="productName" value="기존 상품명" />
+    </div>
+
+    <!-- 상품 가격 -->
+    <div class="input-box">
+        <label>상품 가격</label>
+        <input type="text" id="productPrice" value="15000원" />
+    </div>
+
+    <!-- 상품 설명 -->
+    <div class="input-box">
+        <label>상품 설명</label>
+        <textarea id="productDesc" rows="5">기존 상품 설명입니다.</textarea>
+    </div>
+
+    <!-- 기존 이미지 + 새 이미지 수정 -->
+    <div class="input-box">
+        <label>상품 이미지 수정 (여러개 가능)</label>
+        <input type="file" id="imgUpload" accept="image/*" multiple />
+
+        <div class="preview-area" id="previewImages">
+            <!-- 기존 이미지 (예시) -->
+            <div class="preview-box">
+                <img src="https://via.placeholder.com/120" />
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 영상 여러개 업로드 -->
+    <div class="input-box">
+        <label>영상 업로드 (여러개 가능)</label>
+        <input type="file" id="videoUpload" accept="video/*" multiple />
+
+        <div class="preview-area" id="videoPreview">
+            <!-- 기존 영상 (예시) -->
+            <div class="preview-box">
+                <video src="" controls></video>
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            </div>
+        </div>
+    </div>
+
+    <button style="padding:12px 20px; font-size:16px;">수정 완료</button>
+</div>
+
+<script>
+    /* -----------------------------
+       이미지 여러개 미리보기
+       ----------------------------- */
+    const imgUpload = document.getElementById("imgUpload");
+    const previewImages = document.getElementById("previewImages");
+
+    imgUpload.addEventListener("change", function () {
+        [...imgUpload.files].forEach(file => {
+            const url = URL.createObjectURL(file);
+
+            const div = document.createElement("div");
+            div.classList.add("preview-box");
+
+            div.innerHTML = `
+                <img src="${url}" />
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            previewImages.appendChild(div);
+        });
+    });
+
+
+    /* -----------------------------
+       영상 여러개 미리보기
+       ----------------------------- */
+    const videoUpload = document.getElementById("videoUpload");
+    const videoPreview = document.getElementById("videoPreview");
+
+    videoUpload.addEventListener("change", function () {
+        [...videoUpload.files].forEach(file => {
+            const url = URL.createObjectURL(file);
+
+            const div = document.createElement("div");
+            div.classList.add("preview-box");
+
+            div.innerHTML = `
+                <video src="${url}" controls></video>
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            videoPreview.appendChild(div);
+        });
+    });
+</script>

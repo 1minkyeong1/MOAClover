@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = "모아클로버";
+}
+
+<link rel="stylesheet" href="~/css/index.css" />
+
+<div class="container">
+    <!-- 메인 상품 리스트 -->
+    <div id="main">
+        <div class="grid" id="product-grid"></div>
+    </div>
+
+    <!-- 🔥 페이징 UI 추가 -->
+    <div id="pagination"
+         style="text-align:center; margin:25px 0; font-size:18px; cursor:pointer;">
+    </div>
+
+    <!-- 디테일 페이지 -->
+    <div id="detail" style="display:none;">
+        <div id="back" onclick="goBack()">← 뒤로가기</div>
+        <h2 id="d-title"></h2>
+        <img id="d-img" />
+        <p id="d-desc" style="margin-top:20px; font-size:17px; line-height:1.6;"></p>
+
+        <!-- 🔥 수정 / 삭제 버튼 추가 -->
+        <div style="margin-top:20px;">
+            <a id="edit-btn" class="btn btn-warning">수정</a>
+            <a id="delete-btn" class="btn btn-danger">삭제</a>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    /* ==== 상품 배열 ==== */
+    const products = [
+        { id: 1, name: '제품 1', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
+        { id: 2, name: '제품 2', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
+        { id: 3, name: '제품 3', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
+        { id: 4, name: '제품 4', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
+        { id: 5, name: '제품 5', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
+        { id: 6, name: '제품 6', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' }
+    ];
+
+    /* ==== 설정 ==== */
+    const itemsPerPage = 20;
+    let currentPage = 1;
+
+    /* ==== 총 페이지 ==== */
+    function getTotalPages() {
+        return Math.ceil(products.length / itemsPerPage);
+    }
+
+    /* ==== 상품 출력 ==== */
+    function render() {
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = '';
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageProducts = products.slice(start, end);
+
+        pageProducts.forEach((p, i) => {
+            grid.innerHTML += `
+                <div class="item" onclick="openDetail(${start + i})">
+                    <img src="${p.img}" />
+                    <div class="item-name">${p.name}</div>
+                    <div class="item-price">${p.price}</div>
+                </div>
+            `;
+        });
+
+        renderPagination();
+    }
+
+    /* ==== 페이징 출력 ==== */
+    function renderPagination() {
+        const totalPages = getTotalPages();
+        const paging = document.getElementById('pagination');
+        paging.innerHTML = '';
+
+        if (currentPage > 1) {
+            paging.innerHTML += `<span onclick="goPage(${currentPage - 1})">◀</span>`;
+        }
+
+        for (let i = 1; i <= totalPages; i++) {
+            paging.innerHTML += `
+                <span onclick="goPage(${i})" class="${i === currentPage ? 'active' : ''}">
+                    ${i}
+                </span>
+            `;
+        }
+
+        if (currentPage < totalPages) {
+            paging.innerHTML += `<span onclick="goPage(${currentPage + 1})">▶</span>`;
+        }
+    }
+
+    function goPage(num) {
+        currentPage = num;
+        render();
+    }
+
+    /* ==== 상세 페이지 열기 ==== */
+    function openDetail(index) {
+        const p = products[index];
+
+        document.getElementById('d-title').innerText = p.name;
+        document.getElementById('d-img').src = p.img;
+        document.getElementById('d-desc').innerText = p.desc;
+
+        // 🔥 수정·삭제 버튼에 id 연결
+        document.getElementById("edit-btn").href = `/Home/Edit?id=${p.id}`;
+        document.getElementById("delete-btn").href = `/Home/Delete?id=${p.id}`;
+
+        // 화면 전환
+        document.getElementById('main').style.display = 'none';
+        document.getElementById('detail').style.display = 'block';
+    }
+
+    /* ==== 뒤로가기 ==== */
+    function goBack() {
+        document.getElementById('detail').style.display = 'none';
+        document.getElementById('main').style.display = 'block';
+    }
+
+    /* 초기 실행 */
+    render();
+</script>

@@ -1,0 +1,5 @@
+﻿# Visual Studio 임시 파일 git add에서 제외시킴
+.vs/
+bin/
+obj/
+*.user

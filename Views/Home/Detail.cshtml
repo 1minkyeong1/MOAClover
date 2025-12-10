@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "상품 상세보기";
+}
+
+<link rel="stylesheet" href="~/css/Detail.css" />
+
+<div class="detail-wrap">
+
+    <!-- 뒤로가기 -->
+    <div class="back-btn">
+        <a href="/Home/Index">← 목록으로</a>
+    </div>
+
+    <!-- 상품명 -->
+    <h1 class="product-title">@ViewData["ProductName"]</h1>
+
+    <!-- 가격 -->
+    <div class="product-price">@ViewData["ProductPrice"]</div>
+
+    <!-- 이미지 슬라이드 -->
+    <div class="image-gallery" id="imageGallery">
+        @* 나중에 Model.Images 리스트로 변경 *@
+
+        <img src="https://via.placeholder.com/500x500" class="gallery-img" />
+        <img src="https://via.placeholder.com/500x500/ffdddd" class="gallery-img" />
+        <img src="https://via.placeholder.com/500x500/ddffdd" class="gallery-img" />
+    </div>
+
+    <!-- 썸네일 (선택 기능) -->
+    <div class="thumbnail-wrap" id="thumbnailWrap">
+        <img src="https://via.placeholder.com/120x120" class="thumb" onclick="showImage(this)" />
+        <img src="https://via.placeholder.com/120x120/ffdddd" class="thumb" onclick="showImage(this)" />
+        <img src="https://via.placeholder.com/120x120/ddffdd" class="thumb" onclick="showImage(this)" />
+    </div>
+
+    <!-- 상품 설명 -->
+    <div class="product-desc">
+        @ViewData["ProductDesc"]
+    </div>
+
+    <!-- 영상 영역 -->
+    <h3 class="section-title">상품 영상</h3>
+    <div class="video-area">
+        <video src="" controls class="video-box"></video>
+        <video src="" controls class="video-box"></video>
+    </div>
+
+    <!-- 수정 & 삭제 버튼 -->
+    <div class="edit-delete-btns">
+        <a href="/Home/Edit?id=@ViewData["ProductId"]" class="edit-btn">수정</a>
+        <a href="/Home/Delete?id=@ViewData["ProductId"]"
+           onclick="return confirm('정말 삭제하시겠습니까?')"
+           class="delete-btn">삭제</a>
+    </div>
+
+</div>
+
+<script>
+    /* 썸네일 클릭하면 메인 이미지 바뀜 */
+    function showImage(thumb) {
+        document.querySelectorAll(".gallery-img").forEach(img => {
+            img.style.display = "none";
+        });
+        const main = document.createElement("img");
+        main.src = thumb.src;
+        main.className = "gallery-img";
+        document.getElementById("imageGallery").prepend(main);
+    }
+</script>

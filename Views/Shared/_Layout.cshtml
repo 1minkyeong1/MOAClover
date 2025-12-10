@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MOAClover</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MOAClover.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid d-flex flex-column align-items-center py-3">
+
+                <!-- 브랜드 로고 영역 -->
+                <div class="logo-box" style="width:100%; height:130px; background:#ddd; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <!-- 배경이미지 공간 
+                        <div class="logo-box" style="width:100%; height:180px; background-image:url('/images/logo-bg.jpg'); background-size:cover; background-position:center;
+                           display:flex; flex-direction:column; justify-content:center; align-items:center;"> 
+                     -->
+
+                    <!-- 로고 이미지 공간 -->
+                    <!-- <img src="/images/mylogo.png" alt="로고 이미지" style="height:70px; margin-bottom:10px; display:none;" id="mainLogoImg"> -->
+
+                    <!-- 텍스트 로고 -->
+                    <a href="/Home/Index" style="text-decoration:none; color:inherit;">
+                        <div style="font-size:34px; font-weight:bold;">모아클로버</div>
+                    </a>
+
+                    <div style="width:100%; text-align:right; margin-top:10px; margin-right:80px;">
+                        <a href="/Home/Create" style="color:#777; text-decoration:none; margin-left:10px;">상품등록</a>
+                       @*  <a href="#" style="color:#777; text-decoration:none; margin-left:10px;">로그인</a> *@
+                        <a href="javascript:void(0);"    style="color:#777; text-decoration:none; margin-left:10px;" onclick="openLoginPopup()">로그인</a>
+                        <a href="#" style="color:#777; text-decoration:none; margin-left:10px;">Goods</a>
+                    </div>
+                </div>
+               
+
+                <!-- 메뉴 전체를 가운데 정렬 -->
+                <div class="navbar-collapse collapse show d-flex justify-content-center mt-2">
+                    <ul class="navbar-nav text-center">
+                        <li class="nav-item mx-2">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">카</a>
+                        </li>
+                        <li class="nav-item mx-2">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">테</a>
+                        </li>
+                        <li class="nav-item mx-2">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">고</a>
+                        </li>
+                        <li class="nav-item mx-2">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">리</a>
+                        </li>
+                        <li class="nav-item mx-2">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">존</a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer style="margin-top:80px; padding:40px 20px; background:#f7f7f7; text-align:center; color:#555;">
+        <div style="font-size:20px; font-weight:bold;">모아클로버</div>
+        <div style="margin-top:10px; line-height:1.6; font-size:14px;">
+            대표자: 홍길동 | 사업자등록번호: 000-00-00000<br>
+            Email: contact@myshop.com | 고객센터: 010-0000-0000<br>
+            주소: 서울특별시 어디구 어디동 123-45
+        </div>
+        <div style="margin-top:15px; font-size:13px; color:#888;">© 2025 MOAClover. All rights reserved.</div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    @* 로그인창 팝업 *@
+    <script>
+        function openLoginPopup() {
+        var width = 400;  // 팝업 너비
+        var height = 450; // 팝업 높이
+
+        // 브라우저 창 기준 화면 중앙 좌표 계산
+        var left = (window.innerWidth / 2) - (width / 2) + window.screenX;
+        var top = (window.innerHeight / 2) - (height / 2) + window.screenY;
+
+        window.open(
+            '/Home/Login',
+            'loginPopup',
+            'width=' + width +
+            ',height=' + height +
+            ',left=' + left +
+            ',top=' + top +
+            ',scrollbars=no,resizable=no'
+        );
+    }
+    </script>
+</body>
+</html>
