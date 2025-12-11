@@ -1,0 +1,158 @@
+﻿/* 전체 레이아웃 */
+.detail-wrap {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 뒤로가기 버튼 */
+.back-btn {
+    margin-bottom: 15px;
+}
+
+    .back-btn a {
+        text-decoration: none;
+        font-size: 16px;
+    }
+
+/* 제목 */
+.product-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+/* 가격 */
+.product-price {
+    font-size: 20px;
+    color: #d92121;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* ------------------------------- */
+/* 이미지 + 설명 영역(자동 반응형) */
+/* ------------------------------- */
+
+.detail-top {
+    display: flex;
+    flex-wrap: wrap; /* 화면이 좁아지면 자동으로 줄바꿈 → 세로 배치 */
+    gap: 20px;
+}
+
+/* 이미지 영역 */
+.image-left {
+    flex: 1 1 300px; /* 최소 300px 유지하다 좁으면 자동 줄바꿈됨 */
+    max-width: 450px;
+}
+
+#imageGallery {
+    width: 100%;
+}
+
+.gallery-img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* 썸네일 */
+.thumbnail-wrap {
+    display: flex;
+    flex-wrap: wrap; /* 자동 줄바꿈 */
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.thumb {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+/* ------------------------------- */
+/* 오른쪽 정보 영역 */
+/* ------------------------------- */
+.info-right {
+    flex: 1 1 250px;
+    min-width: 250px;
+}
+
+.product-desc {
+    white-space: pre-line;
+    margin-top: 15px;
+    line-height: 1.5;
+}
+
+/* ------------------------------- */
+/* 탭 메뉴 */
+/* ------------------------------- */
+
+.tab-menu {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    border-bottom: 1px solid #ccc;
+}
+
+.tab {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    flex: 1;
+    text-align: center;
+}
+
+    .tab.active {
+        color: #d92121;
+        border-bottom: 3px solid #d92121;
+    }
+
+/* 탭 내용 영역 */
+.tab-content {
+    margin-top: 20px;
+}
+
+/* ------------------------------- */
+/* 영상 */
+/* ------------------------------- */
+.video-area {
+    display: flex;
+    flex-wrap: wrap; /* 좁으면 아래로 내려감 */
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.video-box {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+}
+
+/* ------------------------------- */
+/* 수정 / 삭제 버튼 */
+/* ------------------------------- */
+.edit-delete-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 40px;
+}
+
+.edit-btn, .delete-btn {
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+
+.edit-btn {
+    background: #3498db;
+}
+
+.delete-btn {
+    background: #d92121;
+}

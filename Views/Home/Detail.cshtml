@@ -6,64 +6,118 @@
 
 <div class="detail-wrap">
 
-    <!-- 뒤로가기 -->
+    <!-- 목록으로 -->
     <div class="back-btn">
         <a href="/Home/Index">← 목록으로</a>
     </div>
 
-    <!-- 상품명 -->
-    <h1 class="product-title">@ViewData["ProductName"]</h1>
 
-    <!-- 가격 -->
-    <div class="product-price">@ViewData["ProductPrice"]</div>
+    <!-- 🧩 상세 상단 : 이미지(왼쪽) + 상품정보(오른쪽) -->
+    <div class="detail-top">
 
-    <!-- 이미지 슬라이드 -->
-    <div class="image-gallery" id="imageGallery">
-        @* 나중에 Model.Images 리스트로 변경 *@
+        <!-- 왼쪽 : 이미지 슬라이드 -->
+        <div class="detail-left">
+            <div class="image-gallery" id="imageGallery">
+                <!-- 🔥 나중에 Model.Images 로 바꿀 예정 -->
+                <img src="https://via.placeholder.com/500x500" class="gallery-img" />
+                <img src="https://via.placeholder.com/500x500/ffdddd" class="gallery-img" style="display:none;" />
+                <img src="https://via.placeholder.com/500x500/ddffdd" class="gallery-img" style="display:none;" />
+            </div>
 
-        <img src="https://via.placeholder.com/500x500" class="gallery-img" />
-        <img src="https://via.placeholder.com/500x500/ffdddd" class="gallery-img" />
-        <img src="https://via.placeholder.com/500x500/ddffdd" class="gallery-img" />
+            <!-- 썸네일 -->
+            <div class="thumbnail-wrap" id="thumbnailWrap">
+                <img src="https://via.placeholder.com/120x120" class="thumb" onclick="showImage(0)" />
+                <img src="https://via.placeholder.com/120x120/ffdddd" class="thumb" onclick="showImage(1)" />
+                <img src="https://via.placeholder.com/120x120/ddffdd" class="thumb" onclick="showImage(2)" />
+            </div>
+        </div>
+
+        <!-- 오른쪽 : 상품정보 -->
+        <div class="detail-right">
+
+            <h1 class="product-title">@ViewData["ProductName"]</h1>
+
+            <div class="product-price">@ViewData["ProductPrice"]</div>
+
+            <div class="product-short-desc">
+                @ViewData["ProductDesc"]
+            </div>
+
+            <!-- 수정 / 삭제 -->
+            <div class="edit-delete-btns">
+                <a href="/Home/Edit?id=@ViewData["ProductId"]" class="edit-btn">수정</a>
+                <a href="/Home/Delete?id=@ViewData["ProductId"]"
+                   onclick="return confirm('정말 삭제하시겠습니까?')"
+                   class="delete-btn">삭제</a>
+            </div>
+
+        </div>
     </div>
 
-    <!-- 썸네일 (선택 기능) -->
-    <div class="thumbnail-wrap" id="thumbnailWrap">
-        <img src="https://via.placeholder.com/120x120" class="thumb" onclick="showImage(this)" />
-        <img src="https://via.placeholder.com/120x120/ffdddd" class="thumb" onclick="showImage(this)" />
-        <img src="https://via.placeholder.com/120x120/ddffdd" class="thumb" onclick="showImage(this)" />
+    <!-- 🧩 상세 하단 : 탭 메뉴 -->
+    <div class="detail-tabs">
+
+        <!-- 탭 메뉴 -->
+        <div class="tab-menu">
+            <div class="tab active" data-tab="desc">상품설명</div>
+            <div class="tab" data-tab="review">리뷰</div>
+            <div class="tab" data-tab="qna">Q&A</div>
+        </div>
+
+        <!-- 탭 내용 영역 -->
+        <div id="tab-desc" class="tab-content">
+            @ViewData["ProductDesc"]
+        </div>
+
+        <div id="tab-review" class="tab-content" style="display:none;">
+            <p>아직 등록된 리뷰가 없습니다.</p>
+        </div>
+
+        <div id="tab-qna" class="tab-content" style="display:none;">
+            <p>문의글이 없습니다.</p>
+        </div>
+
     </div>
 
-    <!-- 상품 설명 -->
-    <div class="product-desc">
-        @ViewData["ProductDesc"]
-    </div>
-
-    <!-- 영상 영역 -->
+    <!-- 🔥 영상 영역 -->
     <h3 class="section-title">상품 영상</h3>
     <div class="video-area">
         <video src="" controls class="video-box"></video>
         <video src="" controls class="video-box"></video>
     </div>
 
-    <!-- 수정 & 삭제 버튼 -->
-    <div class="edit-delete-btns">
-        <a href="/Home/Edit?id=@ViewData["ProductId"]" class="edit-btn">수정</a>
-        <a href="/Home/Delete?id=@ViewData["ProductId"]"
-           onclick="return confirm('정말 삭제하시겠습니까?')"
-           class="delete-btn">삭제</a>
-    </div>
-
 </div>
 
+
 <script>
-    /* 썸네일 클릭하면 메인 이미지 바뀜 */
-    function showImage(thumb) {
-        document.querySelectorAll(".gallery-img").forEach(img => {
-            img.style.display = "none";
+    /* ========================
+       🔹 썸네일 클릭 → 이미지 전환
+       ======================== */
+    function showImage(index) {
+        const imgs = document.querySelectorAll(".gallery-img");
+        imgs.forEach((img, i) => {
+            img.style.display = (i === index) ? "block" : "none";
         });
-        const main = document.createElement("img");
-        main.src = thumb.src;
-        main.className = "gallery-img";
-        document.getElementById("imageGallery").prepend(main);
     }
+
+
+    /* ========================
+       🔹 탭 전환
+       ======================== */
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", function () {
+
+            // 모든 탭에서 active 제거
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            this.classList.add("active");
+
+            // 모든 탭 콘텐츠 숨기기
+            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+
+            // 클릭된 탭 연결된 콘텐츠 보이기
+            const target = this.getAttribute("data-tab");
+            document.getElementById("tab-" + target).style.display = "block";
+        });
+    });
+
 </script>
