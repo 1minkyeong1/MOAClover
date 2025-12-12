@@ -64,3 +64,30 @@
         .login-box .btn-cancel:hover {
             background-color: #555;
         }
+
+
+.register-link {
+    text-decoration: none; /* 밑줄 제거 */
+    color: #F22929; /* 링크 색상 */
+    margin: 5px 70px 0 0; /* 마진 조정 */
+    transition: all 0.3s; /* 마우스 오버 효과 */
+}
+
+    .register-link:hover {
+        background-color: #FC8383; /* 배경색 */
+        color: #fff; /* 글자색 */
+        text-decoration: none;
+    }
+
+.login-link {
+    text-decoration: none; /* 밑줄 제거 */
+    color: #4a6cf7; /* 링크 색상 */
+    margin: 5px 5px 0 8px; /* 마진 조정 */
+    transition: all 0.3s; /* 마우스 오버 효과 */
+}
+
+    .login-link:hover {
+        background-color: #6F91F7; /* 배경색 */
+        color: #fff; /* 글자색 */
+        text-decoration: none;
+    }

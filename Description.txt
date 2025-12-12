@@ -53,4 +53,35 @@ deleted_at	삭제일 (NULL 또는 삭제 시 날짜)
 
 
 
+1. 마이그레이션할 때  NuGet 설치
 
+Microsoft.EntityFrameworkCore
+Microsoft.EntityFrameworkCore.SqlServer
+Microsoft.EntityFrameworkCore.Tools
+
+
+
+2. Appsettings.json에서 추가하기  < SQL Server 인증(SQL Server 로그인 아이디와 패스워드) >
+
+ "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MOACloverKmn;User Id=sa;Password=pointnix;"
+  },
+
+
+ 3. 각각 테이블의 Model 등록
+
+
+ 4.  마이그레이션 실행 (콘솔터미널)
+
+ 마이그레이션 생성
+ dotnet ef migrations add InitialCreate     
+
+ 데이터베이스 적용
+ dotnet ef database update
+
+
+ ****  dotnet ef 가 실행 안되면?   ***
+ 설치해야함
+ dotnet tool install --global dotnet-ef
+
+ 설치한 후에 다시 마이그레이션 생성 실행.

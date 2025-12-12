@@ -43,13 +43,7 @@
                 @ViewData["ProductDesc"]
             </div>
 
-            <!-- 수정 / 삭제 -->
-            <div class="edit-delete-btns">
-                <a href="/Home/Edit?id=@ViewData["ProductId"]" class="edit-btn">수정</a>
-                <a href="/Home/Delete?id=@ViewData["ProductId"]"
-                   onclick="return confirm('정말 삭제하시겠습니까?')"
-                   class="delete-btn">삭제</a>
-            </div>
+           
 
         </div>
     </div>
@@ -84,6 +78,14 @@
     <div class="video-area">
         <video src="" controls class="video-box"></video>
         <video src="" controls class="video-box"></video>
+    </div>
+
+    <!-- 수정 / 삭제 -->
+    <div class="edit-delete-btns">
+        <a href="/Home/Edit?id=@ViewData["ProductId"]" class="edit-btn">수정</a>
+        <a href="/Home/Delete?id=@ViewData["ProductId"]"
+           onclick="return confirm('정말 삭제하시겠습니까?')"
+           class="delete-btn">삭제</a>
     </div>
 
 </div>

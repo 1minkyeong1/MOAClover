@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "아이디 찾기";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/Find.css" />
+
+<div class="find-container">
+    <h2>아이디 찾기</h2>
+
+    <form method="post" asp-action="FindId" asp-controller="Account">
+        <label>이름</label>
+        <input type="text" name="Name" required />
+
+        <label>이메일</label>
+        <input type="email" name="Email" required />
+
+        <button class="btn-main" type="submit">아이디 찾기</button>
+
+        <button type="button" class="btn-main btn-back" onclick="location.href='/Account/Login'">
+            로그인으로 돌아가기
+        </button>
+    </form>
+</div>

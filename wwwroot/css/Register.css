@@ -1,0 +1,149 @@
+﻿/* ------------------------------
+   회원가입 컨테이너
+--------------------------------*/
+.container {
+    max-width: 480px;
+    margin: 36px auto;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(18, 38, 63, 0.06);
+    font-family: "Noto Sans KR", "Segoe UI", Roboto, Arial, sans-serif;
+    color: #1f2937;
+}
+
+    /* 제목 */
+    .container h2 {
+        font-size: 1.5rem;
+        margin: 0 0 18px;
+        text-align: center;
+        font-weight: 700;
+        color: #0f1724;
+    }
+
+    /* 라벨 */
+    .container label {
+        display: block;
+        font-size: 0.875rem;
+        margin: 12px 0 6px;
+        color: #374151;
+        font-weight: 600;
+    }
+
+    /* 입력폼 공통 */
+    .container input[type="text"],
+    .container input[type="password"],
+    .container input[type="email"],
+    .container input[type="date"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #e6e9ee;
+        background: #fbfdff;
+        font-size: 0.95rem;
+        transition: box-shadow .14s ease, border-color .14s ease;
+    }
+
+    .container input:focus {
+        border-color: #6b8cff;
+        box-shadow: 0 6px 18px rgba(95, 120, 255, 0.12);
+    }
+
+    /* 읽기전용 */
+    .container input[readonly] {
+        background: #f7f9ff;
+    }
+
+    /* ------------------------------
+   버튼 기본
+--------------------------------*/
+    .container button {
+        display: inline-block;
+        width: 100%;
+        padding: 11px 14px;
+        margin-top: 12px;
+        border-radius: 12px;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform .06s ease, box-shadow .12s ease;
+    }
+
+        .container button:hover {
+            transform: translateY(-1px);
+        }
+
+        .container button:active {
+            transform: translateY(0);
+        }
+
+        /* 회원가입 (submit) — 파란색 */
+        .container button[type="submit"] {
+            background: linear-gradient(90deg,#4a6cf7,#6772ff);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(74,108,247,0.18);
+        }
+
+/* ------------------------------
+   우편번호 + 주소 검색 버튼
+--------------------------------*/
+.zip-row {
+    display: flex;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+    .zip-row input {
+        width: 60%;
+        height: 42px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #F7D6B7;
+    }
+
+/* 주소 검색 버튼 — 주황색 */
+.btn-zipcode {
+    width: 40%;
+    height: 42px;
+    margin-left: 8px;
+    background: #F59025;
+    color: #fff;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    .btn-zipcode:hover {
+        background: #FF922B;
+    }
+
+/* ------------------------------
+   로그인 버튼 — 녹색
+--------------------------------*/
+.login-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+    .login-btn:hover {
+        background: #43A047;
+    }
+
+/* ------------------------------
+   취소 버튼 — 회색
+--------------------------------*/
+.btn-cancel {
+    background: #777 !important;
+    color: white !important;
+}
+
+    .btn-cancel:hover {
+        background: #666 !important;
+    }

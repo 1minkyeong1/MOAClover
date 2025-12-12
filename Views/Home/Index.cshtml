@@ -5,29 +5,17 @@
 <link rel="stylesheet" href="~/css/index.css" />
 
 <div class="container">
+
     <!-- 메인 상품 리스트 -->
     <div id="main">
         <div class="grid" id="product-grid"></div>
     </div>
 
-    <!-- 🔥 페이징 UI 추가 -->
+    <!-- 🔥 페이징 UI -->
     <div id="pagination"
          style="text-align:center; margin:25px 0; font-size:18px; cursor:pointer;">
     </div>
 
-    <!-- 디테일 페이지 -->
-    <div id="detail" style="display:none;">
-        <div id="back" onclick="goBack()">← 뒤로가기</div>
-        <h2 id="d-title"></h2>
-        <img id="d-img" />
-        <p id="d-desc" style="margin-top:20px; font-size:17px; line-height:1.6;"></p>
-
-        <!-- 🔥 수정 / 삭제 버튼 추가 -->
-        <div style="margin-top:20px;">
-            <a id="edit-btn" class="btn btn-warning">수정</a>
-            <a id="delete-btn" class="btn btn-danger">삭제</a>
-        </div>
-    </div>
 </div>
 
 
@@ -63,7 +51,7 @@
 
         pageProducts.forEach((p, i) => {
             grid.innerHTML += `
-                <div class="item" onclick="openDetail(${start + i})">
+                <div class="item" onclick="location.href='/Home/Detail?id=${p.id}'">
                     <img src="${p.img}" />
                     <div class="item-name">${p.name}</div>
                     <div class="item-price">${p.price}</div>
@@ -102,29 +90,9 @@
         render();
     }
 
-    /* ==== 상세 페이지 열기 ==== */
-    function openDetail(index) {
-        const p = products[index];
-
-        document.getElementById('d-title').innerText = p.name;
-        document.getElementById('d-img').src = p.img;
-        document.getElementById('d-desc').innerText = p.desc;
-
-        // 🔥 수정·삭제 버튼에 id 연결
-        document.getElementById("edit-btn").href = `/Home/Edit?id=${p.id}`;
-        document.getElementById("delete-btn").href = `/Home/Delete?id=${p.id}`;
-
-        // 화면 전환
-        document.getElementById('main').style.display = 'none';
-        document.getElementById('detail').style.display = 'block';
-    }
-
-    /* ==== 뒤로가기 ==== */
-    function goBack() {
-        document.getElementById('detail').style.display = 'none';
-        document.getElementById('main').style.display = 'block';
-    }
-
     /* 초기 실행 */
     render();
+
+
+    
 </script>

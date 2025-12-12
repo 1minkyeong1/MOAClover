@@ -30,8 +30,7 @@
 
                     <div style="width:100%; text-align:right; margin-top:10px; margin-right:80px;">
                         <a href="/Home/Create" style="color:#777; text-decoration:none; margin-left:10px;">상품등록</a>
-                       @*  <a href="#" style="color:#777; text-decoration:none; margin-left:10px;">로그인</a> *@
-                        <a href="javascript:void(0);"    style="color:#777; text-decoration:none; margin-left:10px;" onclick="openLoginPopup()">로그인</a>
+                        <a href="/Account/Login" style="color:#777; text-decoration:none; margin-left:10px;">로그인</a>
                         <a href="#" style="color:#777; text-decoration:none; margin-left:10px;">Goods</a>
                     </div>
                 </div>
@@ -80,28 +79,23 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // 회원가입 후 자동 로그인창 띄우기
+            if (urlParams.get("showLogin") === "true") {
+                openLoginModal();  // ← 당신이 가진 로그인창 열기 함수명으로 변경!
+            }
+
+        });
+    </script>
+
+
+
     @await RenderSectionAsync("Scripts", required: false)
 
-    @* 로그인창 팝업 *@
-    <script>
-        function openLoginPopup() {
-        var width = 400;  // 팝업 너비
-        var height = 450; // 팝업 높이
-
-        // 브라우저 창 기준 화면 중앙 좌표 계산
-        var left = (window.innerWidth / 2) - (width / 2) + window.screenX;
-        var top = (window.innerHeight / 2) - (height / 2) + window.screenY;
-
-        window.open(
-            '/Home/Login',
-            'loginPopup',
-            'width=' + width +
-            ',height=' + height +
-            ',left=' + left +
-            ',top=' + top +
-            ',scrollbars=no,resizable=no'
-        );
-    }
-    </script>
 </body>
 </html>

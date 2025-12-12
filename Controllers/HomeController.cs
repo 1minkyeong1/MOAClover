@@ -38,8 +38,8 @@ namespace MOAClover.Controllers
             return View();
         }
 
-        // /Home/Login 로그인창 보여줌 
-        public IActionResult Login()
+        //  /Home/Detail  상품상세페이지 이동
+        public IActionResult Detail()
         {
             return View();
         }
