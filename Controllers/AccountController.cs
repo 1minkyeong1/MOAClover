@@ -32,7 +32,41 @@ namespace MOAClover.Controllers
             return View();
         }
 
-        // 회원가입 팝업창 열기
+        [HttpPost]
+        public async Task<IActionResult> Login(string username, string password)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+
+            if (user == null || !user.IsActive)
+            {
+                ModelState.AddModelError("", "아이디 또는 비밀번호가 올바르지 않습니다.");
+                return View();
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(
+                user, password, false, false);
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", "아이디 또는 비밀번호가 올바르지 않습니다.");
+                return View();
+            }
+
+            // 항상 홈으로
+            return RedirectToAction("Index", "Home");
+        }
+
+        // 로그아웃
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+
+
+
+        // 회원가입창 열기
         [HttpGet]
         public IActionResult Register()
         {
@@ -137,7 +171,8 @@ namespace MOAClover.Controllers
         <a href='{resetLink}' style='color:#4a6cf7;'>비밀번호 재설정하기</a>
         <p>30분간 유효합니다.</p>";
 
-            await _emailService.SendEmailAsync(user.Email, "비밀번호 재설정", body);
+            //                                           ! = “내가 책임질게, null 아님”
+            await _emailService.SendEmailAsync(user.Email!, "비밀번호 재설정", body);
 
             ViewBag.Message = "비밀번호 재설정 이메일을 발송했습니다.";
             return View();
@@ -208,6 +243,17 @@ namespace MOAClover.Controllers
         {
             return View();
         }
+
+
+       
+
+
+
+
+
+
+
+
 
     }
 }

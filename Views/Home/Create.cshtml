@@ -4,156 +4,109 @@
 
 <link rel="stylesheet" href="~/css/Create.css" />
 
-<div class="container">
-    <h2>새 상품 등록</h2>
+<form asp-action="Create"
+      method="post"
+      enctype="multipart/form-data">
 
-    <div class="input-box">
-        <label>상품명</label>
-        <input type="text" id="pName">
-    </div>
+    <div class="container">
+        <h2>새 상품 등록</h2>
 
-    <div class="input-box">
-        <label>카테고리</label>
-        <input type="text" id="pCategory">
-    </div>
+        <div class="input-box">
+            <label>상품명</label>
+            <input type="text" id="pName" name="Name" required>
+        </div>
 
-    <div class="input-box">
-        <label>가격</label>
-        <input type="text" id="pPrice">
-    </div>
+        <input type="hidden" id="finalCategoryId" name="CategoryId" />
+        <div class="input-box">
+            <label>카테고리</label>
+            <div class="category-row">
+                <select id="category1">
+                    <option value="">대분류 선택</option>
+                    @foreach (var c in ViewBag.Categories)
+                    {
+                        if (c.ParentCategoryId == null)
+                        {
+                            <option value="@c.CategoryId">@c.Name</option>
+                        }
+                    }
+                </select>
 
-    <div class="input-box">
-        <label>설명</label>
-        <textarea id="pDesc"></textarea>
-    </div>
+                <select id="category2">
+                    <option value="">중분류 선택</option>
+                </select>
 
-    <div class="input-box">
-        <label>이미지</label>
-        <input type="file" id="imgUpload" accept="image/*" multiple>
-        <div class="preview-area" id="imgPreview"></div>
-    </div>
+                <select id="category3">
+                    <option value="">소분류 선택</option>
+                </select>
+            </div>
+        </div>
 
-    <div class="input-box">
-        <label>영상 업로드</label>
-        <input type="file" id="videoUpload" accept="video/*" multiple>
-        <div class="preview-area" id="videoPreview"></div>
-    </div>
+        <div class="input-box">
+            <label>가격</label>
+            <input type="text" id="pPrice" name="Price" required>
+        </div>
 
-    <button class="btn-save" onclick="saveProduct()">저장하기</button>
-    
-    <div>
-    <a href="/Home/Index" class="btn-no">취소</a>
+        <div class="input-box">
+            <label>설명</label>
+            <textarea id="pDesc" name="Description"></textarea>
+        </div>
+
+        <div class="input-box">
+            <label>이미지</label>
+            <input type="file" id="imgUpload" name="Images" multiple>
+        </div>
+
+        <div class="input-box">
+            <label>영상 업로드</label>
+            <input type="file" id="videoUpload" name="Video">
+        </div>
+
+        <button class="btn-save" type="submit">저장하기</button>
+
+        <div>
+            <a href="/Home/Index" class="btn-no">취소</a>
+        </div>
     </div>
-</div>
+</form>
 
 <script>
-    /* 임시 제품 저장 배열(나중 DB 연결 가능) */
-    let products = [];
+    const categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Categories));
 
-    /* 이미지 미리보기 */
-    const imgUpload = document.getElementById("imgUpload");
-    const imgPreview = document.getElementById("imgPreview");
+    const category1 = document.getElementById("category1");
+    const category2 = document.getElementById("category2");
+    const category3 = document.getElementById("category3");
+    const finalCategoryId = document.getElementById("finalCategoryId");
 
-    imgUpload.addEventListener("change", function () {
-        imgPreview.innerHTML = "";
+    category1.addEventListener("change", function () {
+        category2.innerHTML = '<option value="">중분류 선택</option>';
+        category3.innerHTML = '<option value="">소분류 선택</option>';
+        finalCategoryId.value = "";
 
-        [...imgUpload.files].forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                imgPreview.innerHTML += `
-                    <div class="preview-box">
-                        <img src="${e.target.result}">
-                        <button class="remove-btn" onclick="removeImage(${index})">×</button>
-                    </div>`;
-            };
-            reader.readAsDataURL(file);
-        });
+        const selectedId = parseInt(this.value);
+        if (!selectedId) return;
+
+        categories
+            .filter(c => c.ParentCategoryId === selectedId)
+            .forEach(c => {
+                category2.innerHTML += `<option value="${c.CategoryId}">${c.Name}</option>`;
+            });
     });
 
-    /* 이미지 하나 삭제 */
-    function removeImage(idx) {
-        const dt = new DataTransfer();
+    category2.addEventListener("change", function () {
+        category3.innerHTML = '<option value="">소분류 선택</option>';
+        finalCategoryId.value = "";
 
-        [...imgUpload.files].forEach((file, index) => {
-            if (index !== idx) dt.items.add(file);
-        });
+        const selectedId = parseInt(this.value);
+        if (!selectedId) return;
 
-        imgUpload.files = dt.files;
-        imgUpload.dispatchEvent(new Event("change"));
-    }
-
-    /* 영상 미리보기 */
-    const videoUpload = document.getElementById("videoUpload");
-    const videoPreview = document.getElementById("videoPreview");
-
-    let videos = []; // 여러 영상 저장 배열
-
-    videoUpload.addEventListener("change", function () {
-        const files = Array.from(videoUpload.files);
-
-        files.forEach(file => {
-            const url = URL.createObjectURL(file);
-            videos.push({ file, url });
-        });
-
-        renderVideoPreview();
+        categories
+            .filter(c => c.ParentCategoryId === selectedId)
+            .forEach(c => {
+                category3.innerHTML += `<option value="${c.CategoryId}">${c.Name}</option>`;
+            });
     });
 
-    /* 미리보기 출력 */
-    function renderVideoPreview() {
-        videoPreview.innerHTML = "";
-
-        videos.forEach((video, index) => {
-            videoPreview.innerHTML += `
-                <div class="preview-box">
-                    <video src="${video.url}" controls></video>
-                    <button class="remove-btn" onclick="removeVideo(${index})">×</button>
-                </div>
-            `;
-        });
-    }
-
-    /* 개별 삭제 */
-    function removeVideo(index) {
-        videos.splice(index, 1);
-        renderVideoPreview();
-    }
-
-    /* 저장하기 */
-    function saveProduct() {
-        const name = document.getElementById("pName").value;
-        const price = document.getElementById("pPrice").value;
-        const desc = document.getElementById("pDesc").value;
-
-        if (!name || !price) {
-            alert("상품명과 가격은 필수입니다.");
-            return;
-        }
-
-        const imgFiles = [...imgUpload.files];
-        const videoFile = videoUpload.files[0] || null;
-
-        // DB 연결 시 이 구조 그대로 사용됨
-        const product = {
-            name,
-            price,
-            desc,
-            images: imgFiles,
-            video: videoFile
-        };
-
-        products.push(product);
-
-        alert("상품이 저장되었습니다!");
-        console.log(products); // 저장 확인용
-
-        // 초기화
-        document.getElementById("pName").value = "";
-        document.getElementById("pPrice").value = "";
-        document.getElementById("pDesc").value = "";
-        imgUpload.value = "";
-        videoUpload.value = "";
-        imgPreview.innerHTML = "";
-        videoPreview.innerHTML = "";
-    }
+    category3.addEventListener("change", function () {
+        finalCategoryId.value = this.value;
+    });
 </script>

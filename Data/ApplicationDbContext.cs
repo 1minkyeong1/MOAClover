@@ -31,16 +31,23 @@ namespace MOAClover.Data
 
             // ❗ 상품 - 카테고리 관계
             modelBuilder.Entity<Product>()
-                .HasOne<Category>()
-                .WithMany()
-                .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                 .HasOne<Category>()
+                 .WithMany()
+                 .HasForeignKey(p => p.CategoryId)
+                 .OnDelete(DeleteBehavior.Restrict);
 
             // ❗ 상품 - 미디어 관계
             modelBuilder.Entity<Media>()
-                .HasOne<Product>()
-                .WithMany()
-                .HasForeignKey(m => m.ProductId)
+                 .HasOne<Product>()
+                 .WithMany()
+                 .HasForeignKey(m => m.ProductId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔥 사용자 - 주소 관계 (필수)
+            modelBuilder.Entity<UserAddress>()
+                .HasOne(ua => ua.User)
+                .WithMany(u => u.Addresses)
+                .HasForeignKey(ua => ua.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

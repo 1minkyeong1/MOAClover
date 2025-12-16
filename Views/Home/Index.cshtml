@@ -1,98 +1,87 @@
-﻿@{
+﻿@model MOAClover.Models.ViewModels.ProductListViewModel
+
+@{
     ViewData["Title"] = "모아클로버";
 }
 
-<link rel="stylesheet" href="~/css/index.css" />
+<link rel="stylesheet" href="~/css/Index.css" />
+
+@if (User.Identity!.IsAuthenticated)
+{
+    <div style="color:green; font-weight:bold;">
+        로그인됨 : @User.Identity.Name
+    </div>
+}
+else
+{
+    <div style="color:red;">
+        비로그인 상태
+    </div>
+}
 
 <div class="container">
 
-    <!-- 메인 상품 리스트 -->
-    <div id="main">
-        <div class="grid" id="product-grid"></div>
+    <div class="grid">
+        @foreach (var p in Model.Products)
+        {
+            <a href="/Home/Detail?id=@p.ProductId" class="item-link">
+                <div class="item">
+
+                    <div class="swiper product-swiper">
+                        <div class="swiper-wrapper">
+                            @foreach (var img in p.ImageUrls)
+                            {
+                                <div class="swiper-slide">
+                                    <img src="@img" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="item-name">@p.Name</div>
+
+
+                    <div class="price-box">
+                        <div class="price-row">
+                            @if (p.DiscountRate.HasValue)
+                            {
+                                <div class="discount-badge">
+                                    @p.DiscountRate% OFF
+                                </div>
+                            }
+
+                            <div class="item-price">
+                                @p.FinalPrice.ToString("N0") 원
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </a>
+        }
+                
     </div>
 
-    <!-- 🔥 페이징 UI -->
-    <div id="pagination"
-         style="text-align:center; margin:25px 0; font-size:18px; cursor:pointer;">
+    <!-- 🔥 페이징 -->
+    <div class="pagination">
+        @if (Model.CurrentPage > 1)
+        {
+            <a href="?page=@(Model.CurrentPage - 1)">◀</a>
+        }
+
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <a href="?page=@i"
+               class="@(i == Model.CurrentPage ? "active" : "")">
+                @i
+            </a>
+        }
+
+        @if (Model.CurrentPage < Model.TotalPages)
+        {
+            <a href="?page=@(Model.CurrentPage + 1)">▶</a>
+        }
     </div>
 
 </div>
-
-
-<script>
-
-    /* ==== 상품 배열 ==== */
-    const products = [
-        { id: 1, name: '제품 1', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
-        { id: 2, name: '제품 2', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
-        { id: 3, name: '제품 3', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
-        { id: 4, name: '제품 4', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
-        { id: 5, name: '제품 5', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' },
-        { id: 6, name: '제품 6', price: '15000원', img: 'https://via.placeholder.com/400x400', desc: '제품 설명입니다.' }
-    ];
-
-    /* ==== 설정 ==== */
-    const itemsPerPage = 20;
-    let currentPage = 1;
-
-    /* ==== 총 페이지 ==== */
-    function getTotalPages() {
-        return Math.ceil(products.length / itemsPerPage);
-    }
-
-    /* ==== 상품 출력 ==== */
-    function render() {
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = '';
-
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const pageProducts = products.slice(start, end);
-
-        pageProducts.forEach((p, i) => {
-            grid.innerHTML += `
-                <div class="item" onclick="location.href='/Home/Detail?id=${p.id}'">
-                    <img src="${p.img}" />
-                    <div class="item-name">${p.name}</div>
-                    <div class="item-price">${p.price}</div>
-                </div>
-            `;
-        });
-
-        renderPagination();
-    }
-
-    /* ==== 페이징 출력 ==== */
-    function renderPagination() {
-        const totalPages = getTotalPages();
-        const paging = document.getElementById('pagination');
-        paging.innerHTML = '';
-
-        if (currentPage > 1) {
-            paging.innerHTML += `<span onclick="goPage(${currentPage - 1})">◀</span>`;
-        }
-
-        for (let i = 1; i <= totalPages; i++) {
-            paging.innerHTML += `
-                <span onclick="goPage(${i})" class="${i === currentPage ? 'active' : ''}">
-                    ${i}
-                </span>
-            `;
-        }
-
-        if (currentPage < totalPages) {
-            paging.innerHTML += `<span onclick="goPage(${currentPage + 1})">▶</span>`;
-        }
-    }
-
-    function goPage(num) {
-        currentPage = num;
-        render();
-    }
-
-    /* 초기 실행 */
-    render();
-
-
-    
-</script>

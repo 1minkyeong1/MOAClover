@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MOAClover.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251212074510_InitialCreate")]
+    [Migration("20251215053636_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -180,14 +180,12 @@ namespace MOAClover.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AddressDetail")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ZipCode")
@@ -396,10 +394,6 @@ namespace MOAClover.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -457,8 +451,7 @@ namespace MOAClover.Migrations
                     b.HasOne("User", "User")
                         .WithMany("Addresses")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });

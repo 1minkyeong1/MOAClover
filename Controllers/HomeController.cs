@@ -1,52 +1,211 @@
-using System.Diagnostics;
+ï»¿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MOAClover.Data;
 using MOAClover.Models;
+using MOAClover.Models.ViewModels;
+using System.Diagnostics;
 
 namespace MOAClover.Controllers
 {
     public class HomeController : Controller
     {
-        // ·Î±×±â·Ï (½ÇÇà Áß ¹ß»ıÇÏ´Â ¸Ş½ÃÁö¸¦ ÄÜ¼ÖÀÌ³ª ÆÄÀÏ·Î ³²°ÜÁÜ)
+
+        private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
+
+        // ë¡œê·¸ê¸°ë¡ (ì‹¤í–‰ ì¤‘ ë°œìƒí•˜ëŠ” ë©”ì‹œì§€ë¥¼ ì½˜ì†”ì´ë‚˜ íŒŒì¼ë¡œ ë‚¨ê²¨ì¤Œ)
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IWebHostEnvironment env)
         {
             _logger = logger;
+            _context = context;
+            _env = env;
         }
 
-        //  /Home/Index ·Î Á¢¼ÓÇÏ¸é IndexÈ­¸é º¸¿©ÁÜ
-        public IActionResult Index()
+        // Indexí™”ë©´ ë³´ì—¬ì¤Œ
+        public IActionResult Index(int page = 1)
         {
-            return View();
+            const int pageSize = 20;
+
+            var query = _context.Products
+                .Where(p => p.IsVisible && p.DeletedAt == null);
+
+            int totalCount = query.Count();
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var products = query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new ProductListItemViewModel
+                {
+                    ProductId = p.ProductId,
+                    Name = p.Name,
+                    Price = p.Price,
+                    DiscountRate = p.DiscountRate,
+
+                    ImageUrls = _context.Media
+                        .Where(m => m.ProductId == p.ProductId && m.MediaType == "image")
+                        .OrderBy(m => m.SortOrder)
+                        .Select(m => m.FileUrl)
+                        .ToList()
+                })
+                .ToList();
+
+            var model = new ProductListViewModel
+            {
+                Products = products,
+                CurrentPage = page,
+                TotalPages = totalPages
+            };
+
+            return View(model);
         }
-        
-        //  /Home/Create ·Î Á¢¼ÓÇÏ¸é »õ»óÇ°µî·Ï(Create) È­¸éÀ» º¸¿©ÁÜ
+
+        // ìƒí’ˆë“±ë¡ ì°½ ì´ë™
+        // ê´€ë¦¬ìë§Œ ì ‘ê·¼ê°€ëŠ¥
+        [Authorize(Roles = "admin")]
+        [HttpGet]
         public IActionResult Create()
         {
+            ViewBag.Categories = _context.Categories
+                .Where(c => c.IsActive)
+                .ToList();
+
             return View();
         }
 
-        // ¼öÁ¤Ã¢ ÀÌµ¿
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        public async Task<IActionResult> Create(Product product, List<IFormFile> Images, IFormFile? Video)
+        {
+            if (product.CategoryId == 0)
+            {
+                ModelState.AddModelError("CategoryId", "ì¹´í…Œê³ ë¦¬ë¥¼ ì„ íƒí•´ì£¼ì„¸ìš”.");
+
+                ViewBag.Categories = _context.Categories
+                   .Where(c => c.IsActive)
+                   .ToList();
+
+                return View(product);
+            }
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            string uploadPath = Path.Combine(_env.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadPath))
+                Directory.CreateDirectory(uploadPath);
+
+            int order = 0;
+
+            foreach (var file in Images)
+            {
+                string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(uploadPath, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await file.CopyToAsync(stream);
+
+                _context.Media.Add(new Media
+                {
+                    ProductId = product.ProductId,
+                    MediaType = "image",
+                    FileUrl = "/uploads/" + fileName,
+                    SortOrder = order++
+                });
+            }
+
+            if (Video != null)
+            {
+                string fileName = Guid.NewGuid() + Path.GetExtension(Video.FileName);
+                string filePath = Path.Combine(uploadPath, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                await Video.CopyToAsync(stream);
+
+                _context.Media.Add(new Media
+                {
+                    ProductId = product.ProductId,
+                    MediaType = "video",
+                    FileUrl = "/uploads/" + fileName
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            // âœ… ë“±ë¡ ì™„ë£Œ ë©”ì‹œì§€
+            TempData["SuccessMessage"] = "ìƒí’ˆì´ ì„±ê³µì ìœ¼ë¡œ ë“±ë¡ë˜ì—ˆìŠµë‹ˆë‹¤.";
+
+            return RedirectToAction("Detail", new { id = product.ProductId });
+        }
+
+        // ìƒí’ˆìƒì„¸í˜ì´ì§€ ì´ë™
+        [HttpGet]
+        public IActionResult Detail(int id)
+        {
+            var product = _context.Products
+                .FirstOrDefault(p => p.ProductId == id);
+
+            if (product == null)
+                return NotFound();
+
+            var medias = _context.Media
+                .Where(m => m.ProductId == id && m.IsActive)
+                .OrderBy(m => m.SortOrder)
+                .ToList();
+
+            // ì¹´í…Œê³ ë¦¬ ê²½ë¡œ ìƒì„±
+            string categoryPath = "";
+            var current = _context.Categories.FirstOrDefault(c => c.CategoryId == product.CategoryId);
+
+            while (current != null)
+            {
+                categoryPath = current.Name + (categoryPath == "" ? "" : " > " + categoryPath);
+                current = current.ParentCategoryId == null
+                    ? null
+                    : _context.Categories.FirstOrDefault(c => c.CategoryId == current.ParentCategoryId);
+            }
+
+            var model = new ProductDetailViewModel
+            {
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Price = product.Price,
+                DiscountRate = product.DiscountRate,
+                Description = product.Description,
+                CategoryPath = categoryPath,
+                ImageUrls = medias
+                    .Where(m => m.MediaType == "image")
+                    .Select(m => m.FileUrl)
+                    .ToList(),
+                VideoUrls = medias
+                    .Where(m => m.MediaType == "video")
+                    .Select(m => m.FileUrl)
+                    .ToList()
+            };
+
+            return View(model);
+        }
+
+        // ìˆ˜ì •ì°½ ì´ë™
         public IActionResult Edit()
         {
             return View();
         }
 
-        // »èÁ¦ Ã¢ ÀÌµ¿
+        // ì‚­ì œ ì°½ ì´ë™
         public IActionResult Delete()
         {
             return View();
         }
 
-        //  /Home/Detail  »óÇ°»ó¼¼ÆäÀÌÁö ÀÌµ¿
-        public IActionResult Detail()
-        {
-            return View();
-        }
+      
 
 
-        //  ¿¡·¯ ¹ß»ı ½Ã º¸¿©ÁÖ´Â ±âº» ¿À·ù ÆäÀÌÁö (Error.cshtml ¿¡ RequestId ¸¦ º¸³»¼­ È­¸é¿¡¼­ ¿¡·¯ ÃßÀû °¡´É)
-        // Duration = 0 ¡æ Ä³½ÃÀúÀå ¾ÈÇÔ.  NoStore = true ¡æ ºê¶ó¿ìÀú Ä³½Ã¿¡ ÀúÀå X
+        //  ì—ëŸ¬ ë°œìƒ ì‹œ ë³´ì—¬ì£¼ëŠ” ê¸°ë³¸ ì˜¤ë¥˜ í˜ì´ì§€ (Error.cshtml ì— RequestId ë¥¼ ë³´ë‚´ì„œ í™”ë©´ì—ì„œ ì—ëŸ¬ ì¶”ì  ê°€ëŠ¥)
+        // Duration = 0 â†’ ìºì‹œì €ì¥ ì•ˆí•¨.  NoStore = true â†’ ë¸Œë¼ìš°ì € ìºì‹œì— ì €ì¥ X
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

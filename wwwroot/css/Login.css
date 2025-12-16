@@ -68,7 +68,7 @@
 
 .register-link {
     text-decoration: none; /* 밑줄 제거 */
-    color: #F22929; /* 링크 색상 */
+    color: #DE5454C7; /* 링크 색상 */
     margin: 5px 70px 0 0; /* 마진 조정 */
     transition: all 0.3s; /* 마우스 오버 효과 */
 }

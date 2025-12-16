@@ -100,3 +100,16 @@ textarea {
         background: #555; /* 마우스 올리면 색 변경 */
         color: #fff; /* 글자색 */
     }
+
+.category-row {
+    display: flex;
+    gap: 10px;
+}
+
+    .category-row select {
+        flex: 1;
+        height: 40px;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }

@@ -6,9 +6,10 @@ namespace MOAClover.Models
     {
         public int ProductId { get; set; } // PK
 
-        public string Name { get; set; }           // 상품명
+        public string Name { get; set; } = string.Empty;          // 상품명
         public string? Description { get; set; }   // 상품설명
         public int Price { get; set; }             // 가격
+        public int? DiscountRate { get; set; } // 할인율 %
 
         public int CategoryId { get; set; }  // FK  카테고리아이디
 

@@ -1,125 +1,191 @@
-﻿@{
-    ViewData["Title"] = "상품 상세보기";
+﻿@model MOAClover.Models.ViewModels.ProductDetailViewModel
+
+@{
+    ViewData["Title"] = "상품페이지";
 }
 
 <link rel="stylesheet" href="~/css/Detail.css" />
 
 <div class="detail-wrap">
 
-    <!-- 목록으로 -->
-    <div class="back-btn">
-        <a href="/Home/Index">← 목록으로</a>
-    </div>
-
-
-    <!-- 🧩 상세 상단 : 이미지(왼쪽) + 상품정보(오른쪽) -->
+    <!-- 상단 -->
     <div class="detail-top">
 
-        <!-- 왼쪽 : 이미지 슬라이드 -->
+        <!-- 왼쪽 이미지 -->
         <div class="detail-left">
-            <div class="image-gallery" id="imageGallery">
-                <!-- 🔥 나중에 Model.Images 로 바꿀 예정 -->
-                <img src="https://via.placeholder.com/500x500" class="gallery-img" />
-                <img src="https://via.placeholder.com/500x500/ffdddd" class="gallery-img" style="display:none;" />
-                <img src="https://via.placeholder.com/500x500/ddffdd" class="gallery-img" style="display:none;" />
-            </div>
+            <img src="@Model.MainImageUrl" class="main-img" />
 
-            <!-- 썸네일 -->
-            <div class="thumbnail-wrap" id="thumbnailWrap">
-                <img src="https://via.placeholder.com/120x120" class="thumb" onclick="showImage(0)" />
-                <img src="https://via.placeholder.com/120x120/ffdddd" class="thumb" onclick="showImage(1)" />
-                <img src="https://via.placeholder.com/120x120/ddffdd" class="thumb" onclick="showImage(2)" />
+            <div class="thumbnail-wrap">
+                @foreach (var img in Model.ImageUrls)
+                {
+                    <img src="@img" class="thumb" onclick="changeImage(this.src)" />
+                }
             </div>
         </div>
 
-        <!-- 오른쪽 : 상품정보 -->
+        <!-- 오른쪽 상품정보 -->
         <div class="detail-right">
-
-            <h1 class="product-title">@ViewData["ProductName"]</h1>
-
-            <div class="product-price">@ViewData["ProductPrice"]</div>
-
-            <div class="product-short-desc">
-                @ViewData["ProductDesc"]
+            <div class="category-info">
+                카테고리
             </div>
 
-           
+            <h1>@Model.Name</h1>
 
+            <!-- 가격 -->
+            <div class="price-box">
+                @if (Model.DiscountRate.HasValue)
+                {
+                    <div class="price-row">
+                        <div class="discount-badge">@Model.DiscountRate%</div>
+
+                        <div class="price-info">
+                            <div class="final-price">
+                                @Model.FinalPrice.ToString("N0") 원
+                            </div>
+                            <div class="origin-price">
+                                <del>@Model.Price.ToString("N0") 원</del>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="final-price">
+                        @Model.Price.ToString("N0") 원
+                    </div>
+                }
+            </div>
+
+            <div class="delivery">배송비: 3000원</div>
+
+            <a href="https://smartstore.naver.com"
+               target="_blank"
+               class="external-link">
+                스마트스토어
+            </a>
         </div>
     </div>
 
-    <!-- 🧩 상세 하단 : 탭 메뉴 -->
-    <div class="detail-tabs">
+    <!-- 탭 -->
+    <div class="tab-menu">
+        <div class="tab active" onclick="openTab(this,'detail')">상세정보</div>
+        <div class="tab" onclick="openTab(this,'qa')">Q&A</div>
+        <div class="tab" onclick="openTab(this,'return')">반품/교환</div>
+    </div>
 
-        <!-- 탭 메뉴 -->
-        <div class="tab-menu">
-            <div class="tab active" data-tab="desc">상품설명</div>
-            <div class="tab" data-tab="review">리뷰</div>
-            <div class="tab" data-tab="qna">Q&A</div>
+    <!-- 탭 내용 -->
+    <div class="tab-content">
+
+        <!-- 상세정보 -->
+        <div id="detail" class="tab-panel active detail-html">
+
+            @if (Model.ImageUrls.Any())
+            {
+                foreach (var img in Model.ImageUrls)
+                {
+                    <img src="@img" />
+                }
+            }
+
+            @if (Model.VideoUrls.Any())
+            {
+                foreach (var video in Model.VideoUrls)
+                {
+                    <video src="@video" controls></video>
+                }
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="text-desc">
+                    @Html.Raw(Model.Description)
+                </div>
+            }
+
         </div>
 
-        <!-- 탭 내용 영역 -->
-        <div id="tab-desc" class="tab-content">
-            @ViewData["ProductDesc"]
+        <!-- Q&A -->
+        <div id="qa" class="tab-panel">
+
+            @if (Model.QnAs == null || !Model.QnAs.Any())
+            {
+                <p class="qna-empty">아직 등록된 상품 문의가 없습니다.</p>
+            }
+            else
+            {
+                @foreach (var q in Model.QnAs)
+                {
+                    <div class="qna-box">
+                        <div class="question">Q. @q.Question</div>
+
+                        <div class="answer">
+                            @(
+                            string.IsNullOrEmpty(q.Answer)
+                            ? "답변 대기중"
+                            : "A. " + q.Answer
+                            )
+                    </div>
+                </div>
+                        }
+            }
+
         </div>
 
-        <div id="tab-review" class="tab-content" style="display:none;">
-            <p>아직 등록된 리뷰가 없습니다.</p>
-        </div>
+        <!-- 반품/교환 -->
+        <div id="return" class="tab-panel return-policy">
 
-        <div id="tab-qna" class="tab-content" style="display:none;">
-            <p>문의글이 없습니다.</p>
+            <h3>반품 / 교환 안내</h3>
+
+            <ul>
+                <li>
+                    <strong>반품/교환 가능 기간</strong><br />
+                    상품 수령일로부터 <b>7일 이내</b>에 신청 가능합니다.
+                </li>
+
+                <li>
+                    <strong>반품/교환 불가 사유</strong>
+                    <ul class="sub">
+                        <li>고객 부주의로 인한 상품 훼손 또는 사용 흔적이 있는 경우</li>
+                        <li>상품 택(tag) 및 구성품이 분실 또는 훼손된 경우</li>
+                        <li>주문 제작 상품 및 세일 상품</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <strong>배송비 안내</strong><br />
+                    단순 변심에 의한 반품/교환 시 왕복 배송비는 고객 부담입니다.<br />
+                    상품 불량 및 오배송의 경우 배송비는 <b>판매자 부담</b>입니다.
+                </li>
+
+                <li>
+                    <strong>반품/교환 방법</strong><br />
+                    고객센터 또는 Q&A를 통해 접수 후 안내에 따라 반품해 주세요.
+                </li>
+
+                <li>
+                    <strong>환불 처리 안내</strong><br />
+                    반품 상품 확인 후 <b>영업일 기준 3~5일 이내</b> 환불 처리됩니다.
+                </li>
+            </ul>
+
         </div>
 
     </div>
-
-    <!-- 🔥 영상 영역 -->
-    <h3 class="section-title">상품 영상</h3>
-    <div class="video-area">
-        <video src="" controls class="video-box"></video>
-        <video src="" controls class="video-box"></video>
-    </div>
-
-    <!-- 수정 / 삭제 -->
-    <div class="edit-delete-btns">
-        <a href="/Home/Edit?id=@ViewData["ProductId"]" class="edit-btn">수정</a>
-        <a href="/Home/Delete?id=@ViewData["ProductId"]"
-           onclick="return confirm('정말 삭제하시겠습니까?')"
-           class="delete-btn">삭제</a>
-    </div>
-
 </div>
 
-
 <script>
-    /* ========================
-       🔹 썸네일 클릭 → 이미지 전환
-       ======================== */
-    function showImage(index) {
-        const imgs = document.querySelectorAll(".gallery-img");
-        imgs.forEach((img, i) => {
-            img.style.display = (i === index) ? "block" : "none";
-        });
+    function changeImage(src) {
+        document.querySelector(".main-img").src = src;
     }
 
+    function openTab(el, id) {
+        document.querySelectorAll(".tab")
+            .forEach(t => t.classList.remove("active"));
 
-    /* ========================
-       🔹 탭 전환
-       ======================== */
-    document.querySelectorAll(".tab").forEach(tab => {
-        tab.addEventListener("click", function () {
+        document.querySelectorAll(".tab-panel")
+            .forEach(p => p.classList.remove("active"));
 
-            // 모든 탭에서 active 제거
-            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-            this.classList.add("active");
-
-            // 모든 탭 콘텐츠 숨기기
-            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
-
-            // 클릭된 탭 연결된 콘텐츠 보이기
-            const target = this.getAttribute("data-tab");
-            document.getElementById("tab-" + target).style.display = "block";
-        });
-    });
-
+        el.classList.add("active");
+        document.getElementById(id).classList.add("active");
+    }
 </script>

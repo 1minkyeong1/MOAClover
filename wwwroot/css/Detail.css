@@ -1,158 +1,412 @@
-﻿/* 전체 레이아웃 */
-.detail-wrap {
+﻿.detail-top {
+    display: flex;
+    gap: 30px;
+    /*align-items: flex-start;*/
+    align-items: center;
+}
+
+/* 1. 왼쪽 영역(이미지 전체 컨테이너) 너비 확대 */
+.detail-left {
+    /* width: 420px; 기존 값 */
+    width: 550px; /* 변경: 너비를 넓혀서 존재감을 키움 */
+    flex-shrink: 0; /* 화면이 줄어도 이 영역이 찌그러지지 않게 고정 */
+}
+
+/* 2. 메인 이미지 높이도 너비에 맞춰 확대 */
+.main-img {
     width: 100%;
-    max-width: 900px;
+    /* height: 420px; 기존 값 */
+    height: 550px; /* 변경: 컨테이너 너비와 맞춰 정사각형 비율 유지 */
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+/* 3. 썸네일 이미지 크기 확대 */
+.thumb {
+    /* width: 60px;  기존 값 */
+    /* height: 60px; 기존 값 */
+    width: 85px; /* 변경: 썸네일 크기 키움 */
+    height: 85px; /* 변경: 썸네일 크기 키움 */
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    transition: border-color 0.2s; /* 호버 효과 부드럽게 추가 */
+}
+
+    /* 썸네일 마우스 올렸을 때 강조 (추가 제안) */
+    .thumb:hover {
+        border-color: #d92121;
+    }
+
+
+/* 오른쪽 영역 여백 확보 */
+.detail-right {
+    flex: 1;
+    /* padding-left: 40px; /* 이미지와 간격 - 현재 삭제된 상태일 것입니다. */
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; /* 내용 중앙 정렬(세로)은 유지하거나 필요에 따라 주석 처리 */
+    margin-top: 30px;
+}
+
+/* 카테고리 영역 스타일 */
+.category-info {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    margin-bottom: 15px; /* 제목과 카테고리 사이 간격 */
+    /* 🔥 [추가] 오른쪽 정렬 */
+    text-align: right;
+}
+
+    /* 상품 제목 */
+    .detail-right h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #222;
+        margin: 0 0 20px 0;
+        line-height: 1.4;
+        word-break: keep-all;
+        text-align: center;
+    }
+
+/* 가격 박스 전체 */
+.price-box {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* 할인율 + 가격정보 가로 정렬 (내부 요소는 기존 유지) */
+.price-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+/* 할인율 배지 */
+.discount-badge {
+    background: #d92121;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 6px;
+    line-height: 1;
+    margin-top: 4px;
+}
+
+/* 가격 텍스트 묶음 */
+.price-info {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 최종 가격 (크고 진하게) */
+.final-price {
+    font-size: 32px;
+    font-weight: 800;
+    color: #222;
+    line-height: 1;
+}
+
+/* 원래 가격 (작고 흐리게) */
+.origin-price {
+    margin-top: 8px;
+    font-size: 16px;
+    color: #aaa;
+    text-align: right;
+}
+
+    .origin-price del {
+        text-decoration: line-through;
+    }
+
+/* 배송비 영역 */
+.delivery {
+    font-size: 15px;
+    color: #555;
+    padding-bottom:20px;
+   /* border-top: 1px solid #eee;*/
+    border-bottom: 1px solid #eee;
+    margin-bottom: 30px;
+    text-align: right;
+}
+
+/* 구매 링크 (버튼 스타일) */
+.external-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    height: 60px;
+    background-color: #03c75a;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
     margin: 0 auto;
+}
+
+    .external-link:hover {
+        background-color: #02b351;
+    }
+
+/* 모바일 대응 (media query) 섹션도 확인하고 필요한 경우 .delivery와 .external-link를 수정해 주세요. */
+
+@media (max-width: 768px) {
+
+    .detail-right h1 {
+        text-align: center; /* 모바일 제목 가운데 정렬 유지 */
+    }
+
+    .price-box {
+        justify-content: center; /* 모바일에서는 가격을 가운데 정렬하는 것이 더 자연스러울 수 있습니다. */
+    }
+
+    .delivery {
+        text-align: center; /* 모바일에서는 배송비도 가운데 정렬하는 것이 더 자연스러울 수 있습니다. */
+    }
+
+    .external-link {
+        width: 80%; /* 모바일에서는 버튼 너비를 80% 정도로 키웁니다. */
+        margin: 0 auto;
+    }
+    .category-info {
+        text-align: center; /* 모바일에서는 제목과 함께 가운데 정렬하는 것이 더 깔끔할 수 있습니다. */
+        margin-bottom: 10px;
+    }
+}
+
+/* 탭 메뉴 전체 */
+.tab-menu {
+    display: flex;
+    justify-content: center; /* ⭐ 가운데 정렬 */
+    gap: 10px;
+    margin-top: 40px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 개별 탭 */
+.tab {
+    min-width: 160px; /* ⭐ 탭 넓이 */
+    text-align: center;
+    padding: 14px 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    color: #555;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+    /* 활성 탭 */
+    .tab.active {
+        color: #d92121;
+        border-bottom-color: #d92121;
+    }
+
+    /* 호버 */
+    .tab:hover {
+        color: #d92121;
+    }
+
+
+.tab-panel {
+    display: none;
+    padding: 25px 0;
+}
+
+    .tab-panel.active {
+        display: block;
+    }
+
+.detail-html img,
+.detail-html video,
+.detail-html iframe {
+    max-width: 100%;
+    display: block;
+    margin: 20px auto;
+}
+
+@media (max-width: 768px) {
+    .detail-top {
+        flex-direction: column;
+    }
+
+    .detail-left {
+        width: 100%;
+    }
+
+    .main-img {
+        height: auto;
+    }
+}
+
+.qna-empty {
+    padding: 30px 0;
+    text-align: center;
+    color: #888;
+    font-size: 15px;
+}
+
+/*반품정책*/
+.return-policy {
     padding: 20px;
-    box-sizing: border-box;
+    line-height: 1.8;
+    color: #333;
 }
 
-/* 뒤로가기 버튼 */
-.back-btn {
-    margin-bottom: 15px;
+    .return-policy h3 {
+        font-size: 18px;
+        margin-bottom: 14px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 8px;
+    }
+
+    .return-policy ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .return-policy > ul > li {
+        margin-bottom: 18px;
+    }
+
+    .return-policy strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 15px;
+    }
+
+    .return-policy ul.sub {
+        margin-top: 8px;
+        padding-left: 14px;
+    }
+
+        .return-policy ul.sub li {
+            font-size: 14px;
+            color: #555;
+            position: relative;
+            padding-left: 10px;
+        }
+
+            .return-policy ul.sub li::before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: #d92121;
+            }
+
+
+/* =========================
+   반응형 웹 디자인 (미디어 쿼리)
+   ========================= */
+
+/* 태블릿 (Tablet, 769px ~ 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+    /* 1. 이미지와 상세 정보 영역 너비 조정 (이미지 축소) */
+    .detail-left {
+        width: 450px; /* 기존 550px에서 450px로 줄임 */
+    }
+
+    .main-img {
+        height: 450px; /* 메인 이미지 높이 조정 */
+    }
+
+    /* 2. 썸네일 크기 약간 조정 */
+    .thumb {
+        width: 75px;
+        height: 75px;
+    }
+
+    /* 3. 제목 크기 조정 */
+    .detail-right h1 {
+        font-size: 24px;
+    }
+
+    /* 4. 가격 크기 조정 */
+    .final-price {
+        font-size: 28px;
+    }
 }
 
-    .back-btn a {
-        text-decoration: none;
+
+/* 모바일 (Mobile, 최대 768px) */
+@media (max-width: 768px) {
+
+    /* 1. 기본 레이아웃 변경: 가로(flex)에서 세로(column)로 변경 */
+    .detail-top {
+        flex-direction: column;
+        gap: 20px; /* 모바일 상하 간격 */
+    }
+
+    /* 2. 이미지 영역: 화면 전체 너비 사용 */
+    .detail-left {
+        width: 100%;
+        order: 1; /* 이미지 영역을 먼저 표시 (순서 조정) */
+    }
+
+    .main-img {
+        height: auto; /* 높이를 자동으로 풀어 종횡비를 유지 */
+        max-height: 400px; /* 너무 길어지는 것 방지 */
+    }
+
+    /* 3. 썸네일 영역: 가로 스크롤 가능하게 변경 (선택 사항) */
+    .thumbnail-wrap {
+        /* overflow-x: auto; */ /* 썸네일이 많을 경우 가로 스크롤 허용 */
+        /* padding-bottom: 5px; */
+    }
+
+    .thumb {
+        width: 65px;
+        height: 65px;
+    }
+
+    /* 4. 상세 정보 영역: 화면 전체 너비 사용 & 여백 제거 */
+    .detail-right {
+        width: 100%;
+        padding-left: 0;
+        margin-top: 0;
+        order: 2; /* 상세 정보 영역을 이미지 아래에 표시 */
+    }
+
+        .detail-right h1 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+    .final-price {
+        font-size: 26px;
+    }
+
+    .discount-badge {
+        font-size: 16px;
+        padding: 4px 8px;
+    }
+
+    .delivery {
+        margin-bottom: 20px;
+    }
+
+    .external-link {
+        height: 50px;
         font-size: 16px;
     }
 
-/* 제목 */
-.product-title {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-/* 가격 */
-.product-price {
-    font-size: 20px;
-    color: #d92121;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-
-/* ------------------------------- */
-/* 이미지 + 설명 영역(자동 반응형) */
-/* ------------------------------- */
-
-.detail-top {
-    display: flex;
-    flex-wrap: wrap; /* 화면이 좁아지면 자동으로 줄바꿈 → 세로 배치 */
-    gap: 20px;
-}
-
-/* 이미지 영역 */
-.image-left {
-    flex: 1 1 300px; /* 최소 300px 유지하다 좁으면 자동 줄바꿈됨 */
-    max-width: 450px;
-}
-
-#imageGallery {
-    width: 100%;
-}
-
-.gallery-img {
-    width: 100%;
-    border-radius: 8px;
-}
-
-/* 썸네일 */
-.thumbnail-wrap {
-    display: flex;
-    flex-wrap: wrap; /* 자동 줄바꿈 */
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.thumb {
-    width: 70px;
-    height: 70px;
-    object-fit: cover;
-    cursor: pointer;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-/* ------------------------------- */
-/* 오른쪽 정보 영역 */
-/* ------------------------------- */
-.info-right {
-    flex: 1 1 250px;
-    min-width: 250px;
-}
-
-.product-desc {
-    white-space: pre-line;
-    margin-top: 15px;
-    line-height: 1.5;
-}
-
-/* ------------------------------- */
-/* 탭 메뉴 */
-/* ------------------------------- */
-
-.tab-menu {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
-    border-bottom: 1px solid #ccc;
-}
-
-.tab {
-    padding: 10px 15px;
-    cursor: pointer;
-    font-weight: bold;
-    flex: 1;
-    text-align: center;
-}
-
-    .tab.active {
-        color: #d92121;
-        border-bottom: 3px solid #d92121;
+    /* 5. 탭 메뉴: 탭 너비 줄이기 */
+    .tab-menu {
+        margin-top: 30px;
     }
 
-/* 탭 내용 영역 */
-.tab-content {
-    margin-top: 20px;
-}
-
-/* ------------------------------- */
-/* 영상 */
-/* ------------------------------- */
-.video-area {
-    display: flex;
-    flex-wrap: wrap; /* 좁으면 아래로 내려감 */
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.video-box {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 8px;
-}
-
-/* ------------------------------- */
-/* 수정 / 삭제 버튼 */
-/* ------------------------------- */
-.edit-delete-btns {
-    display: flex;
-    gap: 10px;
-    margin-top: 40px;
-}
-
-.edit-btn, .delete-btn {
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: white;
-    font-weight: bold;
-}
-
-.edit-btn {
-    background: #3498db;
-}
-
-.delete-btn {
-    background: #d92121;
+    .tab {
+        min-width: 100px;
+        font-size: 14px;
+        padding: 12px 0;
+    }
 }

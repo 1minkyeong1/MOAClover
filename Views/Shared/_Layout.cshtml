@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="utf-8" />
@@ -7,6 +10,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MOAClover.styles.css" asp-append-version="true" />
+    <link rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 </head>
 <body>
     <header>
@@ -29,9 +33,38 @@
                     </a>
 
                     <div style="width:100%; text-align:right; margin-top:10px; margin-right:80px;">
-                        <a href="/Home/Create" style="color:#777; text-decoration:none; margin-left:10px;">상품등록</a>
-                        <a href="/Account/Login" style="color:#777; text-decoration:none; margin-left:10px;">로그인</a>
-                        <a href="#" style="color:#777; text-decoration:none; margin-left:10px;">Goods</a>
+
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <span style="margin-right:10px;">
+                                👤 @User.Identity.Name
+                            </span>
+
+                            <form asp-controller="Account"
+                                  asp-action="Logout"
+                                  method="post"
+                                  style="display:inline;">
+                                <button type="submit"
+                                        style="background:none; border:none; color:#777; cursor:pointer;">
+                                    로그아웃
+                                </button>
+                            </form>
+
+                            @if (User.IsInRole("admin"))
+                            {
+                                <a href="/Home/Create"
+                                   style="color:#777; text-decoration:none; margin-left:10px;">
+                                    상품등록
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <a href="/Account/Login"
+                               style="color:#777; text-decoration:none; margin-left:10px;">
+                                로그인
+                            </a>
+                        }
                     </div>
                 </div>
                
@@ -40,10 +73,10 @@
                 <div class="navbar-collapse collapse show d-flex justify-content-center mt-2">
                     <ul class="navbar-nav text-center">
                         <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">카</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">패션잡화</a>
                         </li>
                         <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">테</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="fashion" asp-action="Privacy">패션잡화</a>
                         </li>
                         <li class="nav-item mx-2">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">고</a>
@@ -79,6 +112,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
