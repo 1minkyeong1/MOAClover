@@ -1,59 +1,73 @@
-﻿@{
+﻿@model MOAClover.Models.ViewModels.RegisterViewModel
+
+@{
     ViewData["Title"] = "회원가입";
-    Layout = "_Layout";
 }
 
 <link rel="stylesheet" href="~/css/Register.css" />
 
 <div class="container">
     <h2>회원가입</h2>
+
     <form method="post" asp-controller="Account" asp-action="Register">
+        @Html.AntiForgeryToken()
 
-        <label>아이디</label>
-        <input type="text" name="UserName" placeholder="아이디 입력" required />
+        <!-- 전체 요약(원하시면 유지/삭제) -->
+        <div asp-validation-summary="All" class="text-danger" style="margin-bottom:12px;"></div>
 
-        <label>비밀번호</label>
-        <input type="password" name="Password" required />
+        <label asp-for="UserName"></label>
+        <input asp-for="UserName" placeholder="아이디 입력" />
+        <span asp-validation-for="UserName" class="field-error"></span>
 
-        <label>이름</label>
-        <input type="text" name="Name" placeholder="홍길동" required />
+        <label asp-for="Password"></label>
+        <input asp-for="Password" />
+        <span asp-validation-for="Password" class="field-error"></span>
 
-        <label>생년월일</label>
-        <input type="date" name="BirthDate" />
+        <label asp-for="ConfirmPassword"></label>
+        <input asp-for="ConfirmPassword" />
+        <span asp-validation-for="ConfirmPassword" class="field-error"></span>
 
-        <label>전화번호</label>
-        <input type="text" name="Phone" placeholder="010-1234-5678" />
+        <label asp-for="Name"></label>
+        <input asp-for="Name" placeholder="홍길동" />
+        <span asp-validation-for="Name" class="field-error"></span>
 
-        <label>이메일</label>
-        <input type="email" name="Email" placeholder="example@mail.com" required />
+        <label asp-for="BirthDate"></label>
+        <input asp-for="BirthDate" type="date" />
+        <span asp-validation-for="BirthDate" class="field-error"></span>
 
-        <label>우편번호</label>
+        <label asp-for="Phone"></label>
+        <input asp-for="Phone" placeholder="010-1234-5678" />
+        <span asp-validation-for="Phone" class="field-error"></span>
+
+        <label asp-for="Email"></label>
+        <input asp-for="Email" placeholder="example@mail.com" />
+        <span asp-validation-for="Email" class="field-error"></span>
+
+        <label asp-for="ZipCode"></label>
         <div class="zip-row">
-            <input type="text" id="zipcode" name="ZipCode" readonly />
+            <input asp-for="ZipCode" id="zipcode" readonly />
             <a href="javascript:void(0);" class="btn-zipcode" onclick="openDaumPostcode()">주소 검색</a>
         </div>
+        <span asp-validation-for="ZipCode" class="field-error"></span>
 
-        <label>주소</label>
-        <input type="text" id="address" name="Address" readonly />
+        <label asp-for="Address"></label>
+        <input asp-for="Address" id="address" readonly />
+        <span asp-validation-for="Address" class="field-error"></span>
 
-        <label>상세주소</label>
-        <input type="text" id="addressDetail" name="AddressDetail" />
+        <label asp-for="AddressDetail"></label>
+        <input asp-for="AddressDetail" id="addressDetail" />
+        <span asp-validation-for="AddressDetail" class="field-error"></span>
 
-        <!-- 회원가입 -->
         <button type="submit">회원가입</button>
 
-        <!-- 취소 (홈 이동) -->
         <button type="button" class="btn btn-cancel" onclick="location.href='/Home/Index'">취소</button>
 
-        <!-- 로그인 이동 -->
         <div style="text-align:center; margin-top:30px;">
             <button type="button" class="login-btn" onclick="location.href='/Account/Login'">로그인</button>
         </div>
-
     </form>
 </div>
 
-<!-- 주소 API -->
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
     function openDaumPostcode() {
@@ -62,7 +76,14 @@
                 document.getElementById('zipcode').value = data.zonecode;
                 document.getElementById('address').value = data.address;
                 document.getElementById('addressDetail').focus();
+
+                // readonly 필드라서, 값 세팅 후 유효성 체크를 강제로 갱신(선택)
+                // $("#zipcode").valid(); $("#address").valid();
             }
         }).open();
     }
 </script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

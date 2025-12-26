@@ -1,0 +1,37 @@
+﻿@model MOAClover.Models.ViewModels.ProductDetailViewModel
+
+<div class="qna-form-box">
+    <h4>상품 문의 작성</h4>
+
+    <form id="qnaForm" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="ProductId" value="@Model.ProductId" />
+
+        @if (User.Identity!.IsAuthenticated)
+        {
+            <!-- 로그인 되어 있으면 이름은 자동 사용 -->
+            <input type="hidden" name="UserName" value="@User.Identity.Name" />
+            <div class="qna-user-display">
+                작성자 : @User.Identity.Name
+            </div>
+        }
+        else
+        {
+            <label>작성자</label>
+            <input type="text" name="UserName" required />
+        }
+
+        <label>질문 내용</label>
+        <textarea name="Question" required></textarea>
+
+        <label class="secret-label">
+            <input type="checkbox" name="IsSecret" value="true" />
+            비밀글
+        </label>
+
+        <button type="submit" class="qna-submit-btn">등록</button>
+        <button type="button" id="btnCancelQnaForm">취소</button>
+    </form>
+</div>
+

@@ -61,3 +61,24 @@
     background: #ddd;
     color: #333;
 }
+
+
+.msg-success {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f1fff3;
+    border: 1px solid #cfead5;
+    color: #137333;
+    font-weight: 700;
+}
+
+.msg-error {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fff5f5;
+    border: 1px solid #ffd0d0;
+    color: #d00;
+    font-weight: 700;
+}

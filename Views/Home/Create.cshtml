@@ -1,112 +1,140 @@
-﻿@{
+﻿@model MOAClover.Models.ViewModels.ProductCreateViewModel
+
+@{
     ViewData["Title"] = "상품 등록";
+    Layout = "_Layout";
 }
 
-<link rel="stylesheet" href="~/css/Create.css" />
 
-<form asp-action="Create"
-      method="post"
-      enctype="multipart/form-data">
+<div class="container" style="max-width:920px; margin:60px auto;">
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,0.06);">
+        <h3 style="margin:0 0 18px; font-weight:900;">상품 등록</h3>
 
-    <div class="container">
-        <h2>새 상품 등록</h2>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div style="margin-bottom:12px; padding:12px; border-radius:12px; background:#fff5f5; border:1px solid #ffd0d0; color:#d00; font-weight:800;">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
 
-        <div class="input-box">
-            <label>상품명</label>
-            <input type="text" id="pName" name="Name" required>
-        </div>
+        <form asp-controller="Home" asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
 
-        <input type="hidden" id="finalCategoryId" name="CategoryId" />
-        <div class="input-box">
-            <label>카테고리</label>
-            <div class="category-row">
-                <select id="category1">
-                    <option value="">대분류 선택</option>
-                    @foreach (var c in ViewBag.Categories)
-                    {
-                        if (c.ParentCategoryId == null)
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">상품명</label>
+                    <input class="form-control" asp-for="Name" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">노출</label>
+                    <select class="form-select" asp-for="IsVisible">
+                        <option value="true">노출</option>
+                        <option value="false">숨김</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">정가</label>
+                    <input class="form-control" asp-for="Price" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">할인율(%)</label>
+                    <input class="form-control" asp-for="DiscountRate" />
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">상세설명(HTML 가능)</label>
+                    <textarea class="form-control" asp-for="Description" rows="6"></textarea>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- ✅ 카테고리 4단 선택 -->
+            <h5 style="font-weight:900;">카테고리 선택</h5>
+
+            <input type="hidden" asp-for="CategoryId" id="FinalCategoryId" />
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">대분류</label>
+                    <select class="form-select" id="catLv1">
+                        <option value="">선택</option>
+                        @foreach (var c in (IEnumerable<dynamic>)ViewBag.Level1)
                         {
                             <option value="@c.CategoryId">@c.Name</option>
                         }
-                    }
-                </select>
+                    </select>
+                </div>
 
-                <select id="category2">
-                    <option value="">중분류 선택</option>
-                </select>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">중분류</label>
+                    <select class="form-select" id="catLv2" disabled>
+                        <option value="">선택</option>
+                    </select>
+                </div>
 
-                <select id="category3">
-                    <option value="">소분류 선택</option>
-                </select>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">소분류</label>
+                    <select class="form-select" id="catLv3" disabled>
+                        <option value="">선택</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">세부</label>
+                    <select class="form-select" id="catLv4" disabled>
+                        <option value="">선택</option>
+                    </select>
+                </div>
+
+                <div class="col-12" style="color:#6b7280; font-size:13px;">
+                    가장 마지막으로 선택된 값이 저장됩니다. (세부가 없으면 소분류/중분류/대분류까지 가능)
+                </div>
             </div>
-        </div>
 
-        <div class="input-box">
-            <label>가격</label>
-            <input type="text" id="pPrice" name="Price" required>
-        </div>
+            <hr class="my-4" />
 
-        <div class="input-box">
-            <label>설명</label>
-            <textarea id="pDesc" name="Description"></textarea>
-        </div>
+            <!-- ✅ 미디어 업로드 -->
+            <div class="row g-3">
+                <h5 style="font-weight:900;">미디어 업로드</h5>
 
-        <div class="input-box">
-            <label>이미지</label>
-            <input type="file" id="imgUpload" name="Images" multiple>
-        </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">상단 썸네일(최대 8장)</label>
+                        <input type="file" class="form-control" asp-for="ThumbImages" multiple accept="image/*" />
+                        <div style="font-size:12px;color:#6b7280;margin-top:6px;">상단 슬라이드/썸네일에만 사용</div>
+                    </div>
 
-        <div class="input-box">
-            <label>영상 업로드</label>
-            <input type="file" id="videoUpload" name="Video">
-        </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">상세페이지 이미지(여러장)</label>
+                        <input type="file" class="form-control" asp-for="DetailImages" multiple accept="image/*" />
+                        <div style="font-size:12px;color:#6b7280;margin-top:6px;">상세정보 탭에서만 표시</div>
+                    </div>
 
-        <button class="btn-save" type="submit">저장하기</button>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">동영상(여러개)</label>
+                        <input type="file" class="form-control" asp-for="Videos" multiple accept="video/*" />
+                    </div>
+                </div>
+            </div>
 
-        <div>
-            <a href="/Home/Index" class="btn-no">취소</a>
-        </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold">등록</button>
+                <a class="btn btn-outline-secondary flex-shrink-0" style="min-width:160px;"
+                   asp-controller="Home" asp-action="Index">
+                    취소
+                </a>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
-<script>
-    const categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Categories));
-
-    const category1 = document.getElementById("category1");
-    const category2 = document.getElementById("category2");
-    const category3 = document.getElementById("category3");
-    const finalCategoryId = document.getElementById("finalCategoryId");
-
-    category1.addEventListener("change", function () {
-        category2.innerHTML = '<option value="">중분류 선택</option>';
-        category3.innerHTML = '<option value="">소분류 선택</option>';
-        finalCategoryId.value = "";
-
-        const selectedId = parseInt(this.value);
-        if (!selectedId) return;
-
-        categories
-            .filter(c => c.ParentCategoryId === selectedId)
-            .forEach(c => {
-                category2.innerHTML += `<option value="${c.CategoryId}">${c.Name}</option>`;
-            });
-    });
-
-    category2.addEventListener("change", function () {
-        category3.innerHTML = '<option value="">소분류 선택</option>';
-        finalCategoryId.value = "";
-
-        const selectedId = parseInt(this.value);
-        if (!selectedId) return;
-
-        categories
-            .filter(c => c.ParentCategoryId === selectedId)
-            .forEach(c => {
-                category3.innerHTML += `<option value="${c.CategoryId}">${c.Name}</option>`;
-            });
-    });
-
-    category3.addEventListener("change", function () {
-        finalCategoryId.value = this.value;
-    });
-</script>
+@section Scripts {
+    <script src="~/js/category4level.js" asp-append-version="true"></script>
+}

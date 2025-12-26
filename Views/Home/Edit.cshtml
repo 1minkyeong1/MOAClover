@@ -1,104 +1,281 @@
-﻿@{
+﻿@model MOAClover.Models.ViewModels.ProductEditViewModel
+@{
     ViewData["Title"] = "상품 수정";
+    Layout = "_Layout";
 }
 
-<link rel="stylesheet" href="~/css/Edit.css" />
+<div class="container" style="max-width:920px; margin:60px auto;">
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,0.06);">
+        <h3 style="margin:0 0 18px; font-weight:900;">상품 수정</h3>
 
-<div class="wrap">
-    <div class="title">상품 수정</div>
+        <form asp-controller="Home" asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ProductId" />
 
-    <!-- 상품명 -->
-    <div class="input-box">
-        <label>상품명</label>
-        <input type="text" id="productName" value="기존 상품명" />
-    </div>
+            <!-- 기본정보 -->
+            <div class="row g-3">
+                <!-- 상품명 -->
+                <div class="col-12">
+                    <label class="form-label fw-bold">상품명</label>
+                    <input class="form-control" asp-for="Name" />
+                </div>
 
-    <!-- 상품 가격 -->
-    <div class="input-box">
-        <label>상품 가격</label>
-        <input type="text" id="productPrice" value="15000원" />
-    </div>
+                <!-- ✅ 카테고리(대/중/소/세부) 한 줄 -->
+                <input type="hidden" asp-for="CategoryId" id="FinalCategoryId" />
 
-    <!-- 상품 설명 -->
-    <div class="input-box">
-        <label>상품 설명</label>
-        <textarea id="productDesc" rows="5">기존 상품 설명입니다.</textarea>
-    </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">카테고리</label>
 
-    <!-- 기존 이미지 + 새 이미지 수정 -->
-    <div class="input-box">
-        <label>상품 이미지 수정 (여러개 가능)</label>
-        <input type="file" id="imgUpload" accept="image/*" multiple />
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select class="form-select" id="catLv1">
+                                <option value="">대분류</option>
+                                @foreach (var c in (IEnumerable<dynamic>)ViewBag.Level1)
+                                {
+                                    <option value="@c.CategoryId" selected="@(ViewBag.SelectedLv1 != null && (int)ViewBag.SelectedLv1 == c.CategoryId)">
+                                        @c.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
 
-        <div class="preview-area" id="previewImages">
-            <!-- 기존 이미지 (예시) -->
-            <div class="preview-box">
-                <img src="https://via.placeholder.com/120" />
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+                        <div class="col-md-3">
+                            <select class="form-select" id="catLv2" @(ViewBag.SelectedLv1 == null ? "disabled" : "")>
+                                <option value="">중분류</option>
+                                @foreach (var c in (IEnumerable<dynamic>)ViewBag.Level2)
+                                {
+                                    <option value="@c.CategoryId" selected="@(ViewBag.SelectedLv2 != null && (int)ViewBag.SelectedLv2 == c.CategoryId)">
+                                        @c.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <select class="form-select" id="catLv3" @(ViewBag.SelectedLv2 == null ? "disabled" : "")>
+                                <option value="">소분류</option>
+                                @foreach (var c in (IEnumerable<dynamic>)ViewBag.Level3)
+                                {
+                                    <option value="@c.CategoryId" selected="@(ViewBag.SelectedLv3 != null && (int)ViewBag.SelectedLv3 == c.CategoryId)">
+                                        @c.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <select class="form-select" id="catLv4" @(ViewBag.SelectedLv3 == null ? "disabled" : "")>
+                                <option value="">세부</option>
+                                @foreach (var c in (IEnumerable<dynamic>)ViewBag.Level4)
+                                {
+                                    <option value="@c.CategoryId" selected="@(ViewBag.SelectedLv4 != null && (int)ViewBag.SelectedLv4 == c.CategoryId)">
+                                        @c.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-1" style="font-size:12px; color:#6b7280;">
+                        마지막으로 선택된 값이 저장됩니다.
+                    </div>
+                </div>
+
+                <!-- 가격/할인/노출 -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">정가</label>
+                    <input class="form-control" asp-for="Price" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">할인율(%)</label>
+                    <input class="form-control" asp-for="DiscountRate" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">노출</label>
+                    <select class="form-select" asp-for="IsVisible">
+                        <option value="true">노출</option>
+                        <option value="false">숨김</option>
+                    </select>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">상세설명(HTML 가능)</label>
+                    <textarea class="form-control" asp-for="Description" rows="7"></textarea>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- 영상 여러개 업로드 -->
-    <div class="input-box">
-        <label>영상 업로드 (여러개 가능)</label>
-        <input type="file" id="videoUpload" accept="video/*" multiple />
+            <hr class="my-4" />
 
-        <div class="preview-area" id="videoPreview">
-            <!-- 기존 영상 (예시) -->
-            <div class="preview-box">
-                <video src="" controls></video>
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            <!-- 기존 미디어 목록 -->
+            <h5 style="font-weight:900;">기존 미디어 관리</h5>
+            <div style="color:#6b7280; font-size:13px; margin-bottom:10px;">
+                - 정렬(SortOrder) 숫자가 낮을수록 먼저 보입니다. 삭제 체크 시 소프트삭제 됩니다.
             </div>
-        </div>
-    </div>
 
-    <button style="padding:12px 20px; font-size:16px;">수정 완료</button>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:80px;">종류</th>
+                            <th>미리보기</th>
+                            <th style="width:120px;">정렬</th>
+                            <th style="width:90px;">활성</th>
+                            <th style="width:90px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.ExistingMedia.Count; i++)
+                        {
+                            var m = Model.ExistingMedia[i];
+
+                            <tr>
+                                <td>
+                                    <input type="hidden" asp-for="ExistingMedia[@i].MediaId" />
+                                    <input type="hidden" asp-for="ExistingMedia[@i].MediaType" />
+                                    <input type="hidden" asp-for="ExistingMedia[@i].FileUrl" />
+                                    <span class="badge bg-secondary">@m.MediaType</span>
+                                </td>
+
+                                <td>
+                                    @if (m.MediaType == "video")
+                                    {
+                                        <video src="@m.FileUrl" controls style="max-width:220px; border-radius:10px;"></video>
+                                    }
+                                    else
+                                    {
+                                        <img src="@m.FileUrl" style="max-width:220px; border-radius:10px; border:1px solid #e5e7eb;" />
+                                    }
+                                    <div style="font-size:12px; color:#6b7280; margin-top:6px;">@m.FileUrl</div>
+                                </td>
+
+                                <td>
+                                    <input class="form-control" asp-for="ExistingMedia[@i].SortOrder" />
+                                </td>
+
+                                <td class="text-center">
+                                    <input class="form-check-input js-active" type="checkbox"
+                                           asp-for="ExistingMedia[@i].IsActive" />
+                                </td>
+
+                                <td class="text-center">
+                                    <input class="form-check-input js-delete" type="checkbox"
+                                           asp-for="ExistingMedia[@i].Delete" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="my-4" />
+
+            <!-- 새 이미지/영상 업로드 -->
+            <div class="row g-3">
+                <h5 style="font-weight:900;">새 미디어 추가</h5>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">상단 썸네일(최대 8장)</label>
+                    <input type="file" class="form-control" asp-for="NewImages" multiple accept="image/*" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">상세페이지 이미지(여러장)</label>
+                    <input type="file" class="form-control" asp-for="NewDetailImages" multiple accept="image/*" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">동영상(여러개)</label>
+                    <input type="file" class="form-control" asp-for="NewVideos" multiple accept="video/*" />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold">전체 수정 저장</button>
+                <a class="btn btn-outline-secondary flex-shrink-0" style="min-width:160px;"
+                   asp-controller="Home" asp-action="Detail" asp-route-id="@Model.ProductId">
+                    돌아가기
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 
-<script>
-    /* -----------------------------
-       이미지 여러개 미리보기
-       ----------------------------- */
-    const imgUpload = document.getElementById("imgUpload");
-    const previewImages = document.getElementById("previewImages");
+@section Scripts {
+    <script>
+        const lv1 = document.getElementById('catLv1');
+        const lv2 = document.getElementById('catLv2');
+        const lv3 = document.getElementById('catLv3');
+        const lv4 = document.getElementById('catLv4');
+        const finalId = document.getElementById('FinalCategoryId');
 
-    imgUpload.addEventListener("change", function () {
-        [...imgUpload.files].forEach(file => {
-            const url = URL.createObjectURL(file);
+        function setFinalCategoryId(){
+          // 가장 깊게 선택된 값이 최종 CategoryId
+          finalId.value = lv4.value || lv3.value || lv2.value || lv1.value || "";
+        }
 
-            const div = document.createElement("div");
-            div.classList.add("preview-box");
+        async function loadChildren(parentId, targetSelect){
+          targetSelect.innerHTML = `<option value="">선택</option>`;
+          if (!parentId){
+            targetSelect.disabled = true;
+            return;
+          }
+          const res = await fetch(`/Home/GetChildCategories?parentId=${parentId}`);
+          const data = await res.json();
+          data.forEach(x => {
+            const opt = document.createElement('option');
+            opt.value = x.id;
+            opt.textContent = x.name;
+            targetSelect.appendChild(opt);
+          });
+          targetSelect.disabled = false;
+        }
 
-            div.innerHTML = `
-                <img src="${url}" />
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
-            `;
-
-            previewImages.appendChild(div);
+        lv1.addEventListener('change', async () => {
+          await loadChildren(lv1.value, lv2);
+          lv3.innerHTML = `<option value="">선택</option>`; lv3.disabled = true;
+          lv4.innerHTML = `<option value="">선택</option>`; lv4.disabled = true;
+          setFinalCategoryId();
         });
-    });
 
-
-    /* -----------------------------
-       영상 여러개 미리보기
-       ----------------------------- */
-    const videoUpload = document.getElementById("videoUpload");
-    const videoPreview = document.getElementById("videoPreview");
-
-    videoUpload.addEventListener("change", function () {
-        [...videoUpload.files].forEach(file => {
-            const url = URL.createObjectURL(file);
-
-            const div = document.createElement("div");
-            div.classList.add("preview-box");
-
-            div.innerHTML = `
-                <video src="${url}" controls></video>
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
-            `;
-
-            videoPreview.appendChild(div);
+        lv2.addEventListener('change', async () => {
+          await loadChildren(lv2.value, lv3);
+          lv4.innerHTML = `<option value="">선택</option>`; lv4.disabled = true;
+          setFinalCategoryId();
         });
-    });
-</script>
+
+        lv3.addEventListener('change', async () => {
+          await loadChildren(lv3.value, lv4);
+          setFinalCategoryId();
+        });
+
+        lv4.addEventListener('change', () => setFinalCategoryId());
+
+        // 페이지 최초 로드시 최종값 세팅
+        setFinalCategoryId();
+
+
+        // 활성, 삭제 체크박스 
+         function syncRow(row){
+          const del = row.querySelector('.js-delete');
+          const act = row.querySelector('.js-active');
+          if(!del || !act) return;
+
+          if(del.checked){
+            act.checked = false;     // 삭제면 활성 자동 해제
+            act.disabled = true;     // 활성 체크 못하게
+          }else{
+            act.disabled = false;
+          }
+        }
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+          syncRow(row);
+          const del = row.querySelector('.js-delete');
+          if(del){
+            del.addEventListener('change', () => syncRow(row));
+          }
+        });
+    </script>
+}

@@ -9,11 +9,16 @@
     <h2>아이디 찾기</h2>
 
     <form method="post" asp-action="FindId" asp-controller="Account">
+        @Html.AntiForgeryToken()
+
+        <!-- 에러 요약(필수는 아니지만 디버깅에 매우 좋음) -->
+        <div asp-validation-summary="All" class="text-danger" style="margin-bottom:12px;"></div>
+
         <label>이름</label>
-        <input type="text" name="Name" required />
+        <input type="text" name="name" required />
 
         <label>이메일</label>
-        <input type="email" name="Email" required />
+        <input type="email" name="email" required />
 
         <button class="btn-main" type="submit">아이디 찾기</button>
 
@@ -21,4 +26,16 @@
             로그인으로 돌아가기
         </button>
     </form>
+
+    @* 결과 메시지 출력 *@
+    @if (ViewBag.Message != null)
+    {
+        <div style="margin-top:12px; color:#228b22; font-size:18px; font-weight:1000;">
+            @Html.Raw(ViewBag.Message)
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

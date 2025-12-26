@@ -16,6 +16,9 @@ namespace MOAClover.Data
         public DbSet<Media> Media { get; set; }
         public DbSet<UserAddress> UserAddresses { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<ProductQnA> ProductQnA { get; set; }
+       
+       
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +51,16 @@ namespace MOAClover.Data
                 .HasOne(ua => ua.User)
                 .WithMany(u => u.Addresses)
                 .HasForeignKey(ua => ua.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ProductQnA>()
+                .HasKey(q => q.QnAId);
+
+            // Products 테이블과 ProductId 컬럼이 FK 로 연결
+            modelBuilder.Entity<ProductQnA>()
+                .HasOne<Product>()
+                .WithMany()
+                .HasForeignKey(q => q.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

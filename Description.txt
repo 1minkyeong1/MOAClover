@@ -52,6 +52,18 @@ is_active	활성 여부 (true/false)
 deleted_at	삭제일 (NULL 또는 삭제 시 날짜)
 
 
+Q&A  (ProductQnA) 테이블
+
+QnAId
+ProductId
+UserId
+Question
+Answer
+IsSecret
+CreatedAt
+AnsweredAt
+
+
 
 1. 마이그레이션할 때  NuGet 설치
 

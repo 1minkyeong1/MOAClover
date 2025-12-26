@@ -9,10 +9,10 @@ namespace MOAClover.Models
         public int Id { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public required string UserId { get; set; }
 
         [Required]
-        public string Token { get; set; }
+        public required string Token { get; set; }
 
         [Required]
         public DateTime ExpireAt { get; set; }

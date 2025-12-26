@@ -20,3 +20,361 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* ===== Layout Header ===== */
+
+.logo-box {
+    width: 100%;
+    min-height: 130px;
+    background: #ddd;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 24px;
+}
+
+/* 로고 가운데 고정용 grid */
+.header-top-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+}
+
+/* 가운데 로고 */
+.header-logo-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-logo-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.header-logo-text {
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.4px;
+}
+
+/* 오른쪽 메뉴 */
+.header-right-menu {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-right-link {
+    color: #555;
+    text-decoration: none;
+}
+
+.header-right-strong {
+    font-weight: 700;
+}
+
+.header-inline-form {
+    display: inline;
+    margin: 0;
+}
+
+.header-right-btnlink {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* 검색창(가운데) */
+.header-search-row {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.header-search-form {
+    width: min(760px, 100%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-search-input {
+    flex: 1;
+    height: 44px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    padding: 0 18px;
+    outline: none;
+}
+
+    .header-search-input:focus {
+        border-color: #cbd5e1;
+    }
+
+.header-search-btn {
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1px solid #111827;
+    background: #111827;
+    color: #fff;
+    font-weight: 800;
+}
+
+.cat-all-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    margin-right: 10px;
+    border-radius: 999px;
+    text-decoration: none;
+    color: #374151;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+    .cat-all-link:hover {
+        background: #f3f4f6;
+    }
+
+    .cat-all-link.active {
+        background: #111827;
+        color: #fff;
+    }
+
+.admin-qna-link {
+    color: #111;
+    text-decoration: none;
+    margin-left: 10px;
+    font-weight: 700;
+    position: relative;
+}
+
+.admin-qna-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    margin-left: 6px;
+    border-radius: 999px;
+    background: #d92121;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* =========================
+   Header Layout (Responsive)
+========================= */
+
+/* 로고 영역 박스 */
+.logo-box {
+    width: 100%;
+    padding: 14px 12px;
+    background: #fff;
+}
+
+/* 1줄: 좌(빈칸) / 가운데 로고 / 우측 메뉴 */
+.header-top-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 가운데 로고 */
+.header-logo-center {
+    justify-self: center;
+}
+
+.header-logo-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.header-logo-text {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+/* 오른쪽 메뉴 */
+.header-right-menu {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.header-right-link {
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.header-right-strong {
+    font-weight: 800;
+}
+
+.header-inline-form {
+    display: inline;
+    margin: 0;
+}
+
+.header-right-btnlink {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+}
+
+/* 2줄: 검색창 */
+.header-search-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.header-search-form {
+    width: min(720px, 100%);
+    display: grid;
+    grid-template-columns: 1fr 96px;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-search-input {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0 14px;
+    outline: none;
+}
+
+    .header-search-input:focus {
+        border-color: #c7c7c7;
+    }
+
+.header-search-btn {
+    height: 44px;
+    border: none;
+    border-radius: 10px;
+    background: #111827;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* 카테고리 메뉴 앞 "전체" 링크 */
+.cat-all-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 14px;
+    margin-right: 8px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    color: #111827;
+    text-decoration: none;
+    font-size: 14px;
+    background: #fff;
+}
+
+    .cat-all-link.active {
+        border-color: #111827;
+        font-weight: 800;
+    }
+
+/* =========================
+   Responsive Breakpoints
+========================= */
+
+/* 태블릿 이하 */
+@media (max-width: 992px) {
+    .header-logo-text {
+        font-size: 30px;
+    }
+
+    .header-search-form {
+        width: min(640px, 100%);
+    }
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+    /* 상단을 2줄 느낌으로: 로고 위, 우측메뉴 아래(오른쪽 정렬) */
+    .header-top-row {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        justify-items: center;
+        gap: 8px;
+    }
+
+    .header-right-menu {
+        justify-self: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .header-logo-text {
+        font-size: 26px;
+    }
+
+    .header-search-row {
+        margin-top: 10px;
+    }
+
+    .header-search-form {
+        grid-template-columns: 1fr 78px;
+        gap: 8px;
+    }
+
+    .header-search-input {
+        height: 42px;
+    }
+
+    .header-search-btn {
+        height: 42px;
+        font-size: 14px;
+    }
+
+    /* 카테고리 줄이 너무 길면 줄바꿈되도록 */
+    .navbar-collapse {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 6px 0;
+    }
+
+    .cat-all-link {
+        height: 32px;
+        padding: 0 12px;
+        font-size: 13px;
+        margin-right: 0;
+    }
+}
+
+/* 아주 작은 모바일 */
+@media (max-width: 420px) {
+    .header-logo-text {
+        font-size: 22px;
+    }
+
+    .header-search-form {
+        grid-template-columns: 1fr 70px;
+    }
+}
+

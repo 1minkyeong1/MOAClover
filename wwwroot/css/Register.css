@@ -6,7 +6,7 @@
     margin: 36px auto;
     background: #ffffff;
     border-radius: 14px;
-    padding: 28px;
+    padding: 25px;
     box-shadow: 0 10px 30px rgba(18, 38, 63, 0.06);
     font-family: "Noto Sans KR", "Segoe UI", Roboto, Arial, sans-serif;
     color: #1f2937;
@@ -14,7 +14,7 @@
 
     /* 제목 */
     .container h2 {
-        font-size: 1.5rem;
+        font-size: 1.9rem;
         margin: 0 0 18px;
         text-align: center;
         font-weight: 700;
@@ -34,7 +34,8 @@
     .container input[type="text"],
     .container input[type="password"],
     .container input[type="email"],
-    .container input[type="date"] {
+    .container input[type="date"],
+    .container input[type="tel"] {
         width: 100%;
         box-sizing: border-box;
         padding: 10px 12px;
@@ -147,3 +148,42 @@
     .btn-cancel:hover {
         background: #666 !important;
     }
+
+
+ /* 에러확인*/
+/* ===== 유효성(정상/오류) 표시 ===== */
+
+/* 기본: 에러 메시지 빨간색 */
+.field-error,
+.field-validation-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #d00;
+}
+
+/* 정상일 땐 메시지 숨김(공간도 제거) */
+.field-validation-valid {
+    display: none;
+}
+
+/* ❌ 오류 input: 빨간 테두리 */
+.container .input-validation-error {
+    border-color: #d00 !important;
+    box-shadow: 0 6px 18px rgba(220, 0, 0, 0.10);
+}
+
+/* ✅ 정상 input: 파란 테두리 (원하시는 “파란색 유효성”) */
+.container input.valid,
+.container select.valid,
+.container textarea.valid {
+    border-color: #4a6cf7 !important;
+    box-shadow: 0 6px 18px rgba(74, 108, 247, 0.12);
+}
+
+/* (선택) 포커스일 때도 파란색 유지 */
+.container input:focus {
+    outline: none;
+    border-color: #4a6cf7;
+    box-shadow: 0 6px 18px rgba(74, 108, 247, 0.16);
+}

@@ -22,4 +22,25 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Models\ViewModels\AddressEditVm.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Models\ViewModels\CategoryMenuNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Models\ViewModels\ProductCreateViewModel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Models\ViewModels\MyPageViewModel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Models\ViewModels\ProductEditViewModel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Services\EmailSettings.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

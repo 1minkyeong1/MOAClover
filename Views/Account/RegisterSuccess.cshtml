@@ -7,13 +7,6 @@
 <div class="success-box">
     <h2>회원가입이 완료되었습니다 🎉</h2>
 
-    <!-- index로 이동 -->
-    <button class="btn-login" onclick="goToLogin()">로그인하러 가기</button>
+    <a class="btn-login" href="/Account/Login">로그인하러 가기</a>
 </div>
 
-<script>
-    function goToLogin() {
-        // index 페이지로 이동 + 로그인 표시 파라미터 전달
-        window.location.href = "/Home/Index?showLogin=true";
-    }
-</script>

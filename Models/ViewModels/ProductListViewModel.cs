@@ -1,6 +1,4 @@
-﻿
-
-namespace MOAClover.Models.ViewModels
+﻿namespace MOAClover.Models.ViewModels
 {
     public class ProductListViewModel
     {
@@ -9,3 +7,5 @@ namespace MOAClover.Models.ViewModels
         public int TotalPages { get; set; }
     }
 }
+
+// 페이징 표시용

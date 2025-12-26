@@ -1,25 +1,33 @@
 ﻿@model MOAClover.Models.ViewModels.ProductListViewModel
+@using MOAClover.Models
 
 @{
     ViewData["Title"] = "모아클로버";
+    bool showHidden = Context.Request.Query["showHidden"] == "true";
 }
 
 <link rel="stylesheet" href="~/css/Index.css" />
 
-@if (User.Identity!.IsAuthenticated)
-{
-    <div style="color:green; font-weight:bold;">
-        로그인됨 : @User.Identity.Name
-    </div>
-}
-else
-{
-    <div style="color:red;">
-        비로그인 상태
-    </div>
-}
-
 <div class="container">
+
+    <!--  관리자 툴바: 숨김 포함 보기 + 숨김 개수 -->
+    @if (User.IsInRole("admin"))
+    {
+        <div class="d-flex align-items-center justify-content-between mb-3" style="gap:12px;">
+            <form method="get" class="d-flex align-items-center gap-2">
+                <input type="hidden" name="page" value="1" />
+                <div class="form-check m-0">
+                    <input class="form-check-input" type="checkbox" id="showHidden" name="showHidden" value="true"
+                           @(showHidden ? "checked" : "") onchange="this.form.submit()" />
+                    <label class="form-check-label" for="showHidden">숨김 상품 포함 보기</label>
+                </div>
+            </form>
+
+            <div class="text-muted" style="font-size:13px;">
+                숨김: <b>@(ViewBag.HiddenCount ?? 0)</b>개
+            </div>
+        </div>
+    }
 
     <div class="grid">
         @foreach (var p in Model.Products)
@@ -27,12 +35,31 @@ else
             <a href="/Home/Detail?id=@p.ProductId" class="item-link">
                 <div class="item">
 
+                    <!--  상태 배지(관리자만) -->
+                    @if (User.IsInRole("admin"))
+                    {
+                        <div style="position:absolute; top:10px; left:10px; z-index:5;">
+                            <span class="badge @(p.IsVisible ? "bg-success" : "bg-secondary")">
+                                @(p.IsVisible ? "노출" : "숨김")
+                            </span>
+                        </div>
+                    }
+
                     <div class="swiper product-swiper">
                         <div class="swiper-wrapper">
-                            @foreach (var img in p.ImageUrls)
+                            @if (p.ImageUrls != null && p.ImageUrls.Any())
+                            {
+                                foreach (var img in p.ImageUrls)
+                                {
+                                    <div class="swiper-slide">
+                                        <img src="@img" />
+                                    </div>
+                                }
+                            }
+                            else
                             {
                                 <div class="swiper-slide">
-                                    <img src="@img" />
+                                    <img src="/images/no-image.png" />
                                 </div>
                             }
                         </div>
@@ -40,39 +67,46 @@ else
 
                     <div class="item-name">@p.Name</div>
 
-
-                    <div class="price-box">
-                        <div class="price-row">
-                            @if (p.DiscountRate.HasValue)
-                            {
-                                <div class="discount-badge">
-                                    @p.DiscountRate% OFF
-                                </div>
-                            }
-
-                            <div class="item-price">
-                                @p.FinalPrice.ToString("N0") 원
+                    <div class="price-block">
+                        @if (p.DiscountRate.HasValue && p.DiscountRate.Value > 0)
+                        {
+                            <div class="origin-line">
+                                <span class="origin-price">@p.Price.ToString("N0")원</span>
                             </div>
 
+                            <div class="sale-line">
+                                <span class="sale-rate">@p.DiscountRate%</span>
+                                <span class="sale-price">@p.FinalPrice.ToString("N0")원</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="sale-line">
+                                <span class="sale-price">@p.Price.ToString("N0")원</span>
+                            </div>
+                        }
+
+                        <div class="ship-line">
+                            <span class="ship-icon">🚚</span>
+                            <span class="ship-fee">4,000원</span>
                         </div>
                     </div>
 
                 </div>
             </a>
         }
-                
     </div>
 
-    <!-- 🔥 페이징 -->
+    <!-- 🔥 페이징: showHidden 유지 -->
     <div class="pagination">
         @if (Model.CurrentPage > 1)
         {
-            <a href="?page=@(Model.CurrentPage - 1)">◀</a>
+            <a href="?page=@(Model.CurrentPage - 1)@(showHidden ? "&showHidden=true" : "")">◀</a>
         }
 
         @for (int i = 1; i <= Model.TotalPages; i++)
         {
-            <a href="?page=@i"
+            <a href="?page=@i@(showHidden ? "&showHidden=true" : "")"
                class="@(i == Model.CurrentPage ? "active" : "")">
                 @i
             </a>
@@ -80,7 +114,7 @@ else
 
         @if (Model.CurrentPage < Model.TotalPages)
         {
-            <a href="?page=@(Model.CurrentPage + 1)">▶</a>
+            <a href="?page=@(Model.CurrentPage + 1)@(showHidden ? "&showHidden=true" : "")">▶</a>
         }
     </div>
 

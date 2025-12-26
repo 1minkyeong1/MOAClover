@@ -6,13 +6,9 @@
         public string Name { get; set; } = "";
         public int Price { get; set; }
         public int? DiscountRate { get; set; }
+        public bool IsVisible { get; set; }
 
         public List<string> ImageUrls { get; set; } = new();
-
-        public List<ProductListItemViewModel> Products { get; set; } = new();
-
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
 
         public int FinalPrice
         {
@@ -25,3 +21,7 @@
         }
     }
 }
+
+
+
+//“상품 목록(리스트) 화면 전용”

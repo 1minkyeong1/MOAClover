@@ -18,7 +18,10 @@ namespace MOAClover.Models.ViewModels
 
         public string? MainImageUrl => ImageUrls.FirstOrDefault();
 
-        public List<ProductQnA> QnAs { get; set; } = new();
+        public List<ProductQnA> QnAs { get; set; } = new List<ProductQnA>();
+
+        public List<string> ThumbUrls { get; set; } = new();       //  상단 썸네일(최대 8장)
+        public List<string> DetailImageUrls { get; set; } = new(); //  상세 탭에서만 보여줄 이미지
 
         public int FinalPrice
         {
@@ -31,3 +34,5 @@ namespace MOAClover.Models.ViewModels
         }
     }
 }
+
+//상세페이지 표시용

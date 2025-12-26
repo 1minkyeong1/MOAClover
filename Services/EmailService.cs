@@ -1,18 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿// Services/EmailService.cs
 using System.Net;
 using System.Net.Mail;
+using Microsoft.Extensions.Options;
 
 namespace MOAClover.Services
 {
-    public class EmailSettings
-    {
-        public string SmtpServer { get; set; }
-        public int Port { get; set; }
-        public string SenderEmail { get; set; }
-        public string SenderName { get; set; }
-        public string Password { get; set; }
-    }
-
     public interface IEmailService
     {
         Task SendEmailAsync(string toEmail, string subject, string body);
@@ -20,30 +12,29 @@ namespace MOAClover.Services
 
     public class EmailService : IEmailService
     {
-        private readonly EmailSettings _config;
+        private readonly EmailSettings _s;
 
-        public EmailService(IOptions<EmailSettings> config)
+        public EmailService(IOptions<EmailSettings> options)
         {
-            _config = config.Value;
+            _s = options.Value;
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            using var client = new SmtpClient(_config.SmtpServer, _config.Port)
-            {
-                Credentials = new NetworkCredential(_config.SenderEmail, _config.Password),
-                EnableSsl = true
-            };
-
-            var mail = new MailMessage()
-            {
-                From = new MailAddress(_config.SenderEmail, _config.SenderName),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-
+            using var mail = new MailMessage();
+            mail.From = new MailAddress(_s.SenderEmail, _s.SenderName);
             mail.To.Add(toEmail);
+            mail.Subject = subject;
+            mail.Body = body;
+            mail.IsBodyHtml = true;
+
+            using var client = new SmtpClient(_s.SmtpServer, _s.SmtpPort)
+            {
+                EnableSsl = _s.EnableSSL,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(_s.Username, _s.Password),
+                DeliveryMethod = SmtpDeliveryMethod.Network
+            };
 
             await client.SendMailAsync(mail);
         }

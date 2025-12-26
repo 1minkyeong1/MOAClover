@@ -1,0 +1,82 @@
+﻿@model List<MOAClover.Models.ProductQnA>
+@{
+    ViewData["Title"] = "Q&A 관리";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    bool showAnswered = ViewBag.ShowAnswered ?? false;
+}
+
+<div class="container" style="max-width:980px; margin:40px auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 style="margin:0; font-weight:900;">Q&A 관리</h3>
+
+        <form method="get" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="page" value="1" />
+            <label class="d-flex align-items-center gap-2" style="font-size:14px;">
+                <input type="checkbox" name="showAnswered" value="true"
+                       @(showAnswered ? "checked" : "") onchange="this.form.submit()" />
+                답변 포함 보기
+            </label>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th style="width:90px;">상품ID</th>
+                    <th>질문</th>
+                    <th style="width:140px;">작성자</th>
+                    <th style="width:160px;">작성일</th>
+                    <th style="width:120px;">상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var q in Model)
+                {
+                    var answered = !string.IsNullOrWhiteSpace(q.Answer);
+                    <tr>
+                        <td>@q.ProductId</td>
+                        <td style="max-width:520px;">
+                            <div style="font-weight:700;">@q.Question</div>
+                            @if (answered)
+                            {
+                                <div style="color:#6b7280; font-size:13px; margin-top:6px;">
+                                    답변: @q.Answer
+                                </div>
+                            }
+                        </td>
+                        <td>@q.UserName</td>
+                        <td>@q.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <span class="badge @(answered ? "bg-success" : "bg-danger")">
+                                @(answered ? "답변완료" : "미답변")
+                            </span>
+                            <a class="btn btn-sm btn-outline-dark ms-2"
+                               asp-controller="Home" asp-action="Detail"
+                               asp-route-id="@q.ProductId" asp-route-qnaPage="1">
+                                상품으로
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination" style="margin-top:24px; display:flex; justify-content:center; gap:8px;">
+        @if (currentPage > 1)
+        {
+            <a href="?page=@(currentPage - 1)@(showAnswered ? "&showAnswered=true" : "")">◀</a>
+        }
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a href="?page=@i@(showAnswered ? "&showAnswered=true" : "")"
+               class="@(i == currentPage ? "active" : "")">@i</a>
+        }
+        @if (currentPage < totalPages)
+        {
+            <a href="?page=@(currentPage + 1)@(showAnswered ? "&showAnswered=true" : "")">▶</a>
+        }
+    </div>
+</div>

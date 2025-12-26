@@ -1,0 +1,9 @@
+﻿@model int
+
+<a asp-controller="Home" asp-action="QnAAdmin" class="admin-qna-link">
+    Q&amp;A
+    @if (Model > 0)
+    {
+        <span class="admin-qna-badge">@Model</span>
+    }
+</a>

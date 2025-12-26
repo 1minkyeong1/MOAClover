@@ -1,0 +1,149 @@
+﻿@model MOAClover.Models.ViewModels.ProductDetailViewModel
+
+@{
+    // 페이징용 값 (컨트롤러에서 ViewBag으로 넘겨줄 예정)
+    int currentPage = ViewBag.QnACurrentPage ?? 1;
+    int totalPages = ViewBag.QnATotalPages ?? 1;
+
+    bool isAdmin = User.IsInRole("admin");
+    string? me = User.Identity?.Name;
+}
+
+<div class="qna-list-box">
+
+    <h4>상품 문의 목록</h4>
+
+    @if (Model.QnAs == null || !Model.QnAs.Any())
+    {
+        <p class="qna-empty">아직 등록된 상품 문의가 없습니다.</p>
+    }
+    else
+    {
+        foreach (var q in Model.QnAs)
+        {
+            bool isOwner = (!string.IsNullOrEmpty(me) && me == q.UserName);
+            bool canSee = !q.IsSecret || isAdmin || isOwner;
+
+            <div class="qna-item" data-qna-id="@q.QnAId">
+                <div class="qna-header">
+                    <span class="qna-user">@q.UserName</span>
+                    <span class="qna-date">@q.CreatedAt.ToString("yyyy-MM-dd")</span>
+
+                    <span class="qna-actions">
+                        @if (isAdmin || isOwner)
+                        {
+                            <button type="button" onclick="startEditQnA(@q.QnAId)">수정</button>
+                            <button type="button" onclick="deleteQnA(@q.QnAId)">삭제</button>
+                        }
+                    </span>
+                </div>
+
+                <!-- 질문 -->
+                <div class="qna-question @(canSee ? "" : "is-secret")">
+                    @if (!canSee)
+                    {
+                        <span class="secret-text">🔒 비밀글입니다.</span>
+                    }
+                    else
+                    {
+                        <div class="qna-line">
+                            <span class="qna-prefix">Q.</span>
+                            <span class="qna-body">@((q.Question ?? "").Trim())</span>
+                        </div>
+                    }
+                </div>
+
+                @if (canSee && (isAdmin || isOwner))
+                {
+                    <div class="qna-edit-form hidden" id="edit_box_@q.QnAId">
+                        <label>문의 수정</label>
+                        <textarea id="edit_question_@q.QnAId">@q.Question</textarea>
+
+                        <label class="secret-label">
+                            <input type="checkbox" id="edit_secret_@q.QnAId" @(q.IsSecret ? "checked" : "") />
+                            비밀글
+                        </label>
+
+                        <div class="qna-edit-actions">
+                            <button type="button" onclick="saveEditQnA(@q.QnAId)">저장</button>
+                            <button type="button" onclick="cancelEditQnA(@q.QnAId)">취소</button>
+                        </div>
+                    </div>
+                }
+
+                <!-- 답변 -->
+                @if (canSee)
+                {
+                    var hasAnswer = !string.IsNullOrWhiteSpace(q.Answer);
+
+                    if (hasAnswer)
+                    {
+                        <div class="qna-answer">
+                            <div class="qna-line">
+                                <span class="qna-prefix">A.</span>
+                                <span class="qna-body">@((q.Answer ?? "").Trim())</span>
+                            </div>
+
+                            @* ✅ 답변이 있을 때만 관리자 수정/삭제 *@
+                            @if (isAdmin)
+                            {
+                                <div class="qna-answer-actions">
+                                    <button type="button" onclick="startEditAnswer(@q.QnAId)">수정</button>
+                                    <button type="button" onclick="deleteAnswer(@q.QnAId)">삭제</button>
+                                </div>
+
+                                <div class="qna-edit-answer-form hidden" id="edit_answer_box_@q.QnAId">
+                                    <label>답변 수정</label>
+                                    <textarea id="edit_answer_@q.QnAId">@q.Answer</textarea>
+
+                                    <div class="qna-edit-actions">
+                                        <button type="button" onclick="saveEditAnswer(@q.QnAId)">저장</button>
+                                        <button type="button" onclick="cancelEditAnswer(@q.QnAId)">취소</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (isAdmin)
+                    {
+                        @* ✅ 답변 없으면 관리자에게는 입력 폼 *@
+                        <div class="qna-answer-form">
+                            <textarea id="answer_@q.QnAId" placeholder="답변을 입력하세요"></textarea>
+                            <button type="button" onclick="answerQnA(@q.QnAId)">답변 등록</button>
+                        </div>
+                    }
+                    else
+                    {
+                        @* ✅ 답변 없으면 일반유저는 준비중 문구만 *@
+                        <div class="qna-answer wait">답변 준비중</div>
+                    }
+                }
+            </div>
+        }
+    }
+
+    <!-- Q&A 페이징 -->
+    @if (totalPages > 1)
+    {
+        <div class="qna-pagination">
+            @if (currentPage > 1)
+            {
+                <a href="javascript:void(0)" onclick="loadQnAPage(@(currentPage - 1))">◀</a>
+            }
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <a href="javascript:void(0)"
+                   class="@(i == currentPage ? "active" : "")"
+                   onclick="loadQnAPage(@i)">
+                    @i
+                </a>
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <a href="javascript:void(0)" onclick="loadQnAPage(@(currentPage + 1))">▶</a>
+            }
+        </div>
+    }
+</div>

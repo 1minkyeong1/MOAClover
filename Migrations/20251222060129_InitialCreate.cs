@@ -236,6 +236,7 @@ namespace MOAClover.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<int>(type: "int", nullable: false),
+                    DiscountRate = table.Column<int>(type: "int", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -260,7 +261,7 @@ namespace MOAClover.Migrations
                     MediaId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<int>(type: "int", nullable: false),
-                    MediaType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MediaType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SortOrder = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -272,6 +273,32 @@ namespace MOAClover.Migrations
                     table.PrimaryKey("PK_Media", x => x.MediaId);
                     table.ForeignKey(
                         name: "FK_Media_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductQnA",
+                columns: table => new
+                {
+                    QnAId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Question = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Answer = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AnsweredAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsSecret = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductQnA", x => x.QnAId);
+                    table.ForeignKey(
+                        name: "FK_ProductQnA_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "ProductId",
@@ -328,6 +355,11 @@ namespace MOAClover.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductQnA_ProductId",
+                table: "ProductQnA",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
@@ -361,6 +393,9 @@ namespace MOAClover.Migrations
 
             migrationBuilder.DropTable(
                 name: "PasswordResetTokens");
+
+            migrationBuilder.DropTable(
+                name: "ProductQnA");
 
             migrationBuilder.DropTable(
                 name: "UserAddresses");

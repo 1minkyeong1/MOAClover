@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MOAClover.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251215053636_InitialCreate")]
+    [Migration("20251222060129_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -84,7 +84,6 @@ namespace MOAClover.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("MediaType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")
@@ -147,6 +146,9 @@ namespace MOAClover.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("DiscountRate")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
 
@@ -165,6 +167,47 @@ namespace MOAClover.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("MOAClover.Models.ProductQnA", b =>
+                {
+                    b.Property<int>("QnAId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QnAId"));
+
+                    b.Property<string>("Answer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AnsweredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSecret")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("QnAId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductQnA");
                 });
 
             modelBuilder.Entity("MOAClover.Models.UserAddress", b =>
@@ -443,6 +486,15 @@ namespace MOAClover.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MOAClover.Models.ProductQnA", b =>
+                {
+                    b.HasOne("MOAClover.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

@@ -1,0 +1,259 @@
+﻿@model MOAClover.Models.ViewModels.MyPageViewModel
+@{
+    ViewData["Title"] = "마이페이지";
+    Layout = "_Layout";
+}
+
+<div class="container" style="max-width:720px; margin:60px auto;">
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,0.06);">
+
+        <h3 style="margin:0 0 16px; font-weight:900;">마이페이지</h3>
+
+        @if (TempData["Msg"] != null)
+        {
+            <div style="margin-bottom:12px; padding:12px; border-radius:12px; background:#f1fff3; border:1px solid #cfead5; color:#137333; font-weight:800;">
+                @TempData["Msg"]
+            </div>
+        }
+        @if (TempData["Err"] != null)
+        {
+            <div style="margin-bottom:12px; padding:12px; border-radius:12px; background:#fff5f5; border:1px solid #ffd0d0; color:#d00; font-weight:800;">
+                @TempData["Err"]
+            </div>
+        }
+
+        <!-- ✅ 기본정보 수정 -->
+        <form asp-controller="Account" asp-action="UpdateMyPage" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">아이디(수정불가)</label>
+                    <input class="form-control" value="@Model.UserName" readonly />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">이름</label>
+                    <input class="form-control" name="Name" value="@Model.Name" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">생년월일</label>
+                    <input type="date" class="form-control" name="BirthDate"
+                           value="@(Model.BirthDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">전화번호</label>
+                    <input class="form-control" name="Phone" value="@Model.Phone" />
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">이메일</label>
+                    <input class="form-control" name="Email" value="@Model.Email" />
+                </div>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-3 fw-bold" type="submit">회원정보 저장</button>
+        </form>
+
+        <hr class="my-4" />
+
+        <!-- ✅ 배송지 목록 -->
+        <h5 style="font-weight:900; margin-bottom:12px;">배송지</h5>
+
+        @if (Model.Addresses.Count == 0)
+        {
+            <div style="color:#6b7280; margin-bottom:10px;">등록된 배송지가 없습니다.</div>
+        }
+        else
+        {
+            foreach (var a in Model.Addresses)
+            {
+                <div style="border:1px solid #e5e7eb; border-radius:12px; padding:14px; margin-bottom:10px;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div style="font-weight:900;">
+                                (@a.ZipCode) @a.Address
+                                @if (!string.IsNullOrWhiteSpace(a.AddressDetail))
+                                {
+                                    <span> @a.AddressDetail</span>
+                                }
+                                @if (a.IsDefault)
+                                {
+                                    <span class="badge bg-success ms-2">대표</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            @if (!a.IsDefault)
+                            {
+                                <form asp-controller="Account" asp-action="SetDefaultAddress" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@a.Id" />
+                                    <button class="btn btn-outline-success btn-sm" type="submit">대표로</button>
+                                </form>
+                            }
+
+                            <button class="btn btn-outline-primary btn-sm" type="button"
+                                    onclick="fillEdit('@a.Id','@a.ZipCode','@Html.Raw(a.Address.Replace("'", "\\'"))','@Html.Raw((a.AddressDetail ?? "").Replace("'", "\\'"))','@a.IsDefault'.toLowerCase())">
+                                수정
+                            </button>
+
+                            <form asp-controller="Account" asp-action="DeleteAddress" method="post"
+                                  onsubmit="return confirm('배송지를 삭제할까요?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@a.Id" />
+                                <button class="btn btn-outline-danger btn-sm" type="submit">삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- ✅ 배송지 추가/수정 폼(공용) -->
+        <div style="border:1px dashed #cbd5e1; border-radius:12px; padding:14px; margin-top:14px;">
+            <h6 id="addrTitle" style="font-weight:900; margin-bottom:10px;">배송지 추가</h6>
+
+            <form id="addrForm" asp-controller="Account" asp-action="AddAddress" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="addrId" value="0" />
+
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">우편번호</label>
+                        <input class="form-control" name="ZipCode" id="zip" readonly />
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">주소</label>
+
+                        <!-- ✅ 주소 입력칸 옆에 주소검색 버튼 -->
+                        <div class="input-group">
+                            <input class="form-control" name="Address" id="addr" readonly />
+                            <button class="btn btn-outline-secondary" type="button" onclick="execDaumPostcode()">
+                                주소검색
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">상세주소</label>
+                        <input class="form-control" name="AddressDetail" id="detail" />
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-check mt-1">
+                            <input class="form-check-input" type="checkbox" name="IsDefault" id="isDefault" />
+                            <label class="form-check-label fw-bold" for="isDefault">대표 배송지로 지정</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-dark flex-grow-1 fw-bold" type="submit" id="addrSubmit">저장</button>
+                    <button class="btn btn-outline-secondary flex-shrink-0" style="min-width:120px;" type="button" onclick="resetAddr()">취소</button>
+                </div>
+            </form>
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- ✅ 비밀번호 변경 -->
+        <form asp-controller="Account" asp-action="ChangePassword" method="post">
+            @Html.AntiForgeryToken()
+            <h5 style="font-weight:900; margin-bottom:10px;">비밀번호 변경</h5>
+
+            <input type="password" class="form-control" name="CurrentPassword" placeholder="현재 비밀번호" required />
+            <input type="password" class="form-control mt-2" name="NewPassword" placeholder="새 비밀번호(6자 이상)" required />
+            <input type="password" class="form-control mt-2" name="ConfirmNewPassword" placeholder="새 비밀번호 확인" required />
+
+            <button class="btn btn-secondary w-100 mt-3 fw-bold" type="submit">비밀번호 변경</button>
+        </form>
+
+        <hr class="my-4" />
+
+        <!-- ✅ 탈퇴(관리자 로그인 시 탈퇴버튼 없음) -->
+        @if (!User.IsInRole("admin"))
+        {
+            <hr class="my-4" />
+
+            <!-- ✅ 탈퇴(맨 아래) -->
+            <form asp-controller="Account" asp-action="DeleteAccount" method="post"
+                  onsubmit="return confirm('정말 탈퇴하시겠습니까? 탈퇴 후 복구 불가합니다.');">
+                @Html.AntiForgeryToken()
+
+                <h5 style="font-weight:900; color:#b91c1c;">회원 탈퇴</h5>
+                <div style="color:#6b7280; font-size:13px; margin-bottom:10px;">비밀번호 확인 후 탈퇴됩니다.</div>
+
+                <input type="password" class="form-control" name="password" placeholder="비밀번호 확인" required />
+                <button class="btn btn-danger w-100 mt-3 fw-bold" type="submit">탈퇴하기</button>
+            </form>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <!-- ✅ Daum(카카오) 우편번호 서비스 스크립트 -->
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>  @* :contentReference[oaicite:0]{index=0} *@
+
+    <script>
+            // ✅ 주소검색 실행(현재 폼: zip/addr/detail 에 채움)
+            function execDaumPostcode() {
+                new daum.Postcode({
+                    oncomplete: function (data) {
+                        // 선택한 주소 타입에 따라 주소값
+                        // (도로명: data.roadAddress / 지번: data.jibunAddress)
+                        var addr = (data.userSelectedType === 'R') ? data.roadAddress : data.jibunAddress;
+
+                        // 참고항목(법정동, 건물명 등)
+                        var extra = '';
+                        if (data.userSelectedType === 'R') {
+                            if (data.bname && /[동|로|가]$/g.test(data.bname)) extra += data.bname;
+                            if (data.buildingName && data.apartment === 'Y')
+                                extra += (extra ? ', ' + data.buildingName : data.buildingName);
+
+                            if (extra) addr += ' (' + extra + ')';
+                        }
+
+                        document.getElementById('zip').value = data.zonecode; // 5자리 우편번호
+                        document.getElementById('addr').value = addr;
+                        document.getElementById('detail').focus();
+                    }
+                }).open();
+            }
+
+
+        function fillEdit(id, zip, addr, detail, isDefault){
+            document.getElementById('addrTitle').innerText = '배송지 수정';
+            const form = document.getElementById('addrForm');
+            form.action = '/Account/UpdateAddress';
+
+            document.getElementById('addrId').value = id;
+            document.getElementById('zip').value = zip;
+            document.getElementById('addr').value = addr;
+            document.getElementById('detail').value = detail;
+            document.getElementById('isDefault').checked = (isDefault === 'true');
+
+            document.getElementById('addrSubmit').innerText = '수정 저장';
+        }
+
+        function resetAddr(){
+            document.getElementById('addrTitle').innerText = '배송지 추가';
+            const form = document.getElementById('addrForm');
+            form.action = '/Account/AddAddress';
+
+            document.getElementById('addrId').value = 0;
+            document.getElementById('zip').value = '';
+            document.getElementById('addr').value = '';
+            document.getElementById('detail').value = '';
+            document.getElementById('isDefault').checked = false;
+
+            document.getElementById('addrSubmit').innerText = '저장';
+        }
+    </script>
+}

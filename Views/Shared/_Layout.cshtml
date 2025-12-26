@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MOAClover.styles.css" asp-append-version="true" />
     <link rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
@@ -18,7 +20,7 @@
             <div class="container-fluid d-flex flex-column align-items-center py-3">
 
                 <!-- 브랜드 로고 영역 -->
-                <div class="logo-box" style="width:100%; height:130px; background:#ddd; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <div class="logo-box">
                     <!-- 배경이미지 공간 
                         <div class="logo-box" style="width:100%; height:180px; background-image:url('/images/logo-bg.jpg'); background-size:cover; background-position:center;
                            display:flex; flex-direction:column; justify-content:center; align-items:center;"> 
@@ -28,68 +30,93 @@
                     <!-- <img src="/images/mylogo.png" alt="로고 이미지" style="height:70px; margin-bottom:10px; display:none;" id="mainLogoImg"> -->
 
                     <!-- 텍스트 로고 -->
-                    <a href="/Home/Index" style="text-decoration:none; color:inherit;">
-                        <div style="font-size:34px; font-weight:bold;">모아클로버</div>
-                    </a>
+                    <!-- 1줄: 가운데 로고 / 오른쪽 로그인영역 -->
+                    <div class="header-top-row">
+                        <div></div>
 
-                    <div style="width:100%; text-align:right; margin-top:10px; margin-right:80px;">
+                        <!-- 로고(가운데 고정) -->
+                        <div class="header-logo-center">
+                            <a href="/Home/Index" class="header-logo-link">
+                                <div class="header-logo-text">모아클로버</div>
+                            </a>
+                        </div>
 
-                        @if (User.Identity!.IsAuthenticated)
-                        {
-                            <span style="margin-right:10px;">
-                                👤 @User.Identity.Name
-                            </span>
-
-                            <form asp-controller="Account"
-                                  asp-action="Logout"
-                                  method="post"
-                                  style="display:inline;">
-                                <button type="submit"
-                                        style="background:none; border:none; color:#777; cursor:pointer;">
-                                    로그아웃
-                                </button>
-                            </form>
-
-                            @if (User.IsInRole("admin"))
+                        <!-- 오른쪽 메뉴 -->
+                        <div class="header-right-menu">
+                            @if (User.Identity!.IsAuthenticated)
                             {
-                                <a href="/Home/Create"
-                                   style="color:#777; text-decoration:none; margin-left:10px;">
-                                    상품등록
+                                <a asp-controller="Account"
+                                   asp-action="MyPage"
+                                   class="header-right-link header-right-strong">
+                                    👤 @User.Identity.Name
+                                </a>
+
+                                <form asp-controller="Account"
+                                      asp-action="Logout"
+                                      method="post"
+                                      class="header-inline-form">
+                                    <button type="submit" class="header-right-btnlink">로그아웃</button>
+                                </form>
+
+                               @*  @if (User.IsInRole("admin"))
+                                {
+                                    <a href="/Home/Create" class="header-right-link">
+                                        상품등록
+                                    </a>
+                                } *@
+                                @if (User.IsInRole("admin"))
+                                {
+
+                                    <a href="/Home/Create"
+                                       style="color:#777; text-decoration:none; margin-left:10px;">
+                                        상품등록
+                                    </a>
+
+                                    @await Component.InvokeAsync("AdminQnaAlert")
+                                   
+                                }
+                            }
+                            else
+                            {
+                                <a href="/Account/Login" class="header-right-link">
+                                    로그인
                                 </a>
                             }
-                        }
-                        else
-                        {
-                            <a href="/Account/Login"
-                               style="color:#777; text-decoration:none; margin-left:10px;">
-                                로그인
-                            </a>
-                        }
+                        </div>
                     </div>
+
+                    <!-- 2줄: 가운데 검색창 -->
+                    <div class="header-search-row">
+                        <form asp-controller="Home" asp-action="Index" method="get" class="header-search-form">
+                            <input type="hidden" name="page" value="1" />
+
+                            @if (!string.IsNullOrWhiteSpace(Context.Request.Query["showHidden"]))
+                            {
+                                <input type="hidden" name="showHidden" value="@Context.Request.Query["showHidden"]" />
+                            }
+
+                            <input class="header-search-input"
+                                   type="text"
+                                   name="q"
+                                   value="@Context.Request.Query["q"]"
+                                   placeholder="상품 검색" />
+
+                            <button class="header-search-btn" type="submit">검색</button>
+                        </form>
+                    </div>
+
                 </div>
                
-
-                <!-- 메뉴 전체를 가운데 정렬 -->
+                <!-- 카테고리 자동추가 -->
                 <div class="navbar-collapse collapse show d-flex justify-content-center mt-2">
-                    <ul class="navbar-nav text-center">
-                        <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">패션잡화</a>
-                        </li>
-                        <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="fashion" asp-action="Privacy">패션잡화</a>
-                        </li>
-                        <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">고</a>
-                        </li>
-                        <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">리</a>
-                        </li>
-                        <li class="nav-item mx-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">존</a>
-                        </li>
-                    </ul>
-                </div>
 
+                    <!-- ✅ 전체(카테고리 필터 해제) -->
+                    <a href="/Home/Index" class="cat-all-link @(string.IsNullOrEmpty(Context.Request.Query["categoryId"]) ? "active" : "")">
+                        전체
+                    </a>
+
+                    @await Component.InvokeAsync("CategoryMenu")
+                </div>
             </div>
         </nav>
     </header>
@@ -121,7 +148,7 @@
 
             // 회원가입 후 자동 로그인창 띄우기
             if (urlParams.get("showLogin") === "true") {
-                openLoginModal();  // ← 당신이 가진 로그인창 열기 함수명으로 변경!
+                openLoginModal(); 
             }
 
         });

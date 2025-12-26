@@ -1,14 +1,34 @@
-﻿@{
+﻿@model MOAClover.Models.Product
+@{
     ViewData["Title"] = "상품 삭제";
+    Layout = "_Layout";
 }
 
-<link rel="stylesheet" href="~/css/Delete.css" />
+<div class="container" style="max-width:720px; margin:60px auto;">
+    <div style="background:#fff; border:1px solid #fee2e2; border-radius:16px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,0.06);">
+        <h3 style="margin:0 0 10px; font-weight:900; color:#b91c1c;">상품 삭제</h3>
+        <div style="color:#6b7280; margin-bottom:18px;">
+            삭제하면 이 상품은 숨김 처리되고(소프트삭제), 관련 미디어도 비활성화됩니다.
+        </div>
 
-<div class="box">
-    <div class="title">상품을 삭제하시겠습니까?</div>
+        <div style="border:1px solid #e5e7eb; border-radius:12px; padding:14px;">
+            <div style="font-weight:900; font-size:18px;">@Model.Name</div>
+            <div style="margin-top:6px; color:#374151;">가격: @Model.Price.ToString("N0") 원</div>
+            <div style="margin-top:6px; color:#6b7280;">카테고리 ID: @Model.CategoryId</div>
+        </div>
 
-    <p style="color:#555; font-size:16px;">삭제하면 복구할 수 없습니다.</p>
+        <form asp-controller="Home" asp-action="DeleteConfirmed" method="post"
+              onsubmit="return confirm('정말 삭제(숨김 처리)하시겠습니까?');" class="mt-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.ProductId" />
 
-    <button class="btn yes">삭제하기</button>
-    <a href="/Home/Index" class="btn no" style="text-decoration:none;">취소</a>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-danger flex-grow-1 fw-bold">삭제 실행</button>
+                <a class="btn btn-outline-secondary flex-shrink-0" style="min-width:160px;"
+                   asp-controller="Home" asp-action="Detail" asp-route-id="@Model.ProductId">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
 </div>

@@ -16,7 +16,7 @@
             <img src="@Model.MainImageUrl" class="main-img" />
 
             <div class="thumbnail-wrap">
-                @foreach (var img in Model.ImageUrls)
+                @foreach (var img in Model.ImageUrls)  // 이제 8장만 들어있음
                 {
                     <img src="@img" class="thumb" onclick="changeImage(this.src)" />
                 }
@@ -26,44 +26,71 @@
         <!-- 오른쪽 상품정보 -->
         <div class="detail-right">
             <div class="category-info">
-                카테고리
+                <span>@Model.CategoryPath</span>
             </div>
 
             <h1>@Model.Name</h1>
 
             <!-- 가격 -->
-            <div class="price-box">
-                @if (Model.DiscountRate.HasValue)
+            <div class="detail-price">
+                @if (Model.DiscountRate.HasValue && Model.DiscountRate.Value > 0)
                 {
-                    <div class="price-row">
-                        <div class="discount-badge">@Model.DiscountRate%</div>
+                    <div class="detail-price-row">
+                        <div class="rate-big">@Model.DiscountRate%</div>
 
-                        <div class="price-info">
-                            <div class="final-price">
-                                @Model.FinalPrice.ToString("N0") 원
+                        <div class="price-right">
+                            <div class="price-line">
+                                <span class="origin">@Model.Price.ToString("N0")원</span>
+                                <span class="sale">@Model.FinalPrice.ToString("N0")원</span>
                             </div>
-                            <div class="origin-price">
-                                <del>@Model.Price.ToString("N0") 원</del>
+
+                            <div class="ship-line">
+                                <span class="ship-icon">🚚</span>
+                                <span class="ship-text">무료배송</span>
                             </div>
                         </div>
                     </div>
                 }
                 else
                 {
-                    <div class="final-price">
-                        @Model.Price.ToString("N0") 원
+                    <div class="detail-price-row">
+                        <div class="price-right">
+                            <div class="price-line">
+                                <span class="sale">@Model.Price.ToString("N0")원</span>
+                            </div>
+
+                            <div class="ship-line">
+                                <span class="ship-icon">🚚</span>
+                                <span class="ship-text">4,000원</span>
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
-
-            <div class="delivery">배송비: 3000원</div>
 
             <a href="https://smartstore.naver.com"
                target="_blank"
                class="external-link">
                 스마트스토어
             </a>
-        </div>
+
+            <!-- 수정,삭제 버튼 -->
+            @if (User.IsInRole("admin"))
+            {
+                <div style="margin-top:120px; display:flex; justify-content: flex-end; gap:12px; padding-top: 16px;">
+                    <a class="btn btn-outline-primary" style="padding: 8px 27px;"
+                       asp-controller="Home" asp-action="Edit" asp-route-id="@Model.ProductId">
+                        수정
+                    </a>
+
+                    <a class="btn btn-outline-danger" style="padding: 8px 27px;"
+                       asp-controller="Home" asp-action="Delete" asp-route-id="@Model.ProductId">
+                        삭제
+                    </a>
+                </div>
+            }
+
+        </div>       
     </div>
 
     <!-- 탭 -->
@@ -79,9 +106,9 @@
         <!-- 상세정보 -->
         <div id="detail" class="tab-panel active detail-html">
 
-            @if (Model.ImageUrls.Any())
+            @if (Model.DetailImageUrls.Any())
             {
-                foreach (var img in Model.ImageUrls)
+                foreach (var img in Model.DetailImageUrls)
                 {
                     <img src="@img" />
                 }
@@ -104,31 +131,23 @@
 
         </div>
 
-        <!-- Q&A -->
+        <!-- Q&A 탭 -->
         <div id="qa" class="tab-panel">
+            <div id="qna-root" data-product-id="@Model.ProductId">
 
-            @if (Model.QnAs == null || !Model.QnAs.Any())
-            {
-                <p class="qna-empty">아직 등록된 상품 문의가 없습니다.</p>
-            }
-            else
-            {
-                @foreach (var q in Model.QnAs)
-                {
-                    <div class="qna-box">
-                        <div class="question">Q. @q.Question</div>
-
-                        <div class="answer">
-                            @(
-                            string.IsNullOrEmpty(q.Answer)
-                            ? "답변 대기중"
-                            : "A. " + q.Answer
-                            )
-                    </div>
+                <div class="qna-toolbar">
+                    <button type="button" id="btnShowQnaForm">문의등록</button>
                 </div>
-                        }
-            }
 
+                <div id="qna-form-area" class="hidden">
+                    @await Html.PartialAsync("~/Views/Home/QnAForm.cshtml", Model)
+                </div>
+
+                <div id="qna-list-area">
+                    @await Html.PartialAsync("~/Views/Home/QnA.cshtml", Model)
+                </div>
+
+            </div>
         </div>
 
         <!-- 반품/교환 -->
@@ -170,6 +189,13 @@
 
         </div>
 
+        <!-- 반품/교환 - IMAGE VERSION -->
+        @* 
+        <div id="return" class="tab-panel return-policy">
+            <img src="/images/return-policy.jpg" class="return-img" />
+        </div>
+        *@
+
     </div>
 </div>
 
@@ -189,3 +215,7 @@
         document.getElementById(id).classList.add("active");
     }
 </script>
+
+@section Scripts {
+    <script src="~/js/qna.js" asp-append-version="true"></script>
+}

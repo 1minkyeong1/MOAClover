@@ -1,0 +1,44 @@
+﻿@model List<MOAClover.Models.ViewModels.CategoryMenuNode>
+
+<ul class="navbar-nav text-center">
+    @foreach (var root in Model)
+    {
+        if (root.Children.Any())
+        {
+            <li class="nav-item dropdown mx-2">
+                <a class="nav-link dropdown-toggle text-dark"
+                   href="#"
+                   role="button"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false">
+                    @root.Name
+                </a>
+
+                <ul class="dropdown-menu">
+                    @foreach (var child in root.Children)
+                    {
+                        <li>
+                            <a class="dropdown-item"
+                               asp-controller="Home"
+                               asp-action="Index"
+                               asp-route-categoryId="@child.Id">
+                                @child.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item mx-2">
+                <a class="nav-link text-dark"
+                   asp-controller="Home"
+                   asp-action="Index"
+                   asp-route-categoryId="@root.Id">
+                    @root.Name
+                </a>
+            </li>
+        }
+    }
+</ul>
