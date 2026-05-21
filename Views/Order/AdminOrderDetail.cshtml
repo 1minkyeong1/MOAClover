@@ -1,0 +1,946 @@
+﻿@model MOAClover.Models.Order
+
+@{
+    ViewData["Title"] = "관리자 주문상세";
+    Layout = "_Layout";
+
+    var histories = ViewBag.OrderHistories as List<MOAClover.Models.OrderStatusHistory>
+        ?? new List<MOAClover.Models.OrderStatusHistory>();
+
+    var payment = ViewBag.Payment as MOAClover.Models.Payment;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="admin-order-detail-wrap">
+
+    <div class="admin-order-detail-head">
+        <div>
+            <h2>주문상세</h2>
+            <p>주문번호 <strong>@Model.OrderNo</strong></p>
+        </div>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           class="admin-order-back-btn">
+            목록으로
+        </a>
+    </div>
+
+    @if (TempData["OrderAdminMessage"] != null)
+    {
+        var orderAdminMessage = TempData["OrderAdminMessage"]?.ToString() ?? "";
+
+        var isWarningMessage =
+        orderAdminMessage.Contains("실패")
+        || orderAdminMessage.Contains("오류")
+        || orderAdminMessage.Contains("문제")
+        || orderAdminMessage.Contains("입력")
+        || orderAdminMessage.Contains("사용해주세요")
+        || orderAdminMessage.Contains("확인해주세요");
+
+        <div class="admin-save-message @(isWarningMessage ? "warning-message" : "success-message")">
+            <div class="admin-save-message-icon">
+                @(isWarningMessage ? "!" : "✓")
+            </div>
+
+            <div class="admin-save-message-text">
+                <strong>@(isWarningMessage ? "처리 안내" : "저장 완료")</strong>
+                <span>@orderAdminMessage</span>
+            </div>
+        </div>
+    }
+
+    <div class="admin-order-detail-summary">
+
+        <div class="admin-order-detail-summary-card">
+            <span>주문번호</span>
+            <strong>@Model.OrderNo</strong>
+            <em>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</em>
+        </div>
+
+        <div class="admin-order-detail-summary-card">
+            <span>주문구분</span>
+            <strong>@(Model.IsGuestOrder ? "비회원 주문" : "회원 주문")</strong>
+            <em>@Model.BuyerName / @Model.BuyerPhone</em>
+        </div>
+
+        <div class="admin-order-detail-summary-card">
+            <span>주문상태</span>
+            <strong class="order-status-badge @OrderStatusHelper.OrderStatusClass(Model.OrderStatus)">
+                @OrderStatusHelper.OrderStatusText(Model.OrderStatus)
+            </strong>
+            <em>결제상태: @OrderStatusHelper.PaymentStatusText(Model.PaymentStatus)</em>
+        </div>
+
+        <div class="admin-order-detail-summary-card total">
+            <span>총 결제금액</span>
+            <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+            <em>
+                @(
+                                Model.PaymentMethod == "BankTransfer" ? "무통장입금" :
+                                Model.PaymentMethod == "TossPayments" ? "카드결제" :
+                                Model.PaymentMethod
+                                )
+            </em>
+        </div>
+
+    </div>
+
+    <div class="guest-detail-layout">
+
+        <div class="guest-detail-main">
+
+            <section class="order-section admin-detail-products-section">
+                <div class="admin-detail-section-head">
+                    <h3>주문 상품</h3>
+                    <span>총 @Model.Items.Count.ToString("N0")개 상품</span>
+                </div>
+
+                <div class="admin-detail-product-list">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="admin-detail-product-row">
+
+                            <a asp-controller="Home"
+                               asp-action="Detail"
+                               asp-route-id="@item.ProductId"
+                               class="admin-detail-product-thumb">
+                                @if (!string.IsNullOrWhiteSpace(item.MainImageUrl))
+                                {
+                                    <img src="@item.MainImageUrl" alt="@item.ProductName" />
+                                }
+                                else
+                                {
+                                    <div class="admin-detail-product-no-img">이미지 없음</div>
+                                }
+                            </a>
+
+                            <div class="admin-detail-product-main">
+                                <a asp-controller="Home"
+                                   asp-action="Detail"
+                                   asp-route-id="@item.ProductId"
+                                   class="admin-detail-product-link">
+                                    @item.ProductName
+                                </a>
+
+                                <div class="admin-detail-product-meta">
+                                    <span>상품번호 @item.ProductId</span>
+                                    <span>수량 @item.Quantity.ToString("N0")개</span>
+                                    <span>단가 @item.FinalUnitPrice.ToString("N0")원</span>
+                                </div>
+                            </div>
+
+                            <div class="admin-detail-product-price">
+                                <span>상품합계</span>
+                                <strong>@item.LineTotal.ToString("N0")원</strong>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="order-section admin-detail-info-section">
+                <div class="admin-detail-section-head">
+                    <h3>주문자 / 배송지 정보</h3>
+                    <span>@(Model.IsGuestOrder ? "비회원 주문" : "회원 주문")</span>
+                </div>
+
+                <div class="admin-detail-info-grid">
+
+                    <div class="admin-detail-info-card">
+                        <div class="admin-detail-info-card-head">
+                            <strong>주문자 정보</strong>
+
+                            <span class="admin-detail-order-type @(Model.IsGuestOrder ? "guest" : "member")">
+                                @(Model.IsGuestOrder ? "비회원" : "회원")
+                            </span>
+                        </div>
+
+                        <div class="admin-detail-info-list">
+                            <div>
+                                <span>주문자</span>
+                                <strong>@Model.BuyerName</strong>
+                            </div>
+
+                            <div>
+                                <span>연락처</span>
+                                <strong>@Model.BuyerPhone</strong>
+                            </div>
+
+                            <div>
+                                <span>이메일</span>
+                                <strong>
+                                    @(string.IsNullOrWhiteSpace(Model.BuyerEmail) ? "-" : Model.BuyerEmail)
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-detail-info-card">
+                        <div class="admin-detail-info-card-head">
+                            <strong>배송지 정보</strong>
+
+                            @if (Model.IsCollectShipping)
+                            {
+                                <span class="admin-detail-shipping-badge danger">
+                                    착불/별도
+                                </span>
+                            }
+                            else if (Model.IsIncludedShipping)
+                            {
+                                <span class="admin-detail-shipping-badge">
+                                    배송비 포함
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="admin-detail-shipping-badge">
+                                    배송비 @Model.ShippingFee.ToString("N0")원
+                                </span>
+                            }
+                        </div>
+
+                        <div class="admin-detail-info-list">
+                            <div>
+                                <span>받는 사람</span>
+                                <strong>@Model.ReceiverName</strong>
+                            </div>
+
+                            <div>
+                                <span>연락처</span>
+                                <strong>@Model.ReceiverPhone</strong>
+                            </div>
+
+                            <div>
+                                <span>주소</span>
+                                <strong>
+                                    (@Model.ZipCode) @Model.Address1 @Model.Address2
+                                </strong>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.DeliveryMemo))
+                            {
+                                <div>
+                                    <span>요청사항</span>
+                                    <strong>@Model.DeliveryMemo</strong>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="order-section admin-history-section">
+                <div class="admin-history-title-row">
+                    <h3>처리 이력</h3>
+                    <span>@histories.Count 건</span>
+                </div>
+
+                @if (!histories.Any())
+                {
+                    <div class="order-history-empty">
+                        아직 처리 이력이 없습니다.
+                    </div>
+                }
+                else
+                {
+                    <div class="admin-history-list">
+                        @foreach (var h in histories)
+                        {
+                            var isEmailIssue = !string.IsNullOrWhiteSpace(h.AdminMemo)
+                            && h.AdminMemo.Contains("이메일")
+                            && h.AdminMemo.Contains("실패");
+
+                            var isReturnExchangeIssue =
+                            h.AfterOrderStatus == "ReturnRequested"
+                            || h.AfterOrderStatus == "ExchangeRequested"
+                            || h.AfterOrderStatus == "Returned"
+                            || h.AfterOrderStatus == "Exchanged"
+                            || h.AfterOrderStatus == "RequestRejected";
+
+                            var isCancelIssue =
+                            h.AfterOrderStatus == "CancelRequested"
+                            || h.AfterOrderStatus == "Cancelled"
+                            || h.AfterPaymentStatus == "Refunded";
+
+                            var hasTracking = !string.IsNullOrWhiteSpace(h.TrackingCompany)
+                            || !string.IsNullOrWhiteSpace(h.TrackingNumber);
+
+                            var hasOrderChanged = h.BeforeOrderStatus != h.AfterOrderStatus;
+                            var hasPaymentChanged = h.BeforePaymentStatus != h.AfterPaymentStatus;
+
+                            var historyClass = isEmailIssue ? "email-issue"
+                            : isCancelIssue ? "cancel-issue"
+                            : isReturnExchangeIssue ? "return-exchange-issue"
+                            : hasTracking ? "shipping-issue"
+                            : "normal";
+
+                            <article class="admin-history-item @historyClass">
+
+                                <div class="admin-history-dot"></div>
+
+                                <div class="admin-history-content">
+                                    <div class="admin-history-top">
+                                        <div>
+                                            <strong>@h.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+                                            <span>@(string.IsNullOrWhiteSpace(h.ChangedBy) ? "관리자" : h.ChangedBy)</span>
+                                        </div>
+
+                                        @if (isEmailIssue)
+                                        {
+                                            <em class="admin-history-badge error">이메일 실패</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "CancelRequested")
+                                        {
+                                            <em class="admin-history-badge warning">취소요청</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "Cancelled")
+                                        {
+                                            <em class="admin-history-badge danger">취소/환불</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "ReturnRequested")
+                                        {
+                                            <em class="admin-history-badge return">반품요청</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "ExchangeRequested")
+                                        {
+                                            <em class="admin-history-badge exchange">교환요청</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "Returned")
+                                        {
+                                            <em class="admin-history-badge return">반품완료</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "Exchanged")
+                                        {
+                                            <em class="admin-history-badge exchange">교환완료</em>
+                                        }
+                                        else if (h.AfterOrderStatus == "RequestRejected")
+                                        {
+                                            <em class="admin-history-badge rejected">요청거절</em>
+                                        }
+                                        else if (h.AfterPaymentStatus == "Refunded")
+                                        {
+                                            <em class="admin-history-badge danger">환불완료</em>
+                                        }
+                                        else if (hasTracking)
+                                        {
+                                            <em class="admin-history-badge shipping">배송정보</em>
+                                        }
+                                        else
+                                        {
+                                            <em class="admin-history-badge normal">처리</em>
+                                        }
+                                    </div>
+
+                                    <div class="admin-history-body">
+
+                                        @if (hasOrderChanged)
+                                        {
+                                            <div class="admin-history-row">
+                                                <span>주문상태</span>
+                                                <strong>
+                                                    @OrderStatusHelper.OrderStatusText(h.BeforeOrderStatus)
+                                                    <b>→</b>
+                                                    @OrderStatusHelper.OrderStatusText(h.AfterOrderStatus)
+                                                </strong>
+                                            </div>
+                                        }
+
+                                        @if (hasPaymentChanged)
+                                        {
+                                            <div class="admin-history-row">
+                                                <span>결제상태</span>
+                                                <strong>
+                                                    @OrderStatusHelper.PaymentStatusText(h.BeforePaymentStatus)
+                                                    <b>→</b>
+                                                    @OrderStatusHelper.PaymentStatusText(h.AfterPaymentStatus)
+                                                </strong>
+                                            </div>
+                                        }
+
+                                        @if (hasTracking)
+                                        {
+                                            <div class="admin-history-row">
+                                                <span>배송정보</span>
+                                                <strong>
+                                                    @(string.IsNullOrWhiteSpace(h.TrackingCompany) ? "-" : h.TrackingCompany)
+                                                    /
+                                                    @(string.IsNullOrWhiteSpace(h.TrackingNumber) ? "-" : h.TrackingNumber)
+                                                </strong>
+                                            </div>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(h.CancelReason))
+                                        {
+                                            <div class="admin-history-row cancel">
+                                                <span>요청/처리 사유</span>
+                                                <strong>@h.CancelReason</strong>
+                                            </div>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(h.AdminMemo))
+                                        {
+                                            <div class="admin-history-row memo @(isEmailIssue ? "email-error" : "")">
+                                                <span>메모</span>
+                                                <strong>@h.AdminMemo</strong>
+                                            </div>
+                                        }
+
+                                        @if (!hasOrderChanged
+                                                                        && !hasPaymentChanged
+                                                                        && !hasTracking
+                                                                        && string.IsNullOrWhiteSpace(h.CancelReason)
+                                                                        && string.IsNullOrWhiteSpace(h.AdminMemo))
+                                        {
+                                            <div class="admin-history-row">
+                                                <span>내용</span>
+                                                <strong>상태 변경 없이 이력이 기록되었습니다.</strong>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+
+        </div>
+
+        <aside class="order-summary admin-order-process-panel">
+            @{
+                var canRefundOrderStatus =
+                Model.OrderStatus == "Paid"
+                || Model.OrderStatus == "Preparing"
+                || Model.OrderStatus == "CancelRequested"
+                || Model.OrderStatus == "ReturnRequested"
+                || Model.OrderStatus == "Returned";
+
+                var isLockedOrderStatus =
+                Model.PaymentStatus == "Refunded"
+                || Model.OrderStatus == "Cancelled"
+                || Model.OrderStatus == "Returned"
+                || Model.OrderStatus == "Exchanged";
+            }
+
+            <div class="admin-process-panel-title">
+                <h3>주문 처리</h3>
+                <span>@OrderStatusHelper.OrderStatusText(Model.OrderStatus)</span>
+            </div>
+
+            @if (Model.OrderStatus == "CancelRequested"
+                        || Model.OrderStatus == "ReturnRequested"
+                        || Model.OrderStatus == "ExchangeRequested")
+            {
+                <section class="admin-process-section urgent">
+                    <div class="admin-process-section-head">
+                        <strong>요청 처리 필요</strong>
+                        <span>고객 요청이 접수되었습니다.</span>
+                    </div>
+
+                    @if (Model.OrderStatus == "CancelRequested")
+                    {
+                        <div class="admin-cancel-request-box">
+                            <strong>고객이 취소/환불을 요청했습니다.</strong>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                            {
+                                <span>요청 사유: @Model.CancelReason</span>
+                            }
+
+                            <span>
+                                카드결제 주문은 결제취소/환불 처리 버튼으로 승인하고,
+                                무통장입금 주문은 실제 환불 후 환불완료 처리해주세요.
+                            </span>
+                        </div>
+                    }
+
+                    @if (Model.OrderStatus == "CancelRequested" && Model.PaymentStatus == "Paid")
+                    {
+                        <form asp-controller="Order"
+                              asp-action="WithdrawCancelRequest"
+                              method="post"
+                              class="admin-cancel-withdraw-form"
+                              onsubmit="return confirm('고객의 취소/환불 요청을 철회 처리하시겠습니까? 주문은 배송준비중 상태로 돌아갑니다.');">
+                            
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+
+                            <label>철회 메모</label>
+                            <textarea name="adminMemo"
+                              rows="3"
+                              placeholder="예: 고객이 전화로 취소요청 철회를 요청함"></textarea>
+
+                            <button type="submit">
+                                취소/환불 요청 철회
+                            </button>
+                        </form>
+                    }
+
+                    @if (Model.OrderStatus == "ReturnRequested" || Model.OrderStatus == "ExchangeRequested")
+                    {
+                        <div class="admin-return-exchange-process-box">
+                            <strong>
+                                @(Model.OrderStatus == "ReturnRequested" ? "반품 요청 처리" : "교환 요청 처리")
+                            </strong>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                            {
+                                <span>요청 사유: @Model.CancelReason</span>
+                            }
+
+                            <form asp-controller="Order"
+                                  asp-action="CompleteReturnExchangeRequest"
+                                  method="post"
+                                  class="admin-return-exchange-process-form"
+                                  onsubmit="return confirm('이 요청을 완료 처리하시겠습니까?');">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+                                <input type="hidden" name="actionType" value="complete" />
+
+                                <label>처리 메모</label>
+                                <textarea name="adminMemo"
+                                  rows="3"
+                                  placeholder="예: 상품 회수 확인 후 반품완료 처리, 새 상품 재발송 완료 등"></textarea>
+
+                                <button type="submit" class="complete">
+                                    @(Model.OrderStatus == "ReturnRequested" ? "반품완료 처리" : "교환완료 처리")
+                                </button>
+                            </form>
+
+                            <form asp-controller="Order"
+                                  asp-action="CompleteReturnExchangeRequest"
+                                  method="post"
+                                  class="admin-return-exchange-process-form reject"
+                                  onsubmit="return confirm('이 요청을 거절 처리하시겠습니까?');">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+                                <input type="hidden" name="actionType" value="reject" />
+
+                                <label>거절 사유</label>
+                                <textarea name="adminMemo"
+                                  rows="3"
+                                  placeholder="예: 사용 흔적 확인, 교환/반품 가능 기간 경과 등"></textarea>
+
+                                <button type="submit" class="reject">
+                                    요청거절 처리
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </section>
+            }
+
+            <section class="admin-process-section">
+                <div class="admin-process-section-head">
+                    <strong>상태 / 배송 정보 변경</strong>
+                    <span>주문상태, 결제상태, 송장번호를 관리합니다.</span>
+                </div>
+
+                <form asp-controller="Order"
+                      asp-action="UpdateOrderStatus"
+                      method="post"
+                      class="admin-order-status-form">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+
+                    <label>주문상태</label>
+                    <select name="orderStatus">
+                        <option value="PendingPayment" selected="@(Model.OrderStatus == "PendingPayment")">결제대기</option>
+                        <option value="Paid" selected="@(Model.OrderStatus == "Paid")">결제완료</option>
+                        <option value="Preparing" selected="@(Model.OrderStatus == "Preparing")">배송준비중</option>
+                        <option value="Shipped" selected="@(Model.OrderStatus == "Shipped")">배송중</option>
+                        <option value="Completed" selected="@(Model.OrderStatus == "Completed")">배송완료</option>
+                        <option value="CancelRequested" selected="@(Model.OrderStatus == "CancelRequested")">취소요청</option>
+                        <option value="ReturnRequested" selected="@(Model.OrderStatus == "ReturnRequested")">반품요청</option>
+                        <option value="ExchangeRequested" selected="@(Model.OrderStatus == "ExchangeRequested")">교환요청</option>
+                        <option value="RequestRejected" selected="@(Model.OrderStatus == "RequestRejected")">요청거절</option>
+
+                        @if (Model.OrderStatus == "Cancelled")
+                        {
+                            <option value="Cancelled" selected disabled>취소완료</option>
+                        }
+
+                        @if (Model.OrderStatus == "Returned")
+                        {
+                            <option value="Returned" selected disabled>반품완료</option>
+                        }
+
+                        @if (Model.OrderStatus == "Exchanged")
+                        {
+                            <option value="Exchanged" selected disabled>교환완료</option>
+                        }
+                    </select>
+
+                    <label>결제상태</label>
+                    <select name="paymentStatus">
+                        <option value="Ready" selected="@(Model.PaymentStatus == "Ready")">결제대기</option>
+                        <option value="Paid" selected="@(Model.PaymentStatus == "Paid")">결제완료</option>
+                        <option value="Failed" selected="@(Model.PaymentStatus == "Failed")">결제실패</option>
+
+                        @if (Model.PaymentStatus == "Cancelled")
+                        {
+                            <option value="Cancelled" selected disabled>결제취소</option>
+                        }
+
+                        @if (Model.PaymentStatus == "Refunded")
+                        {
+                            <option value="Refunded" selected disabled>환불완료</option>
+                        }
+                    </select>
+
+                    <label>택배사</label>
+                    <input type="text"
+                           name="trackingCompany"
+                           value="@Model.TrackingCompany"
+                           placeholder="예: CJ대한통운" />
+
+                    <label>송장번호</label>
+                    <input type="text"
+                           name="trackingNumber"
+                           value="@Model.TrackingNumber"
+                           placeholder="송장번호 입력" />
+
+                    <div class="admin-order-form-help">
+                        배송중 또는 배송완료로 변경하려면 택배사와 송장번호를 입력해야 합니다.
+                    </div>
+
+                    <label>관리자 메모</label>
+                    <textarea name="adminMemo"
+                              class="admin-order-memo"
+                              rows="5"
+                              placeholder="관리자만 볼 수 있는 메모를 입력하세요. 예: 입금자명 다름, 고객 통화 완료, 제주 추가배송비 안내 완료">@Model.AdminMemo</textarea>
+
+                    <label>고객 안내 메모</label>
+                    <textarea name="customerMemo"
+                              class="admin-order-memo customer"
+                              rows="4"
+                              placeholder="고객 주문상세에 보여줄 안내를 입력하세요. 예: 제주 추가배송비 안내 완료, 교환 상품 재발송 예정">@Model.CustomerMemo</textarea>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.AdminMemoUpdatedBy) || Model.AdminMemoUpdatedAt.HasValue)
+                    {
+                        <div class="admin-order-form-help">
+                            최근 메모 수정:
+                            @(string.IsNullOrWhiteSpace(Model.AdminMemoUpdatedBy) ? "관리자" : Model.AdminMemoUpdatedBy)
+                            /
+                            @(Model.AdminMemoUpdatedAt.HasValue? Model.AdminMemoUpdatedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
+                        </div>
+                    }
+
+                    <label>요청/처리 사유</label>
+                    <textarea name="cancelReason"
+                              class="admin-order-memo cancel"
+                              rows="4"
+                              placeholder="취소요청, 반품요청, 교환요청, 요청거절 사유를 입력하세요.">@Model.CancelReason</textarea>
+
+                    <div class="admin-order-form-help">
+                        취소완료, 환불완료, 반품완료, 교환완료는 직접 저장하지 않고 전용 처리 버튼을 사용해주세요.
+                    </div>
+
+                    @if (isLockedOrderStatus)
+                    {
+                        <div class="admin-order-form-help danger">
+                            이미 취소/환불/반품완료/교환완료된 주문은 상태를 직접 변경할 수 없습니다.
+                        </div>
+                    }
+                    else
+                    {
+                        <button type="submit">
+                            저장
+                        </button>
+                    }
+                </form>
+            </section>
+
+            @if (Model.PaymentStatus == "Ready" && Model.OrderStatus != "Cancelled")
+            {
+                <section class="admin-process-section bank">
+                    <div class="admin-process-section-head">
+                        <strong>입금 확인</strong>
+                        <span>무통장입금 확인 후 배송준비중으로 변경합니다.</span>
+                    </div>
+
+                    <form asp-controller="Order"
+                          asp-action="ConfirmBankPayment"
+                          method="post"
+                          class="admin-bank-confirm-form"
+                          onsubmit="return confirm('입금확인 처리하시겠습니까? 주문상태가 배송준비중으로 변경됩니다.');">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+
+                        <button type="submit">
+                            입금확인 처리
+                        </button>
+                    </form>
+                </section>
+            }
+
+            <section class="admin-process-section summary">
+                <div class="admin-process-section-head">
+                    <strong>주문 금액 요약</strong>
+                    <span>결제수단과 최종 금액입니다.</span>
+                </div>
+
+                <div class="order-summary-box">
+                    <div class="summary-row">
+                        <span>주문일</span>
+                        <strong>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>주문상태</span>
+                        <strong class="order-status-badge @OrderStatusHelper.OrderStatusClass(Model.OrderStatus)">
+                            @OrderStatusHelper.OrderStatusText(Model.OrderStatus)
+                        </strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>결제상태</span>
+                        <strong class="payment-status-badge @OrderStatusHelper.PaymentStatusClass(Model.PaymentStatus)">
+                            @OrderStatusHelper.PaymentStatusText(Model.PaymentStatus)
+                        </strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>결제수단</span>
+                        <strong>
+                            @(
+                                Model.PaymentMethod == "BankTransfer" ? "무통장입금" :
+                                Model.PaymentMethod == "TossPayments" ? "카드결제" :
+                                Model.PaymentMethod
+                            )
+                        </strong>
+                    </div>
+
+                    @if (Model.PaidAt.HasValue)
+                    {
+                        <div class="summary-row">
+                            <span>결제일시</span>
+                            <strong>@Model.PaidAt.Value.ToString("yyyy-MM-dd HH:mm")</strong>
+                        </div>
+                    }
+
+                    <hr class="summary-divider" />
+
+                    <div class="summary-row">
+                        <span>상품금액</span>
+                        <strong>@Model.ProductTotal.ToString("N0")원</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>배송비</span>
+
+                        @if (Model.IsCollectShipping)
+                        {
+                            <strong class="shipping-alert-text">착불/별도</strong>
+                        }
+                        else if (Model.IsIncludedShipping)
+                        {
+                            <strong>배송비 포함</strong>
+                        }
+                        else
+                        {
+                            <strong>@Model.ShippingFee.ToString("N0")원</strong>
+                        }
+                    </div>
+
+                    @if (!Model.IsCollectShipping && !Model.IsIncludedShipping && Model.ExtraShippingFee > 0)
+                    {
+                        <div class="summary-row small">
+                            <span>지역 추가배송비</span>
+                            <strong>@Model.ExtraShippingFee.ToString("N0")원</strong>
+                        </div>
+                    }
+
+                    <div class="summary-row total">
+                        <span>총 결제금액</span>
+                        <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+                    </div>
+                </div>
+            </section>
+
+            @if (Model.IsCollectShipping)
+            {
+                <div class="admin-shipping-notice">
+                    이 주문에는 <strong>착불/별도 배송 상품</strong>이 포함되어 있습니다.<br />
+                    고객에게 실제 배송비를 별도로 안내해주세요.
+                </div>
+            }
+
+            @if (Model.OrderStatus == "Cancelled")
+            {
+                <div class="order-cancel-notice">
+                    <strong>취소된 주문입니다.</strong>
+
+                    @if (Model.CancelledAt.HasValue)
+                    {
+                        <div>취소일: @Model.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                    {
+                        <div>취소 사유: @Model.CancelReason</div>
+                    }
+                </div>
+            }
+
+            @if (Model.OrderStatus == "ReturnRequested")
+            {
+                <div class="admin-return-exchange-request-box return">
+                    <strong>고객이 반품을 요청했습니다.</strong>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                    {
+                        <span>요청 사유: @Model.CancelReason</span>
+                    }
+
+                    <span>
+                        상품 회수 및 상태 확인 후 반품완료 또는 요청거절로 처리해주세요.
+                    </span>
+                </div>
+            }
+
+            @if (Model.OrderStatus == "ExchangeRequested")
+            {
+                <div class="admin-return-exchange-request-box exchange">
+                    <strong>고객이 교환을 요청했습니다.</strong>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                    {
+                        <span>요청 사유: @Model.CancelReason</span>
+                    }
+
+                    <span>
+                        교환 가능 여부 확인 후 교환완료 또는 요청거절로 처리해주세요.
+                    </span>
+                </div>
+            }
+
+            @if (payment != null)
+            {
+                <section class="admin-process-section payment">
+                    <div class="admin-process-section-head">
+                        <strong>결제 상세</strong>
+                        <span>@payment.Provider</span>
+                    </div>
+
+                    <div class="admin-payment-detail-box">
+                        <div class="summary-row">
+                            <span>결제사</span>
+                            <strong>@payment.Provider</strong>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>결제금액</span>
+                            <strong>@payment.Amount.ToString("N0")원</strong>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(payment.PaymentKey))
+                        {
+                            <div class="summary-row">
+                                <span>결제키</span>
+                                <strong class="payment-key-text">@payment.PaymentKey</strong>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="summary-row">
+                                <span>결제키</span>
+                                <strong class="payment-key-text empty">저장 안 됨</strong>
+                            </div>
+                        }
+
+                        @if (payment.ApprovedAt.HasValue)
+                        {
+                            <div class="summary-row">
+                                <span>승인일시</span>
+                                <strong>@payment.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm")</strong>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(payment.FailureMessage))
+                        {
+                            <div class="payment-failure-box">
+                                <strong>@payment.FailureCode</strong>
+                                <span>@payment.FailureMessage</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+
+            @if (Model.PaymentMethod == "TossPayments"
+                        && Model.PaymentStatus == "Paid"
+                        && canRefundOrderStatus
+                        && payment != null
+                        && !string.IsNullOrWhiteSpace(payment.PaymentKey))
+            {
+                <section class="admin-process-section refund danger">
+                    <div class="admin-process-section-head">
+                        <strong>카드 결제취소 / 환불</strong>
+                        <span>토스페이먼츠 결제를 취소합니다.</span>
+                    </div>
+
+                    <form asp-controller="Payment"
+                          asp-action="CancelTossPayment"
+                          method="post"
+                          class="admin-payment-cancel-form"
+                          onsubmit="return confirm('토스페이먼츠 결제를 취소/환불 처리하시겠습니까?');">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+
+                        <label>결제취소/환불 사유</label>
+                        <textarea name="cancelReason"
+                              rows="3"
+                              placeholder="예: 고객 요청 취소, 중복 주문, 상품 품절 등"></textarea>
+
+                        <button type="submit">
+                            결제취소/환불 처리
+                        </button>
+                    </form>
+                </section>
+            }
+
+            @if (Model.PaymentMethod == "BankTransfer"
+                        && Model.PaymentStatus == "Paid"
+                        && canRefundOrderStatus)
+            {
+                <section class="admin-process-section refund danger">
+                    <div class="admin-process-section-head">
+                        <strong>무통장입금 수동 환불</strong>
+                        <span>실제 계좌 환불 후 완료 처리합니다.</span>
+                    </div>
+
+                    <form asp-controller="Order"
+                          asp-action="CompleteManualRefund"
+                          method="post"
+                          class="admin-manual-refund-form"
+                          onsubmit="return confirm('실제 계좌 환불을 완료하셨나요? 수동 환불완료 처리하시겠습니까?');">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="orderNo" value="@Model.OrderNo" />
+
+                        <label>수동 환불완료 메모</label>
+                        <textarea name="refundMemo"
+                              rows="3"
+                              placeholder="예: 고객 계좌로 환불 완료, 단순 변심 취소 등">@Model.CancelReason</textarea>
+
+                        <button type="submit">
+                            수동 환불완료 처리
+                        </button>
+                    </form>
+                </section>
+            }
+        </aside>
+    </div>
+</div>

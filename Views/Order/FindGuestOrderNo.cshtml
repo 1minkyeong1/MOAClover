@@ -1,0 +1,140 @@
+﻿@model MOAClover.Models.ViewModels.FindGuestOrderNoViewModel
+
+@{
+    ViewData["Title"] = "비회원 주문번호 찾기";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="guest-lookup-wrap">
+
+    <div class="guest-lookup-card">
+
+        <div class="guest-lookup-head">
+            <h2>비회원 주문번호 찾기</h2>
+            <p>
+                주문 시 입력한 이름, 연락처, 이메일을 입력하면<br />
+                최근 비회원 주문번호를 확인할 수 있습니다.
+            </p>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="order-error">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        @if (TempData["GuestFindMessage"] != null)
+        {
+            <div class="order-message">
+                @TempData["GuestFindMessage"]
+            </div>
+        }
+
+        <form asp-controller="Order" asp-action="FindGuestOrderNo" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="guest-lookup-form">
+                <div>
+                    <label>주문자 이름</label>
+                    <input asp-for="BuyerName"
+                           placeholder="주문 시 입력한 이름" />
+                </div>
+
+                <div>
+                    <label>주문자 연락처</label>
+                    <input asp-for="BuyerPhone"
+                           placeholder="010-0000-0000" />
+                </div>
+
+                <div>
+                    <label>이메일</label>
+                    <input asp-for="BuyerEmail"
+                           placeholder="주문 시 입력한 이메일" />
+                </div>
+            </div>
+
+            <button type="submit" class="guest-lookup-btn">
+                주문번호 찾기
+            </button>
+        </form>
+
+        @if (Model.Searched)
+        {
+            if (Model.Results.Any())
+            {
+                <div class="guest-order-result-box">
+                    <h3>조회된 주문</h3>
+
+                    @foreach (var order in Model.Results)
+                    {
+                        <div class="guest-order-result-item">
+                            <div>
+                                <span>주문번호</span>
+                                <strong>@order.MaskedOrderNo</strong>
+                            </div>
+
+                            <div>
+                                <span>주문일</span>
+                                <strong>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+                            </div>
+
+                            <div>
+                                <span>결제금액</span>
+                                <strong>@order.TotalPayAmount.ToString("N0")원</strong>
+                            </div>
+
+                            <div>
+                                <span>상태</span>
+                                <strong>@order.OrderStatus / @order.PaymentStatus</strong>
+                            </div>
+
+                            <a asp-controller="Order"
+                               asp-action="GuestLookup"
+                               class="guest-order-result-link">
+                                비회원 주문조회로 이동
+                            </a>
+                        </div>
+                    }
+
+                    <div class="guest-lookup-help">
+                        보안을 위해 화면에는 주문번호 일부만 표시됩니다.<br />
+                        주문번호 전체가 필요하면 아래 버튼을 눌러 이메일로 받아보세요.
+                    </div>
+
+                    <form asp-controller="Order"
+                          asp-action="SendGuestOrderNoEmail"
+                          method="post"
+                          class="guest-order-email-form">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="buyerName" value="@Model.BuyerName" />
+                        <input type="hidden" name="buyerPhone" value="@Model.BuyerPhone" />
+                        <input type="hidden" name="buyerEmail" value="@Model.BuyerEmail" />
+
+                        <button type="submit" class="guest-order-email-btn">
+                            이메일로 주문번호 받기
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="guest-order-result-empty">
+                    입력하신 정보와 일치하는 비회원 주문이 없습니다.
+                </div>
+            }
+        }
+
+        <div class="guest-lookup-help">
+            주문조회 비밀번호를 잊어버렸거나 이메일 확인이 어렵다면 고객센터로 문의해주세요.
+        </div>
+
+    </div>
+
+</div>

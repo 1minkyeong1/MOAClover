@@ -1,0 +1,185 @@
+﻿@model MOAClover.Models.ViewModels.AdminUserListViewModel
+
+@{
+    ViewData["Title"] = "회원관리";
+    Layout = "_Layout";
+
+    string? keyword = Model.Keyword;
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="admin-users-wrap">
+
+    <div class="admin-users-head">
+        <div>
+            <h2>회원관리</h2>
+            <p>회원 가입 정보와 주문 현황을 확인합니다.</p>
+        </div>
+
+        <form method="get" class="admin-users-search">
+            <input type="text"
+                   name="keyword"
+                   value="@keyword"
+                   placeholder="아이디, 이름, 이메일, 연락처 검색" />
+
+            <button type="submit">검색</button>
+
+            @if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                <a asp-controller="Admin"
+                   asp-action="Users"
+                   class="admin-users-reset-btn">
+                    초기화
+                </a>
+            }
+        </form>
+    </div>
+
+    <div class="admin-users-summary">
+        전체 회원 <strong>@Model.TotalCount</strong>명
+    </div>
+
+    @if (Model.Users == null || !Model.Users.Any())
+    {
+        <div class="admin-users-empty">
+            조회된 회원이 없습니다.
+        </div>
+    }
+    else
+    {
+        <div class="admin-users-table-wrap">
+            <table class="admin-users-table">
+                <thead>
+                    <tr>
+                        <th>회원</th>
+                        <th>연락처</th>
+                        <th>가입일</th>
+                        <th>상태</th>
+                        <th>주문수</th>
+                        <th>결제주문</th>
+                        <th>결제금액</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>
+                                <div class="admin-user-main">
+                                    <strong>
+                                        @user.Name
+                                        @if (user.IsAdmin)
+                                        {
+                                            <span class="admin-user-role">관리자</span>
+                                        }
+                                    </strong>
+                                    <span>@user.UserName</span>
+                                    <span>@user.Email</span>
+                                </div>
+                            </td>
+
+                            <td>@user.Phone</td>
+
+                            <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="admin-user-status active">활성</span>
+                                }
+                                else
+                                {
+                                    <span class="admin-user-status inactive">비활성</span>
+                                }
+                            </td>
+
+                            <td>@user.OrderCount.ToString("N0")건</td>
+
+                            <td>@user.PaidOrderCount.ToString("N0")건</td>
+
+                            <td>
+                                <strong>@user.TotalPaidAmount.ToString("N0")원</strong>
+                            </td>
+
+                            <td>
+                                <a asp-controller="Admin"
+                                   asp-action="UserDetail"
+                                   asp-route-id="@user.Id"
+                                   class="admin-user-detail-btn">
+                                    상세보기
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (totalPages > 1)
+    {
+        var queryText = "";
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            queryText += $"&keyword={Uri.EscapeDataString(keyword)}";
+        }
+
+        var startPage = Math.Max(1, currentPage - 2);
+        var endPage = Math.Min(totalPages, currentPage + 2);
+
+        <div class="admin-users-pagination-wrap">
+            <div class="admin-users-page-info">
+                @currentPage / @totalPages 페이지
+            </div>
+
+            <div class="admin-users-pagination">
+                @if (currentPage > 1)
+                {
+                    <a href="?page=1@queryText" title="첫 페이지">«</a>
+                    <a href="?page=@(currentPage - 1)@queryText" title="이전 페이지">‹</a>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a href="?page=1@queryText">1</a>
+
+                    @if (startPage > 2)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <a href="?page=@i@queryText"
+                       class="@(i == currentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+
+                    <a href="?page=@totalPages@queryText">@totalPages</a>
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="?page=@(currentPage + 1)@queryText" title="다음 페이지">›</a>
+                    <a href="?page=@totalPages@queryText" title="마지막 페이지">»</a>
+                }
+            </div>
+        </div>
+    }
+
+</div>

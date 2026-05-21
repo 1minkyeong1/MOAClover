@@ -1,0 +1,593 @@
+﻿@model List<MOAClover.Models.Order>
+
+@{
+    ViewData["Title"] = "관리자 주문관리";
+    Layout = "_Layout";
+
+    string? status = ViewBag.Status as string;
+    string? keyword = ViewBag.Keyword as string;
+    string? specialFilter = ViewBag.SpecialFilter as string;
+    string? dateFilter = ViewBag.DateFilter as string;
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+
+    int todayOrderCount = ViewBag.TodayOrderCount ?? 0;
+    int issueCount = ViewBag.IssueCount ?? 0;
+    int pendingPaymentCount = ViewBag.PendingPaymentCount ?? 0;
+    int paidCount = ViewBag.PaidCount ?? 0;
+    int preparingCount = ViewBag.PreparingCount ?? 0;
+    int shippedCount = ViewBag.ShippedCount ?? 0;
+    int completedCount = ViewBag.CompletedCount ?? 0;
+    int doneCount = ViewBag.DoneCount ?? 0;
+    int cancelRequestedCount = ViewBag.CancelRequestedCount ?? 0;
+    int returnExchangeRequestedCount = ViewBag.ReturnExchangeRequestedCount ?? 0;
+    int cancelledCount = ViewBag.CancelledCount ?? 0;
+    int memoCount = ViewBag.MemoCount ?? 0;
+    int collectCount = ViewBag.CollectCount ?? 0;
+
+    string? paymentMethod = ViewBag.PaymentMethod as string;
+    string? orderType = ViewBag.OrderType as string;
+    string? startDate = ViewBag.StartDate as string;
+    string? endDate = ViewBag.EndDate as string;
+
+    string ShippingText(MOAClover.Models.Order order)
+    {
+        if (order.IsCollectShipping)
+            return "착불/별도";
+
+        if (order.IsIncludedShipping)
+            return "배송비 포함";
+
+        return order.ShippingFee.ToString("N0") + "원";
+    }
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="admin-orders-wrap">
+
+    <div class="admin-orders-head">
+        <div>
+            <h2>주문관리</h2>
+            <p>회원/비회원 주문을 확인하고 배송상태를 관리합니다.</p>
+        </div>
+
+        <form method="get" class="admin-orders-filter">
+            
+            @if (!string.IsNullOrWhiteSpace(dateFilter))
+            {
+                <input type="hidden" name="dateFilter" value="@dateFilter" />
+            }
+
+            <input type="text"
+                   name="keyword"
+                   value="@keyword"
+                   placeholder="주문번호, 상품명, 주문자, 연락처, 송장번호 검색" />
+
+            <select name="status">
+                <option value="">전체 주문</option>
+                <option value="PendingPayment" selected="@(status == "PendingPayment")">결제대기</option>
+                <option value="Paid" selected="@(status == "Paid")">결제완료</option>
+                <option value="Preparing" selected="@(status == "Preparing")">배송준비중</option>
+                <option value="Shipped" selected="@(status == "Shipped")">배송중</option>
+                <option value="Completed" selected="@(status == "Completed")">배송완료</option>
+                <option value="CancelRequested" selected="@(status == "CancelRequested")">취소요청</option>
+                <option value="ReturnRequested" selected="@(status == "ReturnRequested")">반품요청</option>
+                <option value="ExchangeRequested" selected="@(status == "ExchangeRequested")">교환요청</option>
+                <option value="Returned" selected="@(status == "Returned")">반품완료</option>
+                <option value="Exchanged" selected="@(status == "Exchanged")">교환완료</option>
+                <option value="RequestRejected" selected="@(status == "RequestRejected")">요청거절</option>
+                <option value="Cancelled" selected="@(status == "Cancelled")">취소</option>
+            </select>
+
+            <select name="specialFilter">
+                <option value="">특수 필터 없음</option>
+                <option value="issue" selected="@(specialFilter == "issue")">처리 필요</option>
+                <option value="done" selected="@(specialFilter == "done")">처리 완료</option>
+                <option value="cancelRequested" selected="@(specialFilter == "cancelRequested")">취소요청</option>
+                <option value="returnExchange" selected="@(specialFilter == "returnExchange")">반품/교환 요청</option>
+                <option value="memo" selected="@(specialFilter == "memo")">메모 있음</option>
+                <option value="collect" selected="@(specialFilter == "collect")">착불/별도 배송</option>
+            </select>
+
+            <select name="paymentMethod">
+                <option value="">결제수단 전체</option>
+                <option value="BankTransfer" selected="@(paymentMethod == "BankTransfer")">무통장입금</option>
+                <option value="TossPayments" selected="@(paymentMethod == "TossPayments")">카드결제</option>
+            </select>
+
+            <select name="orderType">
+                <option value="">회원구분 전체</option>
+                <option value="member" selected="@(orderType == "member")">회원</option>
+                <option value="guest" selected="@(orderType == "guest")">비회원</option>
+            </select>
+
+            <div class="admin-orders-date-range">
+                <span>기간 검색</span>
+
+                <input type="date"
+                       name="startDate"
+                       value="@startDate"
+                       class="admin-orders-date-input" />
+
+                <em>~</em>
+
+                <input type="date"
+                       name="endDate"
+                       value="@endDate"
+                       class="admin-orders-date-input" />
+
+                <button type="submit">검색</button>
+
+                @if (!string.IsNullOrWhiteSpace(keyword)
+                                || !string.IsNullOrWhiteSpace(status)
+                                || !string.IsNullOrWhiteSpace(specialFilter)
+                                || !string.IsNullOrWhiteSpace(dateFilter)
+                                || !string.IsNullOrWhiteSpace(paymentMethod)
+                                || !string.IsNullOrWhiteSpace(orderType)
+                                || !string.IsNullOrWhiteSpace(startDate)
+                                || !string.IsNullOrWhiteSpace(endDate))
+                {
+                    <a asp-controller="Order"
+                       asp-action="AdminOrders"
+                       class="admin-orders-reset-btn">
+                        초기화
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <div class="admin-order-quick-filters">
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           class="@(string.IsNullOrWhiteSpace(status)
+                            && string.IsNullOrWhiteSpace(specialFilter)
+                            && string.IsNullOrWhiteSpace(dateFilter)
+                            ? "active" : "")">
+            전체
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-dateFilter="today"
+           asp-route-keyword="@keyword"
+           asp-route-paymentMethod="@paymentMethod"
+           asp-route-orderType="@orderType"
+           class="@(dateFilter == "today" ? "active today" : "today")">
+            오늘주문
+            @if (todayOrderCount > 0)
+            {
+                <span>@todayOrderCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="issue"
+           asp-route-keyword="@keyword"
+           class="@(specialFilter == "issue" ? "active issue" : "issue")">
+            처리필요
+            @if (issueCount > 0)
+            {
+                <span>@issueCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="PendingPayment"
+           asp-route-keyword="@keyword"
+           class="@(status == "PendingPayment" ? "active" : "")">
+            결제대기
+            @if (pendingPaymentCount > 0)
+            {
+                <span>@pendingPaymentCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="Paid"
+           asp-route-keyword="@keyword"
+           class="@(status == "Paid" ? "active" : "")">
+            결제완료
+            @if (paidCount > 0)
+            {
+                <span>@paidCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="Preparing"
+           asp-route-keyword="@keyword"
+           class="@(status == "Preparing" ? "active" : "")">
+            배송준비중
+            @if (preparingCount > 0)
+            {
+                <span>@preparingCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="Shipped"
+           asp-route-keyword="@keyword"
+           class="@(status == "Shipped" ? "active" : "")">
+            배송중
+            @if (shippedCount > 0)
+            {
+                <span>@shippedCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="Completed"
+           asp-route-keyword="@keyword"
+           class="@(status == "Completed" ? "active" : "")">
+            배송완료
+            @if (completedCount > 0)
+            {
+                <span>@completedCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="Cancelled"
+           asp-route-keyword="@keyword"
+           class="@(status == "Cancelled" ? "active" : "")">
+            취소
+            @if (cancelledCount > 0)
+            {
+                <span>@cancelledCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="done"
+           asp-route-keyword="@keyword"
+           class="@(specialFilter == "done" ? "active done" : "done")">
+            처리완료
+            @if (doneCount > 0)
+            {
+                <span>@doneCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="cancelRequested"
+           asp-route-keyword="@keyword"
+           class="@(specialFilter == "cancelRequested" ? "active cancel-requested" : "cancel-requested")">
+            취소요청
+            @if (cancelRequestedCount > 0)
+            {
+                <span>@cancelRequestedCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="returnExchange"
+           asp-route-keyword="@keyword"
+           class="@(specialFilter == "returnExchange" ? "active return-exchange" : "return-exchange")">
+            반품/교환 요청
+            @if (returnExchangeRequestedCount > 0)
+            {
+                <span>@returnExchangeRequestedCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="memo"
+           asp-route-keyword="@keyword"
+           class="@(specialFilter == "memo" ? "active warning" : "warning")">
+            메모있음
+            @if (memoCount > 0)
+            {
+                <span>@memoCount</span>
+            }
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="collect"
+           asp-route-keyword="@keyword"
+           class="@(specialFilter == "collect" ? "active danger" : "danger")">
+            착불·별도
+            @if (collectCount > 0)
+            {
+                <span>@collectCount</span>
+            }
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="admin-orders-empty">
+            주문 내역이 없습니다.
+        </div>
+    }
+    else
+    {
+        <div class="admin-orders-list compact">
+            @foreach (var order in Model)
+            {
+                var isImportant =
+                order.OrderStatus == "CancelRequested"
+                || order.OrderStatus == "ReturnRequested"
+                || order.OrderStatus == "ExchangeRequested"
+                || order.IsCollectShipping
+                || !string.IsNullOrWhiteSpace(order.AdminMemo);
+
+                var requestTitle = "";
+
+                if (order.OrderStatus == "CancelRequested")
+                {
+                    requestTitle = "취소/환불 요청";
+                }
+                else if (order.OrderStatus == "ReturnRequested")
+                {
+                    requestTitle = "반품 요청";
+                }
+                else if (order.OrderStatus == "ExchangeRequested")
+                {
+                    requestTitle = "교환 요청";
+                }
+
+                var firstItem = order.Items?.FirstOrDefault();
+                var productSummary = firstItem == null
+                ? "상품 정보 없음"
+                : firstItem.ProductName;
+
+                var itemCount = order.Items?.Count ?? 0;
+
+                if (itemCount > 1)
+                {
+                    productSummary += $" 외 {itemCount - 1}건";
+                }
+
+                <article class="admin-order-row @(isImportant ? "important" : "")">
+
+                    <div class="admin-order-row-main">
+
+                        <div class="admin-order-row-col order-no">
+                            <div class="admin-order-no">
+                                @order.OrderNo
+                            </div>
+
+                            <div class="admin-order-meta-line">
+                                <span class="admin-order-type @(order.IsGuestOrder ? "guest" : "member")">
+                                    @(order.IsGuestOrder ? "비회원" : "회원")
+                                </span>
+
+                                <span class="admin-order-date">
+                                    @order.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="admin-order-row-col customer">
+                            <span>주문자</span>
+                            <strong>@order.BuyerName</strong>
+                            <em>@order.BuyerPhone</em>
+                        </div>
+
+                        <div class="admin-order-row-col product">
+                            <span>주문상품</span>
+
+                            @if (firstItem != null)
+                            {
+                                <a asp-controller="Home"
+                                   asp-action="Detail"
+                                   asp-route-id="@firstItem.ProductId"
+                                   class="admin-order-product-link">
+                                    @productSummary
+                                </a>
+
+                                <em>
+                                    수량 @firstItem.Quantity.ToString("N0")개
+                                </em>
+                            }
+                            else
+                            {
+                                <strong>@productSummary</strong>
+                            }
+                        </div>
+
+                        <div class="admin-order-row-col amount">
+                            <span>결제금액</span>
+                            <strong>@order.TotalPayAmount.ToString("N0")원</strong>
+
+                            <em>
+                                상품 @order.ProductTotal.ToString("N0")원 /
+                                배송 @ShippingText(order)
+                            </em>
+                        </div>
+
+                        <div class="admin-order-row-col status">
+                            <span>상태</span>
+
+                            <strong class="order-status-badge @OrderStatusHelper.OrderStatusClass(order.OrderStatus)">
+                                @OrderStatusHelper.OrderStatusText(order.OrderStatus)
+                            </strong>
+
+                            <strong class="payment-status-badge @OrderStatusHelper.PaymentStatusClass(order.PaymentStatus)">
+                                @OrderStatusHelper.PaymentStatusText(order.PaymentStatus)
+                            </strong>
+                        </div>
+
+                        <div class="admin-order-row-col shipping">
+                            <span>배송</span>
+
+                            @if (!string.IsNullOrWhiteSpace(order.TrackingNumber))
+                            {
+                                <strong>@order.TrackingCompany</strong>
+                                <em>@order.TrackingNumber</em>
+                            }
+                            else
+                            {
+                                <strong class="muted">미등록</strong>
+                            }
+                        </div>
+
+                        <div class="admin-order-row-actions">
+                            <a asp-controller="Order"
+                               asp-action="AdminOrderDetail"
+                               asp-route-orderNo="@order.OrderNo"
+                               class="admin-order-detail-btn">
+                                주문상세
+                            </a>
+                        </div>
+
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(requestTitle)
+                                || order.IsCollectShipping
+                                || !string.IsNullOrWhiteSpace(order.AdminMemo))
+                    {
+                        <div class="admin-order-row-notices">
+
+                            @if (!string.IsNullOrWhiteSpace(requestTitle))
+                            {
+                                <div class="admin-order-row-notice request">
+                                    <strong>@requestTitle</strong>
+
+                                    @if (!string.IsNullOrWhiteSpace(order.CancelReason))
+                                    {
+                                        <span>사유: @order.CancelReason</span>
+                                    }
+                                    else
+                                    {
+                                        <span>주문상세에서 처리해주세요.</span>
+                                    }
+                                </div>
+                            }
+
+                            @if (order.IsCollectShipping)
+                            {
+                                <div class="admin-order-row-notice shipping">
+                                    <strong>착불/별도 배송</strong>
+                                    <span>고객에게 실제 배송비를 별도 안내해주세요.</span>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(order.AdminMemo))
+                            {
+                                <div class="admin-order-row-notice memo">
+                                    <strong>관리자 메모 있음</strong>
+                                    <span>@order.AdminMemo</span>
+                                </div>
+                            }
+
+                        </div>
+                    }
+
+                </article>
+            }
+        </div>
+    }
+
+    @if (totalPages > 1)
+    {
+        var queryText = "";
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            queryText += $"&status={Uri.EscapeDataString(status)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            queryText += $"&keyword={Uri.EscapeDataString(keyword)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(specialFilter))
+        {
+            queryText += $"&specialFilter={Uri.EscapeDataString(specialFilter)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(dateFilter))
+        {
+            queryText += $"&dateFilter={Uri.EscapeDataString(dateFilter)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(paymentMethod))
+        {
+            queryText += $"&paymentMethod={Uri.EscapeDataString(paymentMethod)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(orderType))
+        {
+            queryText += $"&orderType={Uri.EscapeDataString(orderType)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(startDate))
+        {
+            queryText += $"&startDate={Uri.EscapeDataString(startDate)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(endDate))
+        {
+            queryText += $"&endDate={Uri.EscapeDataString(endDate)}";
+        }
+
+        var startPage = Math.Max(1, currentPage - 2);
+        var endPage = Math.Min(totalPages, currentPage + 2);
+
+        <div class="admin-orders-pagination-wrap">
+            <div class="admin-orders-page-info">
+                @currentPage / @totalPages 페이지
+            </div>
+
+            <div class="admin-orders-pagination">
+                @if (currentPage > 1)
+                {
+                    <a href="?page=1@queryText" title="첫 페이지">«</a>
+                    <a href="?page=@(currentPage - 1)@queryText" title="이전 페이지">‹</a>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a href="?page=1@queryText">1</a>
+
+                    @if (startPage > 2)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <a href="?page=@i@queryText"
+                       class="@(i == currentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+
+                    <a href="?page=@totalPages@queryText">@totalPages</a>
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="?page=@(currentPage + 1)@queryText" title="다음 페이지">›</a>
+                    <a href="?page=@totalPages@queryText" title="마지막 페이지">»</a>
+                }
+            </div>
+        </div>
+    }
+
+</div>

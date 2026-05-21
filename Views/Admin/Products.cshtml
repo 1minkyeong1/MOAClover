@@ -1,0 +1,345 @@
+﻿@model MOAClover.Models.ViewModels.AdminProductListViewModel
+
+@{
+    ViewData["Title"] = "상품관리";
+    Layout = "_Layout";
+
+    string filter = Model.Filter;
+    string? keyword = Model.Keyword;
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
+}
+
+<link rel="stylesheet" href="~/css/AdminProducts.css" asp-append-version="true" />
+
+<div class="admin-products-wrap">
+
+    <div class="admin-products-head">
+        <div>
+            <h2>상품관리</h2>
+            <p>상품 노출, 품절, 가격, 재고 상태를 관리합니다.</p>
+        </div>
+
+        <div class="admin-products-head-actions">
+            <a asp-controller="Home"
+               asp-action="Create"
+               class="admin-product-create-btn">
+                상품등록
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["AdminProductMessage"] != null)
+    {
+        <div class="order-message">
+            @TempData["AdminProductMessage"]
+        </div>
+    }
+
+    <form method="get" class="admin-products-search">
+        <input type="hidden" name="filter" value="@filter" />
+
+        <input type="text"
+               name="keyword"
+               value="@keyword"
+               placeholder="상품명 검색" />
+
+        <button type="submit">검색</button>
+
+        @if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            <a asp-controller="Admin"
+               asp-action="Products"
+               asp-route-filter="@filter"
+               class="admin-products-reset-btn">
+                초기화
+            </a>
+        }
+    </form>
+
+    <div class="admin-products-filters">
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="all"
+           class="@(filter == "all" ? "active" : "")">
+            전체
+            <span>@Model.TotalCount</span>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="visible"
+           class="@(filter == "visible" ? "active visible" : "visible")">
+            노출
+            <span>@Model.VisibleCount</span>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="hidden"
+           class="@(filter == "hidden" ? "active hidden" : "hidden")">
+            숨김
+            <span>@Model.HiddenCount</span>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="soldout"
+           class="@(filter == "soldout" ? "active soldout" : "soldout")">
+            품절
+            <span>@Model.SoldoutCount</span>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="deleted"
+           class="@(filter == "deleted" ? "active deleted" : "deleted")">
+            삭제상품
+            <span>@Model.DeletedCount</span>
+        </a>
+    </div>
+
+    @if (Model.Products == null || !Model.Products.Any())
+    {
+        <div class="admin-products-empty">
+            조회된 상품이 없습니다.
+        </div>
+    }
+    else
+    {
+        <div class="admin-products-list">
+            @foreach (var p in Model.Products)
+            {
+                <article class="admin-product-card">
+                    <div class="admin-product-thumb">
+                        @if (!string.IsNullOrWhiteSpace(p.MainImageUrl))
+                        {
+                            <img src="@p.MainImageUrl" alt="@p.Name" />
+                        }
+                        else
+                        {
+                            <div>이미지 없음</div>
+                        }
+                    </div>
+
+                    <div class="admin-product-info">
+                        <div class="admin-product-name">@p.Name</div>
+
+                        <div class="admin-product-meta">
+                            <span>상품번호 @p.ProductId</span>
+                            <span>등록일 @p.CreatedAt.ToString("yyyy-MM-dd")</span>
+                        </div>
+
+                        <div class="admin-product-badges">
+                            @if (p.IsDeleted)
+                            {
+                                <span class="admin-product-badge deleted">삭제됨</span>
+                            }
+                            else
+                            {
+                                <span class="admin-product-badge @(p.IsVisible ? "visible" : "hidden")">
+                                    @(p.IsVisible ? "노출" : "숨김")
+                                </span>
+                            }
+
+                            @if (p.UseStock)
+                            {
+                                if (p.StockQuantity <= 0)
+                                {
+                                    <span class="admin-product-badge soldout">품절</span>
+                                }
+                                else if (p.StockQuantity <= 5)
+                                {
+                                    <span class="admin-product-badge low">재고부족</span>
+                                }
+                                else
+                                {
+                                    <span class="admin-product-badge stock">재고관리</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="admin-product-badge no-stock">재고미사용</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="admin-product-price">
+                        @if (p.DiscountRate.HasValue && p.DiscountRate.Value > 0)
+                        {
+                            <span class="origin">@p.Price.ToString("N0")원</span>
+                            <strong>@p.FinalPrice.ToString("N0")원</strong>
+                            <em>@p.DiscountRate%</em>
+                        }
+                        else
+                        {
+                            <strong>@p.Price.ToString("N0")원</strong>
+                        }
+                    </div>
+
+                    <div class="admin-product-stock">
+                        <form asp-controller="Admin"
+                              asp-action="UpdateProductStock"
+                              method="post"
+                              class="admin-product-stock-form">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="id" value="@p.ProductId" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                            <label class="admin-stock-check">
+                                <input type="checkbox"
+                                       name="useStock"
+                                       value="true"
+                                       @(p.UseStock ? "checked" : "") />
+                                재고관리
+                            </label>
+
+                            <div class="admin-stock-input-row">
+                                <input type="number"
+                                       name="stockQuantity"
+                                       value="@p.StockQuantity"
+                                       min="0" />
+
+                                <button type="submit">
+                                    저장
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="admin-product-actions">
+                        @if (p.IsDeleted)
+                        {
+                            <form asp-controller="Admin"
+                                  asp-action="RestoreProduct"
+                                  method="post"
+                                  onsubmit="return confirm('이 상품을 복구하시겠습니까? 복구 후에는 숨김 상태가 됩니다.');">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="id" value="@p.ProductId" />
+                                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                                <button type="submit" class="restore">
+                                    복구
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Home"
+                               asp-action="Detail"
+                               asp-route-id="@p.ProductId"
+                               class="admin-product-detail-btn">
+                                보기
+                            </a>
+
+                            <a asp-controller="Home"
+                               asp-action="Edit"
+                               asp-route-id="@p.ProductId"
+                               class="admin-product-edit-btn">
+                                수정
+                            </a>
+
+                            <form asp-controller="Admin"
+                                  asp-action="ToggleProductVisible"
+                                  method="post"
+                                  onsubmit="return confirm('@(p.IsVisible ? "이 상품을 숨김 처리하시겠습니까?" : "이 상품을 노출 처리하시겠습니까?")');">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="id" value="@p.ProductId" />
+                                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                                <button type="submit"
+                                        class="@(p.IsVisible ? "hide" : "show")">
+                                    @(p.IsVisible ? "숨김" : "노출")
+                                </button>
+                            </form>
+
+                            <form asp-controller="Admin"
+                                  asp-action="DeleteProduct"
+                                  method="post"
+                                  onsubmit="return confirm('이 상품을 삭제 처리하시겠습니까? 고객 화면과 기본 상품관리 목록에서 제외됩니다.');">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="id" value="@p.ProductId" />
+                                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                                <button type="submit" class="delete">
+                                    삭제
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+
+    @if (totalPages > 1)
+    {
+        var queryText = "";
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            queryText += $"&filter={Uri.EscapeDataString(filter)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            queryText += $"&keyword={Uri.EscapeDataString(keyword)}";
+        }
+
+        var startPage = Math.Max(1, currentPage - 2);
+        var endPage = Math.Min(totalPages, currentPage + 2);
+
+        <div class="admin-products-pagination-wrap">
+            <div class="admin-products-page-info">
+                @currentPage / @totalPages 페이지
+            </div>
+
+            <div class="admin-products-pagination">
+                @if (currentPage > 1)
+                {
+                    <a href="?page=1@queryText">«</a>
+                    <a href="?page=@(currentPage - 1)@queryText">‹</a>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a href="?page=1@queryText">1</a>
+
+                    @if (startPage > 2)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <a href="?page=@i@queryText"
+                       class="@(i == currentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+
+                    <a href="?page=@totalPages@queryText">@totalPages</a>
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="?page=@(currentPage + 1)@queryText">›</a>
+                    <a href="?page=@totalPages@queryText">»</a>
+                }
+            </div>
+        </div>
+    }
+
+</div>

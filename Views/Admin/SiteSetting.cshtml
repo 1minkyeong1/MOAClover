@@ -1,0 +1,236 @@
+﻿@model MOAClover.Models.ViewModels.AdminSiteSettingViewModel
+
+@{
+    ViewData["Title"] = "사이트 기본정보";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/AdminDashboard.css" asp-append-version="true" />
+
+<div class="admin-site-setting-wrap">
+
+    <div class="admin-site-setting-head">
+        <div>
+            <h2>사이트 기본정보</h2>
+            <p>쇼핑몰 하단 정보, 고객센터, 무통장입금 계좌, 반품/교환 안내를 관리합니다.</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="Dashboard"
+           class="admin-site-setting-back">
+            대시보드로
+        </a>
+    </div>
+
+    @if (TempData["AdminSiteSettingMessage"] != null)
+    {
+        <div class="admin-site-setting-message">
+            @TempData["AdminSiteSettingMessage"]
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="admin-site-setting-message error">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form asp-controller="Admin"
+          asp-action="SiteSetting"
+          method="post"
+          class="admin-site-setting-form">
+        @Html.AntiForgeryToken()
+
+        <section class="admin-site-setting-section">
+            <h3>쇼핑몰 정보</h3>
+
+            <div class="admin-site-setting-grid">
+                <div>
+                    <label>쇼핑몰명</label>
+                    <input asp-for="ShopName"
+                           placeholder="예: 모아클로버" />
+                </div>
+
+                <div>
+                    <label>대표자명</label>
+                    <input asp-for="OwnerName"
+                           placeholder="예: 홍길동" />
+                </div>
+
+                <div>
+                    <label>사업자등록번호</label>
+                    <input asp-for="BusinessNumber"
+                           placeholder="예: 000-00-00000" />
+                </div>
+
+                <div>
+                    <label>통신판매업 신고번호</label>
+                    <input asp-for="MailOrderSalesNumber"
+                           placeholder="예: 제2026-서울강남-0000호" />
+                </div>
+
+                <div>
+                    <label>고객센터 전화번호</label>
+                    <input asp-for="CustomerPhone"
+                           placeholder="예: 010-0000-0000" />
+                </div>
+
+                <div>
+                    <label>고객센터 이메일</label>
+                    <input asp-for="CustomerEmail"
+                           placeholder="예: contact@moaclover.com" />
+                </div>
+
+                <div>
+                    <label>고객센터 운영시간</label>
+                    <input asp-for="CustomerServiceHours"
+                           placeholder="예: 평일 10:00~17:00 / 점심 12:00~13:00 / 주말·공휴일 휴무" />
+                </div>
+
+                <div class="full">
+                    <label>사업장 주소</label>
+                    <input asp-for="Address"
+                           placeholder="예: 서울특별시 ..." />
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-site-setting-section">
+            <h3>무통장입금 계좌</h3>
+
+            <div class="admin-site-setting-grid">
+                <div>
+                    <label>은행명</label>
+                    <input asp-for="BankName"
+                           placeholder="예: 국민은행" />
+                </div>
+
+                <div>
+                    <label>계좌번호</label>
+                    <input asp-for="BankAccountNumber"
+                           placeholder="예: 000000-00-000000" />
+                </div>
+
+                <div>
+                    <label>예금주</label>
+                    <input asp-for="BankAccountHolder"
+                           placeholder="예: 모아클로버" />
+                </div>
+
+                <div class="full">
+                    <label>무통장입금 안내문</label>
+                    <textarea asp-for="BankTransferNotice"
+                              rows="4"
+                              placeholder="예: 주문 후 24시간 이내 입금해주세요. 입금자명이 다를 경우 고객센터로 연락 부탁드립니다."></textarea>
+                </div>
+
+            </div>
+
+            <div class="admin-site-setting-help">
+                입력한 계좌 정보는 무통장입금 안내 화면에 표시됩니다.
+            </div>
+        </section>
+
+        <section class="admin-site-setting-section">
+            <h3>배송 안내</h3>
+
+            <div class="admin-site-setting-grid">
+                <div>
+                    <label>기본 택배사</label>
+                    <input asp-for="DefaultDeliveryCompany"
+                           placeholder="예: CJ대한통운" />
+                </div>
+
+                <div>
+                    <label>무료배송 기준 안내</label>
+                    <input asp-for="FreeShippingNotice"
+                           placeholder="예: 50,000원 이상 구매 시 무료배송" />
+                </div>
+
+                <div class="full">
+                    <label>기본 배송 안내 문구</label>
+                    <textarea asp-for="ShippingNotice"
+                              rows="4"
+                              placeholder="예: 결제 완료 후 1~3영업일 이내 출고됩니다. 제주/도서산간 지역은 추가 배송비가 발생할 수 있습니다."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-site-setting-section">
+            <h3>반품/교환 안내</h3>
+
+            <div class="admin-site-setting-grid">
+                <div class="full">
+                    <label>반품 주소</label>
+                    <input asp-for="ReturnAddress"
+                           placeholder="예: 서울특별시 ... 모아클로버 반품 담당자 앞" />
+                </div>
+
+                <div>
+                    <label>단순 변심 반품 배송비</label>
+                    <input asp-for="ReturnShippingFee"
+                           type="number"
+                           min="0"
+                           placeholder="예: 3000" />
+                </div>
+
+                <div>
+                    <label>교환 왕복 배송비</label>
+                    <input asp-for="ExchangeShippingFee"
+                           type="number"
+                           min="0"
+                           placeholder="예: 6000" />
+                </div>
+
+                <div>
+                    <label>교환/반품 가능 기간</label>
+                    <input asp-for="ReturnExchangeAvailableDays"
+                           type="number"
+                           min="1"
+                           placeholder="예: 7" />
+                </div>
+
+                <div class="full">
+                    <label>제주 추가 배송비 안내</label>
+                    <input asp-for="JejuExtraShippingFeeNotice"
+                           placeholder="예: 제주 지역은 추가 배송비 4,000원이 발생할 수 있습니다." />
+                </div>
+
+                <div class="full">
+                    <label>도서산간 추가 배송비 안내</label>
+                    <input asp-for="RemoteAreaExtraShippingFeeNotice"
+                           placeholder="예: 도서산간 지역은 지역에 따라 추가 배송비가 발생할 수 있습니다." />
+                </div>
+
+                <div class="full">
+                    <label>교환/반품 추가 안내</label>
+                    <textarea asp-for="ReturnShippingFeeNotice"
+                              rows="4"
+                              placeholder="예: 특정 상품은 교환/반품 배송비가 다를 수 있습니다."></textarea>
+                </div>
+
+                <div class="full">
+                    <label>반품/교환 추가 문구</label>
+                    <textarea asp-for="ReturnExchangeNotice"
+                              rows="5"
+                              placeholder="예: 상품 상태 확인 후 교환 또는 반품 가능 여부가 결정됩니다."></textarea>
+                </div>
+            </div>
+
+            <div class="admin-site-setting-help">
+                배송비와 기간은 안내 페이지에 자동으로 표시됩니다. 아래 추가 안내 문구에는 중복 문장을 넣지 말고, 예외사항이나 추가 설명만 입력하세요.
+            </div>
+        </section>
+
+        <div class="admin-site-setting-actions">
+            <button type="submit">
+                기본정보 저장
+            </button>
+        </div>
+    </form>
+
+</div>

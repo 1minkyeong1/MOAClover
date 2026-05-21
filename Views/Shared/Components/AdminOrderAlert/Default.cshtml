@@ -1,0 +1,16 @@
+﻿@model MOAClover.Models.ViewModels.AdminOrderAlertViewModel
+
+<a asp-controller="Order"
+   asp-action="AdminOrders"
+   asp-route-specialFilter="issue"
+   class="header-admin-link admin-order-alert-pill"
+   title="처리 필요 @(Model.IssueCount)건 / 취소요청 @(Model.CancelRequestedCount)건 / 반품교환 @(Model.ReturnExchangeRequestedCount)건">
+    주문관리
+
+    @if (Model.IssueCount > 0)
+    {
+        <span class="admin-order-alert-badge">
+            @(Model.IssueCount > 99 ? "99+" : Model.IssueCount.ToString())
+        </span>
+    }
+</a>

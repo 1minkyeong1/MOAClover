@@ -1,0 +1,309 @@
+﻿@model MOAClover.Models.ViewModels.AdminSiteSettingViewModel
+
+@{
+    ViewData["Title"] = "사이트 디자인 설정";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/AdminDashboard.css" asp-append-version="true" />
+
+<div class="admin-site-setting-wrap">
+
+    <div class="admin-site-setting-head">
+        <div>
+            <h2>사이트 디자인 설정</h2>
+            <p>상단 색상, 하단 색상, 메인 광고/배너 영역을 관리합니다.</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="Dashboard"
+           class="admin-site-setting-back">
+            대시보드로
+        </a>
+    </div>
+
+    @if (TempData["AdminSiteDesignMessage"] != null)
+    {
+        <div class="admin-site-setting-message">
+            @TempData["AdminSiteDesignMessage"]
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="admin-site-setting-message error">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form asp-controller="Admin"
+          asp-action="SiteDesign"
+          method="post"
+          enctype="multipart/form-data"
+          class="admin-site-setting-form">
+        @Html.AntiForgeryToken()
+
+        <section class="admin-site-setting-section">
+            <h3>디자인 설정</h3>
+
+            <div class="admin-site-setting-grid">
+                <div>
+                    <label>상단 배경색</label>
+                    <input asp-for="HeaderBackgroundColor" placeholder="예: #eef4e8" />
+                </div>
+
+                <div>
+                    <label>상단 글자색</label>
+                    <input asp-for="HeaderTextColor" placeholder="예: #065f46" />
+                </div>
+
+                <div>
+                    <label>하단 배경색</label>
+                    <input asp-for="FooterBackgroundColor" placeholder="예: #f4f1e8" />
+                </div>
+
+                <div>
+                    <label>하단 글자색</label>
+                    <input asp-for="FooterTextColor" placeholder="예: #374151" />
+                </div>
+
+                <div>
+                    <label>카테고리 배경색</label>
+                    <input asp-for="CategoryBackgroundColor" placeholder="예: #ffffff" />
+                </div>
+
+                <div>
+                    <label>카테고리 글자색</label>
+                    <input asp-for="CategoryTextColor" placeholder="예: #374151" />
+                </div>
+
+                <div>
+                    <label>선택 카테고리 글자색</label>
+                    <input asp-for="CategoryActiveTextColor" placeholder="예: #ffffff" />
+                </div>
+
+                <div>
+                    <label>선택 카테고리 배경색</label>
+                    <input asp-for="CategoryActiveBackgroundColor" placeholder="예: #111827" />
+                </div>
+
+                <div class="full">
+                    <label>카테고리 배경 이미지 URL</label>
+                    <input asp-for="CategoryBackgroundImageUrl" placeholder="예: /images/category-bg.jpg" />
+                </div>
+
+                <div class="full">
+                    <label>카테고리 배경 이미지 직접 업로드</label>
+                    <input asp-for="CategoryBackgroundImageFile" type="file" accept="image/*" />
+                </div>
+
+                <div class="full">
+                    <label class="admin-site-setting-check">
+                        <input asp-for="UseCategoryBackgroundImage" />
+                        카테고리 배경 이미지 사용
+                    </label>
+                </div>
+
+                <div class="full">
+                    <label>로고 이미지 URL</label>
+                    <input asp-for="LogoImageUrl" placeholder="예: /images/logo.png" />
+                </div>
+
+                <div class="full">
+                    <label>로고 이미지 직접 업로드</label>
+                    <input asp-for="LogoImageFile" type="file" accept="image/*" />
+                </div>
+
+                <div class="full">
+                    <label class="admin-site-setting-check">
+                        <input asp-for="UseHeaderBackgroundImage" />
+                        상단 배경 이미지 사용
+                    </label>
+                </div>
+
+                <div class="full">
+                    <label>상단 배경 이미지 URL</label>
+                    <input asp-for="HeaderBackgroundImageUrl" placeholder="예: /images/header-bg.jpg" />
+                </div>
+
+                <div class="full">
+                    <label>상단 배경 이미지 직접 업로드</label>
+                    <input asp-for="HeaderBackgroundImageFile" type="file" accept="image/*" />
+                </div>
+
+                <div class="full">
+                    <label class="admin-site-setting-check">
+                        <input asp-for="UseFooterBackgroundImage" />
+                        하단 배경 이미지 사용
+                    </label>
+                </div>
+
+                <div class="full">
+                    <label>하단 배경 이미지 URL</label>
+                    <input asp-for="FooterBackgroundImageUrl" placeholder="예: /images/footer-bg.jpg , 권장 사이즈 1600 x 400px" />
+                </div>
+
+                <div class="full">
+                    <label>하단 배경 이미지 직접 업로드</label>
+                    <input asp-for="FooterBackgroundImageFile" type="file" accept="image/*" />
+                </div>
+
+            </div>
+
+            <div class="admin-site-setting-help">
+                색상은 #eef4e8 같은 HEX 색상코드로 입력하세요. <br />
+                상단 배경 이미지는 1600 x 360px 권장, 로고 이미지는 300 x 180px 권장, 하단 배경이미지는 1600 x 400px 권장입니다.<br />
+                이미지는 /images/header-bg.jpg, /images/logo.png(투명배경) 같은 경로를 입력하면 됩니다.
+            </div>
+        </section>
+
+        <section class="admin-site-setting-section">
+            <h3>메인 광고 / 배너 설정</h3>
+
+            <div class="admin-site-setting-grid">
+                <div class="full">
+                    <label class="admin-site-setting-check">
+                        <input asp-for="UseMainHeroBanner" />
+                        메인 배너 사용
+                    </label>
+                </div>
+
+                <div>
+                    <label>배너 제목</label>
+                    <input asp-for="MainHeroTitle" placeholder="예: 모아클로버 추천 상품" />
+                </div>
+
+                <div>
+                    <label>버튼 문구</label>
+                    <input asp-for="MainHeroButtonText" placeholder="예: 바로 보러가기" />
+                </div>
+
+                <div class="full">
+                    <label>배너 설명</label>
+                    <input asp-for="MainHeroSubtitle" placeholder="예: 이번 주 인기 상품을 만나보세요." />
+                </div>
+
+                <div class="full">
+                    <label>배너 이미지 URL</label>
+                    <input asp-for="MainHeroImageUrl" placeholder="예: /images/banner/main-banner.jpg" />
+                </div>
+
+                <div class="full">
+                    <label>메인 배너 이미지 직접 업로드</label>
+                    <input asp-for="MainHeroImageFile" type="file" accept="image/*" />
+                </div>
+
+                <div class="full">
+                    <label>배너 클릭 링크</label>
+                    <input asp-for="MainHeroLinkUrl" placeholder="예: /Home/Detail?id=1" />
+                </div>
+
+                <div>
+                    <label>배너 배경색</label>
+                    <input asp-for="MainHeroBackgroundColor" placeholder="예: #eef4e8" />
+                </div>
+
+                <div class="full">
+                    <label class="admin-site-setting-check">
+                        <input asp-for="UseMainHeroSlider" />
+                        슬라이드 배너 사용
+                    </label>
+                </div>
+
+                <div class="full">
+                    <label>슬라이드 배너 이미지 URL</label>
+                    <textarea asp-for="MainHeroSliderImageUrls"
+                              rows="5"
+                              placeholder="/images/banner/main-banner-1.jpg&#10;/images/banner/main-banner-2.jpg&#10;/images/banner/main-banner-3.jpg"></textarea>
+                </div>
+
+                <div class="full">
+                    <label>슬라이드 배너 이미지 직접 업로드</label>
+                    <input asp-for="MainHeroSliderImageFiles"
+                           type="file"
+                           accept="image/*"
+                           multiple />
+                </div>
+
+                <div class="full">
+                    <label>슬라이드 배너 클릭 링크 URL</label>
+                    <textarea asp-for="MainHeroSliderLinkUrls"
+                              rows="5"
+                              placeholder="/Home/Detail?id=1&#10;/Home/Index?categoryId=2&#10;/Home/Detail?id=3"></textarea>
+                </div>
+
+                <div class="full">
+                    <label>배너 동영상 URL</label>
+                    <input asp-for="MainHeroVideoUrl" placeholder="예: /videos/main.mp4" />
+                </div>
+
+                <div class="full">
+                    <label>메인 배너 동영상 직접 업로드</label>
+                    <input asp-for="MainHeroVideoFile" type="file" accept="video/mp4,video/webm,video/ogg" />
+                </div>
+
+            </div>
+
+            <div class="admin-site-setting-help">
+                단일 배너 이미지는 1200 x 320px 권장입니다. 슬라이드 이미지는 1200 x 320px 권장입니다. 이미지 URL과 클릭 링크 URL은 한 줄씩 짝을 맞춰 입력하세요. <br />
+                예: 1번째 이미지 URL은 1번째 링크 URL로 이동합니다. 링크를 비워두면 공통 배너 클릭 링크가 사용됩니다.
+            </div>
+        </section>
+
+        <section class="admin-site-setting-section">
+            <h3>고객 안내 페이지 디자인 설정</h3>
+
+            <div class="admin-site-setting-grid">
+                <div>
+                    <label>안내 페이지 배경색</label>
+                    <input asp-for="PolicyPageBackgroundColor" placeholder="예: #f8fafc" />
+                </div>
+
+                <div>
+                    <label>안내 페이지 글자색</label>
+                    <input asp-for="PolicyPageTextColor" placeholder="예: #374151" />
+                </div>
+
+                <div>
+                    <label>안내 박스 배경색</label>
+                    <input asp-for="PolicyPageBoxBackgroundColor" placeholder="예: #ffffff" />
+                </div>
+
+                <div class="full">
+                    <label class="admin-site-setting-check">
+                        <input asp-for="UsePolicyPageBackgroundImage" />
+                        안내 페이지 배경 이미지 사용
+                    </label>
+                </div>
+
+                <div class="full">
+                    <label>안내 페이지 배경 이미지 URL</label>
+                    <input asp-for="PolicyPageBackgroundImageUrl" placeholder="예: /images/policy-bg.jpg" />
+                </div>
+
+                <div class="full">
+                    <label>안내 페이지 배경 이미지 직접 업로드</label>
+                    <input asp-for="PolicyPageBackgroundImageFile"
+                           type="file"
+                           accept="image/*" />
+                </div>
+             
+            </div>
+
+            <div class="admin-site-setting-help">
+                고객센터, 이용약관, 개인정보처리방침, 배송·교환·반품 안내 페이지에 공통 적용됩니다.
+                배경 이미지는 1600 x 600px 정도의 연한 패턴 이미지를 권장합니다.
+            </div>
+        </section>
+
+        <div class="admin-site-setting-actions">
+            <button type="submit">
+                디자인 설정 저장
+            </button>
+        </div>
+    </form>
+
+</div>

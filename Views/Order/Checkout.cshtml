@@ -1,0 +1,688 @@
+﻿@model MOAClover.Models.ViewModels.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "주문서";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="order-wrap">
+
+    <div class="order-head">
+        <h2>주문서</h2>
+        <p>배송 정보를 입력하고 주문 내용을 확인해주세요.</p>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="order-error">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <div>@error.ErrorMessage</div>
+            }
+        </div>
+    }
+
+    <form asp-controller="Order" asp-action="Checkout" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               name="returnUrl"
+               value="@Url.Action("Checkout", "Order", new { guest = Model.IsGuestOrder })" />
+
+        <div class="order-layout">
+
+            <div class="order-main">
+
+                <section class="order-section">
+                    <h3>주문 상품</h3>
+
+                    <div class="order-items">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="order-item">
+
+                                <button type="submit"
+                                        formaction="@Url.Action("Remove", "Cart")"
+                                        formmethod="post"
+                                        formnovalidate
+                                        name="cartItemId"
+                                        value="@item.CartItemId"
+                                        class="checkout-item-remove-btn"
+                                        onclick="return confirm('이 상품을 주문서에서 삭제하시겠습니까?');">
+                                    Ｘ
+                                </button>
+
+                                <a asp-controller="Home"
+                                   asp-action="Detail"
+                                   asp-route-id="@item.ProductId"
+                                   class="order-item-img order-item-link-img">
+                                    @if (!string.IsNullOrWhiteSpace(item.MainImageUrl))
+                                    {
+                                        <img src="@item.MainImageUrl" alt="@item.ProductName" />
+                                    }
+                                    else
+                                    {
+                                        <div class="order-no-img">이미지 없음</div>
+                                    }
+                                </a>
+
+                                <div class="order-item-info">
+                                    <a asp-controller="Home"
+                                       asp-action="Detail"
+                                       asp-route-id="@item.ProductId"
+                                       class="order-item-name order-item-link-name">
+                                        @item.ProductName
+                                    </a>
+
+                                    <div class="order-item-meta">
+                                        수량 @item.Quantity 개 · @item.FinalPrice.ToString("N0")원
+                                    </div>
+                                </div>
+
+                                <div class="order-item-price">
+                                    @item.LineTotal.ToString("N0")원
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="order-section">
+                    <h3>주문자 정보</h3>
+
+                    <div class="order-form-grid">
+                        <div>
+                            <label>주문자 이름</label>
+                            <input asp-for="BuyerName" id="BuyerName" />
+                            <span asp-validation-for="BuyerName" class="field-error"></span>
+                        </div>
+
+                        <div>
+                            <label>주문자 연락처</label>
+                            <input asp-for="BuyerPhone" id="BuyerPhone" placeholder="010-0000-0000" />
+                            <span asp-validation-for="BuyerPhone" class="field-error"></span>
+                        </div>
+
+                        <div class="full">
+                            <label>이메일</label>
+                            <input asp-for="BuyerEmail" id="BuyerEmail" placeholder="선택 입력" />
+                            <span asp-validation-for="BuyerEmail" class="field-error"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="order-section">
+                    <div class="order-section-head">
+                        <h3>배송지 정보</h3>
+
+                        <label class="same-buyer-check">
+                            <input type="checkbox" id="sameAsBuyer" />
+                            주문자 정보와 동일
+                        </label>
+                    </div>
+
+                    @if (!Model.IsGuestOrder && Model.SavedAddresses.Any())
+                    {
+                        <div class="checkout-address-book">
+                            <div class="checkout-address-book-title">
+                                저장된 배송지
+                            </div>
+
+                            @{
+                                var defaultAddress = Model.SavedAddresses.FirstOrDefault(x => x.IsDefault)
+                                ?? Model.SavedAddresses.FirstOrDefault();
+
+                                var otherAddresses = Model.SavedAddresses
+                                .Where(x => defaultAddress == null || x.Id != defaultAddress.Id)
+                                .ToList();
+                            }
+
+                            <div class="checkout-address-list">
+
+                                @if (defaultAddress != null)
+                                {
+                                    <button type="button"
+                                            class="checkout-address-card is-default selected"
+                                            onclick="selectSavedAddress('@defaultAddress.Id',
+                                                   '@defaultAddress.ReceiverName',
+                                                   '@defaultAddress.ReceiverPhone',
+                                                   '@defaultAddress.ZipCode',
+                                                   '@Html.Raw(defaultAddress.Address.Replace("'", "\\'"))',
+                                                   '@Html.Raw((defaultAddress.AddressDetail ?? "").Replace("'", "\\'"))')">
+                                        <span class="checkout-address-main">
+                                            <span class="checkout-address-person">
+                                                <strong>@defaultAddress.ReceiverName</strong>
+                                                <em>@defaultAddress.ReceiverPhone</em>
+                                            </span>
+
+                                            <span class="checkout-address-text">
+                                                @defaultAddress.FullAddress
+                                            </span>
+                                        </span>
+
+                                        <span class="checkout-address-badge">대표</span>
+                                    </button>
+                                }
+
+                                @if (otherAddresses.Any())
+                                {
+                                    <button type="button"
+                                            class="checkout-address-toggle"
+                                            onclick="toggleOtherAddresses(this)">
+                                        <span>다른 배송지 보기</span>
+                                        <em>⌄</em>
+                                    </button>
+
+                                    <div class="checkout-address-more" id="checkoutAddressMore">
+                                        @foreach (var addr in otherAddresses)
+                                        {
+                                            <button type="button"
+                                                    class="checkout-address-card"
+                                                    onclick="selectSavedAddress('@addr.Id',
+                                                               '@addr.ReceiverName',
+                                                               '@addr.ReceiverPhone',
+                                                               '@addr.ZipCode',
+                                                               '@Html.Raw(addr.Address.Replace("'", "\\'"))',
+                                                               '@Html.Raw((addr.AddressDetail ?? "").Replace("'", "\\'"))')">
+                                                <span class="checkout-address-main">
+                                                    <span class="checkout-address-person">
+                                                        <strong>@addr.ReceiverName</strong>
+                                                        <em>@addr.ReceiverPhone</em>
+                                                    </span>
+
+                                                    <span class="checkout-address-text">
+                                                        @addr.FullAddress
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                    }
+
+                    <div class="order-form-grid">
+                        <input type="hidden" asp-for="SelectedAddressId" id="SelectedAddressId" />
+
+                        <div>
+                            <label>받는 사람</label>
+                            <input asp-for="ReceiverName" id="ReceiverName" />
+                            <span asp-validation-for="ReceiverName" class="field-error"></span>
+                        </div>
+
+                        <div>
+                            <label>받는 사람 연락처</label>
+                            <input asp-for="ReceiverPhone" id="ReceiverPhone" placeholder="010-0000-0000" />
+                            <span asp-validation-for="ReceiverPhone" class="field-error"></span>
+                        </div>
+
+                        <div>
+                            <label>우편번호</label>
+                            <div class="address-search-row">
+                                <input asp-for="ZipCode"
+                                       id="ZipCode"
+                                       readonly
+                                       placeholder="우편번호" />
+
+                                <button type="button"
+                                        class="address-search-btn"
+                                        onclick="openPostcode()">
+                                    주소 검색
+                                </button>
+                            </div>
+                            <span asp-validation-for="ZipCode" class="field-error"></span>
+                        </div>
+
+                        <div class="full">
+                            <label>주소</label>
+                            <input asp-for="Address1"
+                                   id="Address1"
+                                   readonly
+                                   placeholder="주소 검색 버튼을 눌러주세요" />
+                            <span asp-validation-for="Address1" class="field-error"></span>
+                        </div>
+
+                        <div class="full">
+                            <label>상세주소</label>
+                            <input asp-for="Address2"
+                                   id="Address2"
+                                   placeholder="상세주소를 입력해주세요" />
+                        </div>
+
+                        <div class="full">
+                            <label>배송 요청사항</label>
+                            <textarea asp-for="DeliveryMemo"
+                                      id="DeliveryMemo"
+                                      rows="3"
+                                      placeholder="예: 문 앞에 놓아주세요."></textarea>
+                        </div>
+
+                        @if (!Model.IsGuestOrder)
+                        {
+                            <div class="full">
+                                <label class="checkout-save-address-check">
+                                    <input type="checkbox" asp-for="SaveAddressToMyPage" />
+                                    이번 배송지를 마이페이지 배송지에 저장
+                                </label>
+
+                                <label class="checkout-save-address-check sub">
+                                    <input type="checkbox" asp-for="SetAsDefaultAddress" />
+                                    대표 배송지로 지정
+                                </label>
+                            </div>
+                        }
+
+                    </div>
+                </section>
+
+                @if (Model.IsGuestOrder)
+                {
+                    <section class="order-section">
+                        <h3>비회원 주문조회 비밀번호</h3>
+
+                        <div class="guest-order-help">
+                            비회원 주문조회 시 사용할 비밀번호입니다.<br />
+                            주문 완료 후 주문번호와 이 비밀번호로 주문내역과 배송상태를 확인할 수 있습니다.
+                        </div>
+
+                        <input type="hidden" asp-for="IsGuestOrder" />
+
+                        <div class="order-form-grid">
+                            <div>
+                                <label>비회원 주문 비밀번호</label>
+                                <input type="password"
+                                       name="GuestOrderPassword"
+                                       autocomplete="new-password"
+                                       placeholder="4자 이상 입력" />
+                            </div>
+
+                            <div>
+                                <label>비밀번호 확인</label>
+                                <input type="password"
+                                       name="GuestOrderPasswordConfirm"
+                                       autocomplete="new-password"
+                                       placeholder="한 번 더 입력" />
+                            </div>
+                        </div>
+                    </section>
+                }
+                else
+                {
+                    <input type="hidden" asp-for="IsGuestOrder" />
+                }
+
+            </div>
+
+            <aside class="order-summary">
+                <h3>결제 금액</h3>
+
+                <div class="summary-row">
+                    <span>상품금액</span>
+                    <strong>@Model.ProductTotal.ToString("N0")원</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>배송비</span>
+
+                    @if (Model.HasCollectShipping)
+                    {
+                        <strong id="shippingFeeText">착불/별도</strong>
+                    }
+                    else if (Model.HasIncludedShipping)
+                    {
+                        <strong id="shippingFeeText">배송비 포함</strong>
+                    }
+                    else
+                    {
+                        <strong id="shippingFeeText">@Model.ShippingFee.ToString("N0")원</strong>
+                    }
+                </div>
+
+                <div class="summary-row small" id="extraShippingRow"
+                     style="@(Model.ExtraShippingFee > 0 ? "" : "display:none;")">
+                    <span>지역 추가배송비</span>
+                    <strong id="extraShippingFeeText">@Model.ExtraShippingFee.ToString("N0")원</strong>
+                </div>
+
+                <div class="summary-row total">
+                    <span>총 결제금액</span>
+                    <strong id="totalPayAmountText">@Model.TotalPayAmount.ToString("N0")원</strong>
+                </div>
+
+                <section class="order-section">
+                    <h3>결제수단</h3>
+
+                    <div class="payment-method-box">
+                        <label class="payment-method-card selected">
+                            <input type="radio"
+                                   asp-for="PaymentMethod"
+                                   value="BankTransfer"
+                                   checked />
+
+                            <span class="payment-method-main">
+                                <strong>무통장입금</strong>
+                                <em>입금 확인 후 상품 준비가 시작됩니다.</em>
+                            </span>
+                        </label>
+
+                        <label class="payment-method-card">
+                            <input type="radio"
+                                   asp-for="PaymentMethod"
+                                   value="TossPayments" />
+
+                            <span class="payment-method-main">
+                                <strong>카드결제</strong>
+                                <em>토스페이먼츠 결제창으로 결제합니다.</em>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="payment-method-help">
+                        현재는 무통장입금만 지원합니다. 카드결제는 추후 연결 예정입니다.
+                    </div>
+                </section>
+
+                <button type="submit" class="order-submit-btn">
+                    주문 저장하기
+                </button>
+
+                <p class="order-help">
+                    현재 단계에서는 결제 연동 전이라 주문만 저장됩니다.
+                    다음 단계에서 실제 결제창을 연결합니다.
+                </p>
+            </aside>
+
+            <input type="hidden" id="ProductTotalValue" value="@Model.ProductTotal" />
+            <input type="hidden" id="BaseShippingFeeValue" value="@Model.BaseShippingFee" />
+            <input type="hidden" id="JejuExtraFeeValue" value="@(Model.Items.Any() ? Model.Items.Max(x => x.JejuExtraFee) : 0)" />
+            <input type="hidden" id="HasCollectShippingValue" value="@Model.HasCollectShipping.ToString().ToLower()" />
+            <input type="hidden" id="HasIncludedShippingValue" value="@Model.HasIncludedShipping.ToString().ToLower()" />
+
+        </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+    <script>
+        const sameAsBuyer = document.getElementById("sameAsBuyer");
+        const saveAddressCheck = document.getElementById("SaveAddressToMyPage");
+        const defaultAddressCheck = document.getElementById("SetAsDefaultAddress");
+
+        sameAsBuyer?.addEventListener("change", function () {
+            syncBuyerToReceiver();
+        });
+
+        document.getElementById("BuyerName")?.addEventListener("input", syncBuyerToReceiver);
+        document.getElementById("BuyerPhone")?.addEventListener("input", syncBuyerToReceiver);
+
+        defaultAddressCheck?.addEventListener("change", function () {
+            if (this.checked && saveAddressCheck) {
+                saveAddressCheck.checked = true;
+            }
+
+            updateCheckoutDefaultPreview();
+            recalculateCheckoutShipping();
+        });
+
+        saveAddressCheck?.addEventListener("change", function () {
+            if (!this.checked && defaultAddressCheck) {
+                defaultAddressCheck.checked = false;
+            }
+
+            updateCheckoutDefaultPreview();
+        });
+
+        function syncBuyerToReceiver() {
+            if (!sameAsBuyer || !sameAsBuyer.checked) {
+                return;
+            }
+
+            const buyerName = document.getElementById("BuyerName");
+            const buyerPhone = document.getElementById("BuyerPhone");
+            const receiverName = document.getElementById("ReceiverName");
+            const receiverPhone = document.getElementById("ReceiverPhone");
+
+            if (buyerName && receiverName) {
+                receiverName.value = buyerName.value;
+            }
+
+            if (buyerPhone && receiverPhone) {
+                receiverPhone.value = buyerPhone.value;
+            }
+        }
+
+        function selectSavedAddress(id, receiverName, receiverPhone, zipCode, address, addressDetail) {
+            const selectedAddressId = document.getElementById("SelectedAddressId");
+            const receiverNameEl = document.getElementById("ReceiverName");
+            const receiverPhoneEl = document.getElementById("ReceiverPhone");
+            const zip = document.getElementById("ZipCode");
+            const address1 = document.getElementById("Address1");
+            const address2 = document.getElementById("Address2");
+
+            if (selectedAddressId) {
+                selectedAddressId.value = id;
+            }
+
+            if (receiverNameEl) {
+                receiverNameEl.value = receiverName || "";
+            }
+
+            if (receiverPhoneEl) {
+                receiverPhoneEl.value = receiverPhone || "";
+            }
+
+            if (zip) {
+                zip.value = zipCode || "";
+            }
+
+            if (address1) {
+                address1.value = address || "";
+            }
+
+            if (address2) {
+                address2.value = addressDetail || "";
+            }
+
+            document.querySelectorAll(".checkout-address-card")
+                .forEach(card => card.classList.remove("selected"));
+
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add("selected");
+            }
+
+            updateCheckoutDefaultPreview();
+        }
+
+        function clearSelectedSavedAddress() {
+            const selectedAddressId = document.getElementById("SelectedAddressId");
+
+            if (selectedAddressId) {
+                selectedAddressId.value = "";
+            }
+
+            document.querySelectorAll(".checkout-address-card")
+                .forEach(card => card.classList.remove("selected"));
+
+            updateCheckoutDefaultPreview();
+        }
+
+        function updateCheckoutDefaultPreview() {
+            document.querySelectorAll(".checkout-address-badge.preview")
+                .forEach(badge => badge.remove());
+
+            if (!defaultAddressCheck || !defaultAddressCheck.checked) {
+                return;
+            }
+
+            const selectedCard = document.querySelector(".checkout-address-card.selected");
+
+            if (!selectedCard) {
+                return;
+            }
+
+            const badge = document.createElement("span");
+            badge.className = "checkout-address-badge preview";
+            badge.innerText = "대표 예정";
+
+            selectedCard.appendChild(badge);
+        }
+
+        function toggleOtherAddresses(button) {
+            const box = document.getElementById("checkoutAddressMore");
+
+            if (!box) {
+                return;
+            }
+
+            const isOpen = box.classList.contains("open");
+
+            if (isOpen) {
+                box.classList.remove("open");
+                button.classList.remove("open");
+                button.querySelector("span").innerText = "다른 배송지 보기";
+            } else {
+                box.classList.add("open");
+                button.classList.add("open");
+                button.querySelector("span").innerText = "다른 배송지 접기";
+            }
+        }
+
+        function openPostcode() {
+            new daum.Postcode({
+                oncomplete: function (data) {
+                    let address = "";
+
+                    if (data.userSelectedType === "R") {
+                        address = data.roadAddress;
+                    } else {
+                        address = data.jibunAddress;
+                    }
+
+                    let extraAddress = "";
+
+                    if (data.userSelectedType === "R") {
+                        if (data.bname !== "" && /[동|로|가]$/g.test(data.bname)) {
+                            extraAddress += data.bname;
+                        }
+
+                        if (data.buildingName !== "" && data.apartment === "Y") {
+                            extraAddress += extraAddress !== ""
+                                ? ", " + data.buildingName
+                                : data.buildingName;
+                        }
+
+                        if (extraAddress !== "") {
+                            address += " (" + extraAddress + ")";
+                        }
+                    }
+
+                    const zip = document.getElementById("ZipCode");
+                    const address1 = document.getElementById("Address1");
+                    const address2 = document.getElementById("Address2");
+
+                    if (zip) {
+                        zip.value = data.zonecode;
+                    }
+
+                    if (address1) {
+                        address1.value = address;
+                    }
+
+                    if (address2) {
+                        address2.value = "";
+                        address2.focus();
+                    }
+
+                    clearSelectedSavedAddress();
+                    recalculateCheckoutShipping();
+                }
+            }).open();
+        }
+
+        function formatWon(value) {
+            return Number(value || 0).toLocaleString("ko-KR") + "원";
+        }
+
+        function recalculateCheckoutShipping() {
+            const productTotal = Number(document.getElementById("ProductTotalValue")?.value || 0);
+            const baseShippingFee = Number(document.getElementById("BaseShippingFeeValue")?.value || 0);
+            const jejuExtraFee = Number(document.getElementById("JejuExtraFeeValue")?.value || 0);
+
+            const hasCollectShipping =
+                document.getElementById("HasCollectShippingValue")?.value === "true";
+
+            const hasIncludedShipping =
+                document.getElementById("HasIncludedShippingValue")?.value === "true";
+
+            const address1 = document.getElementById("Address1")?.value || "";
+
+            const shippingFeeText = document.getElementById("shippingFeeText");
+            const extraShippingRow = document.getElementById("extraShippingRow");
+            const extraShippingFeeText = document.getElementById("extraShippingFeeText");
+            const totalPayAmountText = document.getElementById("totalPayAmountText");
+
+            if (!shippingFeeText || !totalPayAmountText) {
+                return;
+            }
+
+            if (hasCollectShipping) {
+                shippingFeeText.innerText = "착불/별도";
+
+                if (extraShippingRow) {
+                    extraShippingRow.style.display = "none";
+                }
+
+                totalPayAmountText.innerText = formatWon(productTotal);
+                return;
+            }
+
+            if (hasIncludedShipping) {
+                shippingFeeText.innerText = "배송비 포함";
+
+                if (extraShippingRow) {
+                    extraShippingRow.style.display = "none";
+                }
+
+                totalPayAmountText.innerText = formatWon(productTotal);
+                return;
+            }
+
+            let extraFee = 0;
+
+            if (address1.includes("제주")) {
+                extraFee = jejuExtraFee;
+            }
+
+            const totalShippingFee = baseShippingFee + extraFee;
+
+            shippingFeeText.innerText = formatWon(totalShippingFee);
+
+            if (extraShippingRow && extraShippingFeeText) {
+                if (extraFee > 0) {
+                    extraShippingRow.style.display = "";
+                    extraShippingFeeText.innerText = formatWon(extraFee);
+                } else {
+                    extraShippingRow.style.display = "none";
+                    extraShippingFeeText.innerText = "0원";
+                }
+            }
+
+            totalPayAmountText.innerText = formatWon(productTotal + totalShippingFee);
+        }
+
+        document.getElementById("Address1")
+            ?.addEventListener("input", recalculateCheckoutShipping);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            recalculateCheckoutShipping();
+        });
+
+    </script>
+}

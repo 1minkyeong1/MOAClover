@@ -1,30 +1,206 @@
 ﻿@model MOAClover.Models.ViewModels.ProductListViewModel
 @using MOAClover.Models
+@using Microsoft.EntityFrameworkCore
+@inject MOAClover.Data.ApplicationDbContext Db
+
 
 @{
     ViewData["Title"] = "모아클로버";
     bool showHidden = Context.Request.Query["showHidden"] == "true";
+    string? productFilter = ViewBag.ProductFilter as string;
+
+    var siteSetting = await Db.SiteSettings
+        .AsNoTracking()
+        .OrderBy(x => x.SiteSettingId)
+        .FirstOrDefaultAsync();
+
+    var useMainHeroBanner = siteSetting?.UseMainHeroBanner == true;
+
+    var mainHeroTitle = siteSetting?.MainHeroTitle;
+    var mainHeroSubtitle = siteSetting?.MainHeroSubtitle;
+    var mainHeroImageUrl = siteSetting?.MainHeroImageUrl;
+    var mainHeroVideoUrl = siteSetting?.MainHeroVideoUrl;
+    var mainHeroLinkUrl = siteSetting?.MainHeroLinkUrl;
+    var mainHeroButtonText = siteSetting?.MainHeroButtonText;
+    var mainHeroBackgroundColor = siteSetting?.MainHeroBackgroundColor;
+
+    var useMainHeroSlider = siteSetting?.UseMainHeroSlider == true;
+
+    var mainHeroSliderImageUrls = (siteSetting?.MainHeroSliderImageUrls ?? "")
+        .Split(new[] { "\r\n", "\n", "\r", "," }, StringSplitOptions.RemoveEmptyEntries)
+        .Select(x => x.Trim())
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .ToList();
+
+    var mainHeroSliderLinkUrls = (siteSetting?.MainHeroSliderLinkUrls ?? "")
+    .Split(new[] { "\r\n", "\n", "\r", "," }, StringSplitOptions.None)
+    .Select(x => x.Trim())
+    .ToList();
+
+    var hasMainHeroText =
+        !string.IsNullOrWhiteSpace(mainHeroTitle)
+        || !string.IsNullOrWhiteSpace(mainHeroSubtitle)
+        || !string.IsNullOrWhiteSpace(mainHeroButtonText);
+
+    var hasMainHeroMedia =
+        !string.IsNullOrWhiteSpace(mainHeroVideoUrl)
+        || !string.IsNullOrWhiteSpace(mainHeroImageUrl)
+        || (useMainHeroSlider && mainHeroSliderImageUrls.Any());
+
+    string ShippingText(MOAClover.Models.ViewModels.ProductListItemViewModel p)
+    {
+        if (p.ShippingType == "Included")
+            return "배송비 포함";
+
+        if (p.ShippingType == "Free")
+            return "무료배송";
+
+        if (p.ShippingType == "ConditionalFree")
+        {
+            if (p.FreeShippingMinAmount.HasValue && p.FreeShippingMinAmount.Value > 0)
+                return $"{p.FreeShippingMinAmount.Value:N0}원 이상 무료배송";
+
+            return $"{p.ShippingFee:N0}원";
+        }
+
+        if (p.ShippingType == "Collect")
+            return "착불/별도";
+
+        return $"{p.ShippingFee:N0}원";
+    }
 }
 
 <link rel="stylesheet" href="~/css/Index.css" />
 
 <div class="container">
 
+    @* 배너광고 위치 *@
+    @if (useMainHeroBanner && (hasMainHeroText || hasMainHeroMedia))
+    {
+        <section class="main-hero-banner @(hasMainHeroText ? "with-text" : "media-only")"
+                 style="@(string.IsNullOrWhiteSpace(mainHeroBackgroundColor) ? "" : $"background-color:{mainHeroBackgroundColor};")">
+
+            @if (hasMainHeroText)
+            {
+                <div class="main-hero-content">
+                    @if (!string.IsNullOrWhiteSpace(mainHeroTitle))
+                    {
+                        <h2>@mainHeroTitle</h2>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(mainHeroSubtitle))
+                    {
+                        <p>@mainHeroSubtitle</p>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(mainHeroLinkUrl)
+                                && !string.IsNullOrWhiteSpace(mainHeroButtonText))
+                    {
+                        <a href="@mainHeroLinkUrl" class="main-hero-btn">
+                            @mainHeroButtonText
+                        </a>
+                    }
+                </div>
+            }
+
+            <div class="main-hero-media">
+                @if (useMainHeroSlider && mainHeroSliderImageUrls.Any())
+                {
+                    <div class="swiper main-hero-swiper">
+                        <div class="swiper-wrapper">
+                            @for (int i = 0; i < mainHeroSliderImageUrls.Count; i++)
+                            {
+                                var imgUrl = mainHeroSliderImageUrls[i];
+
+                                var slideLinkUrl = i < mainHeroSliderLinkUrls.Count
+                                ? mainHeroSliderLinkUrls[i]
+                                : "";
+
+                                if (string.IsNullOrWhiteSpace(slideLinkUrl))
+                                {
+                                    slideLinkUrl = mainHeroLinkUrl;
+                                }
+
+                                <div class="swiper-slide">
+                                    @if (!string.IsNullOrWhiteSpace(slideLinkUrl))
+                                    {
+                                        <a href="@slideLinkUrl" class="main-hero-image-link">
+                                            <img src="@imgUrl" alt="@(mainHeroTitle ?? "메인 배너")" />
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <img src="@imgUrl" alt="@(mainHeroTitle ?? "메인 배너")" />
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="main-hero-swiper-pagination"></div>
+                    </div>
+                }
+                else if (!string.IsNullOrWhiteSpace(mainHeroVideoUrl))
+                {
+                    <video src="@mainHeroVideoUrl"
+                           autoplay
+                           muted
+                           loop
+                           playsinline>
+                    </video>
+                }
+                else if (!string.IsNullOrWhiteSpace(mainHeroImageUrl))
+                {
+                    if (!string.IsNullOrWhiteSpace(mainHeroLinkUrl))
+                    {
+                        <a href="@mainHeroLinkUrl" class="main-hero-image-link">
+                            <img src="@mainHeroImageUrl" alt="@(mainHeroTitle ?? "메인 배너")" />
+                        </a>
+                    }
+                    else
+                    {
+                        <img src="@mainHeroImageUrl" alt="@(mainHeroTitle ?? "메인 배너")" />
+                    }
+                }
+            </div>
+
+        </section>
+    }
+
     <!--  관리자 툴바: 숨김 포함 보기 + 숨김 개수 -->
     @if (User.IsInRole("admin"))
     {
-        <div class="d-flex align-items-center justify-content-between mb-3" style="gap:12px;">
-            <form method="get" class="d-flex align-items-center gap-2">
-                <input type="hidden" name="page" value="1" />
-                <div class="form-check m-0">
-                    <input class="form-check-input" type="checkbox" id="showHidden" name="showHidden" value="true"
-                           @(showHidden ? "checked" : "") onchange="this.form.submit()" />
-                    <label class="form-check-label" for="showHidden">숨김 상품 포함 보기</label>
-                </div>
-            </form>
+        <div class="admin-product-toolbar">
+            <div class="admin-product-filter-buttons">
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="@(string.IsNullOrWhiteSpace(productFilter) && !showHidden ? "active" : "")">
+                    노출 상품
+                </a>
 
-            <div class="text-muted" style="font-size:13px;">
-                숨김: <b>@(ViewBag.HiddenCount ?? 0)</b>개
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   asp-route-showHidden="true"
+                   class="@(showHidden && string.IsNullOrWhiteSpace(productFilter) ? "active" : "")">
+                    전체 상품
+                </a>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   asp-route-productFilter="hidden"
+                   asp-route-showHidden="true"
+                   class="@(productFilter == "hidden" ? "active hidden" : "hidden")">
+                    숨김 상품
+                    <span>@(ViewBag.HiddenCount ?? 0)</span>
+                </a>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   asp-route-productFilter="soldout"
+                   asp-route-showHidden="true"
+                   class="@(productFilter == "soldout" ? "active soldout" : "soldout")">
+                    품절 상품
+                    <span>@(ViewBag.SoldoutCount ?? 0)</span>
+                </a>
             </div>
         </div>
     }
@@ -35,13 +211,20 @@
             <a href="/Home/Detail?id=@p.ProductId" class="item-link">
                 <div class="item">
 
-                    <!--  상태 배지(관리자만) -->
+                    <!-- 상태 배지(관리자만) -->
                     @if (User.IsInRole("admin"))
                     {
-                        <div style="position:absolute; top:10px; left:10px; z-index:5;">
-                            <span class="badge @(p.IsVisible ? "bg-success" : "bg-secondary")">
+                        <div class="admin-card-badges">
+                            <span class="admin-card-badge @(p.IsVisible ? "visible" : "hidden")">
                                 @(p.IsVisible ? "노출" : "숨김")
                             </span>
+
+                            @if (p.UseStock && p.StockQuantity <= 0)
+                            {
+                                <span class="admin-card-badge soldout">
+                                    품절
+                                </span>
+                            }
                         </div>
                     }
 
@@ -52,20 +235,32 @@
                                 foreach (var img in p.ImageUrls)
                                 {
                                     <div class="swiper-slide">
-                                        <img src="@img" />
+                                        <img src="@img" alt="@p.Name" />
                                     </div>
                                 }
                             }
                             else
                             {
                                 <div class="swiper-slide">
-                                    <img src="/images/no-image.png" />
+                                    <img src="/images/no-image.png" alt="이미지 없음" />
                                 </div>
                             }
                         </div>
                     </div>
 
                     <div class="item-name">@p.Name</div>
+
+                    @if (p.UseStock)
+                    {
+                        if (p.StockQuantity <= 0)
+                        {
+                            <div class="product-stock-badge soldout">품절</div>
+                        }
+                        else if (p.StockQuantity <= 5)
+                        {
+                            <div class="product-stock-badge low">재고 @p.StockQuantity 개 남음</div>
+                        }
+                    }
 
                     <div class="price-block">
                         @if (p.DiscountRate.HasValue && p.DiscountRate.Value > 0)
@@ -88,8 +283,15 @@
 
                         <div class="ship-line">
                             <span class="ship-icon">🚚</span>
-                            <span class="ship-fee">4,000원</span>
+                            <span class="ship-fee">@ShippingText(p)</span>
                         </div>
+
+                        @if (p.JejuExtraFee > 0 || p.RemoteAreaExtraFee > 0)
+                        {
+                            <div class="product-ship-extra">
+                                제주/도서산간 추가배송비
+                            </div>
+                        }
                     </div>
 
                 </div>
@@ -97,25 +299,102 @@
         }
     </div>
 
-    <!-- 🔥 페이징: showHidden 유지 -->
-    <div class="pagination">
-        @if (Model.CurrentPage > 1)
+    <!-- 페이징 -->
+    @if (Model.TotalPages > 1)
+    {
+        string filterQuery = "";
+
+        if (showHidden)
         {
-            <a href="?page=@(Model.CurrentPage - 1)@(showHidden ? "&showHidden=true" : "")">◀</a>
+            filterQuery += "&showHidden=true";
         }
 
-        @for (int i = 1; i <= Model.TotalPages; i++)
+        if (!string.IsNullOrWhiteSpace(productFilter))
         {
-            <a href="?page=@i@(showHidden ? "&showHidden=true" : "")"
-               class="@(i == Model.CurrentPage ? "active" : "")">
-                @i
-            </a>
+            filterQuery += $"&productFilter={Uri.EscapeDataString(productFilter)}";
         }
 
-        @if (Model.CurrentPage < Model.TotalPages)
+        if (!string.IsNullOrWhiteSpace(Context.Request.Query["q"]))
         {
-            <a href="?page=@(Model.CurrentPage + 1)@(showHidden ? "&showHidden=true" : "")">▶</a>
+            filterQuery += $"&q={Uri.EscapeDataString(Context.Request.Query["q"].ToString())}";
         }
-    </div>
+
+        if (!string.IsNullOrWhiteSpace(Context.Request.Query["categoryId"]))
+        {
+            filterQuery += $"&categoryId={Uri.EscapeDataString(Context.Request.Query["categoryId"].ToString())}";
+        }
+
+        var startPage = Math.Max(1, Model.CurrentPage - 2);
+        var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+
+        <div class="pagination-wrap">
+            <div class="pagination-info">
+                @Model.CurrentPage / @Model.TotalPages 페이지
+            </div>
+
+            <div class="pagination">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a href="?page=1@filterQuery" title="첫 페이지">«</a>
+                    <a href="?page=@(Model.CurrentPage - 1)@filterQuery" title="이전 페이지">‹</a>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a href="?page=1@filterQuery">1</a>
+
+                    @if (startPage > 2)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <a href="?page=@i@filterQuery"
+                       class="@(i == Model.CurrentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+
+                    <a href="?page=@Model.TotalPages@filterQuery">@Model.TotalPages</a>
+                }
+
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a href="?page=@(Model.CurrentPage + 1)@filterQuery" title="다음 페이지">›</a>
+                    <a href="?page=@Model.TotalPages@filterQuery" title="마지막 페이지">»</a>
+                }
+            </div>
+        </div>
+    }
 
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (document.querySelector(".main-hero-swiper")) {
+                new Swiper(".main-hero-swiper", {
+                    loop: true,
+                    autoplay: {
+                        delay: 3500,
+                        disableOnInteraction: false
+                    },
+                    speed: 600,
+                    pagination: {
+                        el: ".main-hero-swiper-pagination",
+                        clickable: true
+                    }
+                });
+            }
+        });
+    </script>
+}

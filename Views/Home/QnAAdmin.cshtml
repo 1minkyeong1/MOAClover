@@ -1,82 +1,216 @@
-﻿@model List<MOAClover.Models.ProductQnA>
+﻿@model MOAClover.Models.ViewModels.AdminQnAListViewModel
+
 @{
     ViewData["Title"] = "Q&A 관리";
-    int currentPage = ViewBag.CurrentPage ?? 1;
-    int totalPages = ViewBag.TotalPages ?? 1;
-    bool showAnswered = ViewBag.ShowAnswered ?? false;
+    Layout = "_Layout";
+
+    string filter = Model.Filter;
+    string? keyword = Model.Keyword;
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
 }
 
-<div class="container" style="max-width:980px; margin:40px auto;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 style="margin:0; font-weight:900;">Q&A 관리</h3>
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
 
-        <form method="get" class="d-flex align-items-center gap-2">
-            <input type="hidden" name="page" value="1" />
-            <label class="d-flex align-items-center gap-2" style="font-size:14px;">
-                <input type="checkbox" name="showAnswered" value="true"
-                       @(showAnswered ? "checked" : "") onchange="this.form.submit()" />
-                답변 포함 보기
-            </label>
+<div class="admin-qna-wrap">
+
+    <div class="admin-qna-head">
+        <div>
+            <h2>Q&A 관리</h2>
+            <p>상품 문의를 확인하고 답변이 필요한 문의를 관리합니다.</p>
+        </div>
+
+        <form method="get" class="admin-qna-search">
+            <input type="hidden" name="filter" value="@filter" />
+
+            <input type="text"
+                   name="keyword"
+                   value="@keyword"
+                   placeholder="상품명, 작성자, 문의내용 검색" />
+
+            <button type="submit">검색</button>
+
+            @if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                <a asp-controller="Home"
+                   asp-action="QnAAdmin"
+                   asp-route-filter="@filter"
+                   class="admin-qna-reset-btn">
+                    초기화
+                </a>
+            }
         </form>
     </div>
 
-    <div class="table-responsive">
-        <table class="table align-middle">
-            <thead>
-                <tr>
-                    <th style="width:90px;">상품ID</th>
-                    <th>질문</th>
-                    <th style="width:140px;">작성자</th>
-                    <th style="width:160px;">작성일</th>
-                    <th style="width:120px;">상태</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var q in Model)
-                {
-                    var answered = !string.IsNullOrWhiteSpace(q.Answer);
-                    <tr>
-                        <td>@q.ProductId</td>
-                        <td style="max-width:520px;">
-                            <div style="font-weight:700;">@q.Question</div>
-                            @if (answered)
-                            {
-                                <div style="color:#6b7280; font-size:13px; margin-top:6px;">
-                                    답변: @q.Answer
-                                </div>
-                            }
-                        </td>
-                        <td>@q.UserName</td>
-                        <td>@q.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>
-                            <span class="badge @(answered ? "bg-success" : "bg-danger")">
-                                @(answered ? "답변완료" : "미답변")
-                            </span>
-                            <a class="btn btn-sm btn-outline-dark ms-2"
-                               asp-controller="Home" asp-action="Detail"
-                               asp-route-id="@q.ProductId" asp-route-qnaPage="1">
-                                상품으로
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="admin-qna-filters">
+        <a asp-controller="Home"
+           asp-action="QnAAdmin"
+           asp-route-filter="waiting"
+           class="@(filter == "waiting" ? "active danger" : "danger")">
+            미답변
+            <span>@Model.WaitingCount</span>
+        </a>
+
+        <a asp-controller="Home"
+           asp-action="QnAAdmin"
+           asp-route-filter="answered"
+           class="@(filter == "answered" ? "active" : "")">
+            답변완료
+            <span>@Model.AnsweredCount</span>
+        </a>
+
+        <a asp-controller="Home"
+           asp-action="QnAAdmin"
+           asp-route-filter="secret"
+           class="@(filter == "secret" ? "active secret" : "secret")">
+            비밀글
+        </a>
+
+        <a asp-controller="Home"
+           asp-action="QnAAdmin"
+           asp-route-filter="all"
+           class="@(filter == "all" ? "active" : "")">
+            전체
+        </a>
     </div>
 
-    <div class="pagination" style="margin-top:24px; display:flex; justify-content:center; gap:8px;">
-        @if (currentPage > 1)
-        {
-            <a href="?page=@(currentPage - 1)@(showAnswered ? "&showAnswered=true" : "")">◀</a>
-        }
-        @for (int i = 1; i <= totalPages; i++)
-        {
-            <a href="?page=@i@(showAnswered ? "&showAnswered=true" : "")"
-               class="@(i == currentPage ? "active" : "")">@i</a>
-        }
-        @if (currentPage < totalPages)
-        {
-            <a href="?page=@(currentPage + 1)@(showAnswered ? "&showAnswered=true" : "")">▶</a>
-        }
+    <div class="admin-qna-summary">
+        조회된 문의 <strong>@Model.TotalCount</strong>건
     </div>
+
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <div class="admin-qna-empty">
+            조회된 Q&A가 없습니다.
+        </div>
+    }
+    else
+    {
+        <div class="admin-qna-list">
+            @foreach (var q in Model.Items)
+            {
+                <article class="admin-qna-card @(q.HasAnswer ? "answered" : "waiting")">
+
+                    <div class="admin-qna-card-top">
+                        <div>
+                            <div class="admin-qna-product">
+                                @q.ProductName
+                            </div>
+
+                            <div class="admin-qna-meta">
+                                <span>@q.UserName</span>
+                                <span>@q.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+
+                                @if (q.IsSecret)
+                                {
+                                    <strong class="admin-qna-secret">비밀글</strong>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="admin-qna-status @(q.HasAnswer ? "done" : "wait")">
+                            @(q.HasAnswer ? "답변완료" : "답변대기")
+                        </div>
+                    </div>
+
+                    <div class="admin-qna-question">
+                        <span>Q.</span>
+                        <strong>@q.Question</strong>
+                    </div>
+
+                    @if (q.HasAnswer)
+                    {
+                        <div class="admin-qna-answer">
+                            <span>A.</span>
+                            <strong>@q.Answer</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="admin-qna-answer-empty">
+                            아직 답변이 등록되지 않았습니다.
+                        </div>
+                    }
+
+                    <div class="admin-qna-card-bottom">
+                        <a asp-controller="Home"
+                           asp-action="Detail"
+                           asp-route-id="@q.ProductId"
+                           asp-fragment="qnaArea"
+                           class="admin-qna-detail-btn">
+                            상품상세에서 답변하기
+                        </a>
+                    </div>
+
+                </article>
+            }
+        </div>
+    }
+
+    @if (totalPages > 1)
+    {
+        var queryText = "";
+
+        if (!string.IsNullOrWhiteSpace(filter))
+        {
+            queryText += $"&filter={Uri.EscapeDataString(filter)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            queryText += $"&keyword={Uri.EscapeDataString(keyword)}";
+        }
+
+        var startPage = Math.Max(1, currentPage - 2);
+        var endPage = Math.Min(totalPages, currentPage + 2);
+
+        <div class="qna-admin-pagination-wrap">
+            <div class="qna-pagination-info">
+                @currentPage / @totalPages 페이지
+            </div>
+
+            <div class="qna-admin-pagination">
+                @if (currentPage > 1)
+                {
+                    <a href="?page=1@queryText" title="첫 페이지">«</a>
+                    <a href="?page=@(currentPage - 1)@queryText" title="이전 페이지">‹</a>
+                }
+
+                @if (startPage > 1)
+                {
+                    <a href="?page=1@queryText">1</a>
+
+                    @if (startPage > 2)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <a href="?page=@i@queryText"
+                       class="@(i == currentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    @if (endPage < totalPages - 1)
+                    {
+                        <span class="pagination-ellipsis">...</span>
+                    }
+
+                    <a href="?page=@totalPages@queryText">@totalPages</a>
+                }
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="?page=@(currentPage + 1)@queryText" title="다음 페이지">›</a>
+                    <a href="?page=@totalPages@queryText" title="마지막 페이지">»</a>
+                }
+            </div>
+        </div>
+    }
+
 </div>

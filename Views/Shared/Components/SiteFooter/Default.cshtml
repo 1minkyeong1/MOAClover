@@ -1,0 +1,67 @@
+﻿@model MOAClover.Models.SiteSetting
+
+@{
+    var footerStyleParts = new List<string>();
+
+    if (!string.IsNullOrWhiteSpace(Model.FooterBackgroundColor))
+    {
+        footerStyleParts.Add($"background-color:{Model.FooterBackgroundColor}");
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.FooterTextColor))
+    {
+        footerStyleParts.Add($"color:{Model.FooterTextColor}");
+    }
+
+    if (Model.UseFooterBackgroundImage && !string.IsNullOrWhiteSpace(Model.FooterBackgroundImageUrl))
+    {
+        footerStyleParts.Add($"background-image:url('{Model.FooterBackgroundImageUrl}')");
+        footerStyleParts.Add("background-size:cover");
+        footerStyleParts.Add("background-position:center");
+        footerStyleParts.Add("background-repeat:no-repeat");
+    }
+
+    var footerStyle = string.Join(";", footerStyleParts);
+
+    var footerTextStyle = string.IsNullOrWhiteSpace(Model.FooterTextColor)
+        ? ""
+        : $"color:{Model.FooterTextColor};";
+}
+
+<footer class="site-footer" style="@footerStyle">
+
+    <div class="site-footer-shop" style="@footerTextStyle">
+        @(string.IsNullOrWhiteSpace(Model.ShopName) ? "모아클로버" : Model.ShopName)
+    </div>
+
+    <div class="site-footer-info" style="@footerTextStyle">
+        대표자: @(string.IsNullOrWhiteSpace(Model.OwnerName) ? "-" : Model.OwnerName)
+        |
+        사업자등록번호: @(string.IsNullOrWhiteSpace(Model.BusinessNumber) ? "-" : Model.BusinessNumber)
+        <br />
+
+        통신판매업 신고번호: @(string.IsNullOrWhiteSpace(Model.MailOrderSalesNumber) ? "-" : Model.MailOrderSalesNumber)
+        <br />
+
+        Email: @(string.IsNullOrWhiteSpace(Model.CustomerEmail) ? "-" : Model.CustomerEmail)
+        |
+        고객센터: @(string.IsNullOrWhiteSpace(Model.CustomerPhone) ? "-" : Model.CustomerPhone)
+        <br />
+
+        주소: @(string.IsNullOrWhiteSpace(Model.Address) ? "-" : Model.Address)
+    </div>
+
+    <div class="site-footer-links" style="@footerTextStyle">
+        <a asp-controller="Home" asp-action="CustomerService" style="@footerTextStyle">고객센터</a>
+        <span>|</span>
+        <a asp-controller="Home" asp-action="Terms" style="@footerTextStyle">이용약관</a>
+        <span>|</span>
+        <a asp-controller="Home" asp-action="PrivacyPolicy" style="@footerTextStyle">개인정보처리방침</a>
+        <span>|</span>
+        <a asp-controller="Home" asp-action="ShippingReturn" style="@footerTextStyle">배송·교환·반품 안내</a>
+    </div>
+
+    <div class="site-footer-copy" style="@footerTextStyle">
+        © @DateTime.Now.Year @(string.IsNullOrWhiteSpace(Model.ShopName) ? "MOAClover" : Model.ShopName). All rights reserved.
+    </div>
+</footer>

@@ -1,0 +1,103 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject MOAClover.Data.ApplicationDbContext Db
+
+@{
+    ViewData["Title"] = "개인정보처리방침";
+    Layout = "_Layout";
+
+    var setting = await Db.SiteSettings
+        .AsNoTracking()
+        .OrderBy(x => x.SiteSettingId)
+        .FirstOrDefaultAsync();
+
+    var policyStyleParts = new List<string>();
+
+    if (!string.IsNullOrWhiteSpace(setting?.PolicyPageBackgroundColor))
+    {
+        policyStyleParts.Add($"background-color:{setting.PolicyPageBackgroundColor}");
+    }
+
+    if (setting?.UsePolicyPageBackgroundImage == true
+        && !string.IsNullOrWhiteSpace(setting.PolicyPageBackgroundImageUrl))
+    {
+        policyStyleParts.Add($"background-image:url('{setting.PolicyPageBackgroundImageUrl}')");
+        policyStyleParts.Add("background-size:cover");
+        policyStyleParts.Add("background-position:center top");
+        policyStyleParts.Add("background-repeat:no-repeat");
+    }
+
+    if (!string.IsNullOrWhiteSpace(setting?.PolicyPageTextColor))
+    {
+        policyStyleParts.Add($"--policy-text-color:{setting.PolicyPageTextColor}");
+    }
+
+    if (!string.IsNullOrWhiteSpace(setting?.PolicyPageBoxBackgroundColor))
+    {
+        policyStyleParts.Add($"--policy-box-bg-color:{setting.PolicyPageBoxBackgroundColor}");
+    }
+
+    var policyStyle = string.Join(";", policyStyleParts);
+}
+
+<link rel="stylesheet" href="~/css/Policy.css" asp-append-version="true" />
+
+<div class="policy-wrap" style="@policyStyle">
+    <div class="policy-head">
+        <h2>개인정보처리방침</h2>
+        <p>모아클로버는 고객의 개인정보를 안전하게 보호하기 위해 노력합니다.</p>
+    </div>
+
+    <section class="policy-section">
+        <h3>1. 수집하는 개인정보 항목</h3>
+        <p>
+            회원가입, 주문, 배송, 고객문의 처리 과정에서 이름, 아이디, 이메일, 연락처, 주소,
+            주문정보, 결제정보 등이 수집될 수 있습니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>2. 개인정보의 수집 및 이용 목적</h3>
+        <p>
+            수집한 개인정보는 회원관리, 주문 처리, 결제 확인, 상품 배송, 환불 및 교환 처리,
+            고객 상담, 공지사항 전달을 위해 사용됩니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>3. 개인정보의 보유 및 이용기간</h3>
+        <p>
+            개인정보는 이용 목적 달성 후 지체 없이 파기합니다. 단, 관련 법령에 따라 일정 기간 보관이 필요한 정보는
+            해당 기간 동안 안전하게 보관합니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>4. 개인정보의 제3자 제공</h3>
+        <p>
+            회사는 고객의 동의 없이 개인정보를 외부에 제공하지 않습니다.
+            다만 배송, 결제 등 서비스 제공에 필요한 경우 관련 업체에 필요한 범위 내에서 제공될 수 있습니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>5. 개인정보 처리 위탁</h3>
+        <p>
+            상품 배송을 위한 택배사, 결제 처리를 위한 결제대행사 등 서비스 제공에 필요한 업무를 위탁할 수 있습니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>6. 이용자의 권리</h3>
+        <p>
+            고객은 언제든지 자신의 개인정보 열람, 수정, 삭제를 요청할 수 있으며,
+            회원정보 수정 또는 고객센터를 통해 처리할 수 있습니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>7. 개인정보 보호책임자</h3>
+        <p>
+            개인정보 관련 문의는 사이트 하단의 고객센터 이메일 또는 연락처로 문의해주시기 바랍니다.
+        </p>
+    </section>
+</div>

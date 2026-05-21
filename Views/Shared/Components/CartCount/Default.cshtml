@@ -1,0 +1,16 @@
+﻿@model int
+
+<a asp-controller="Cart"
+   asp-action="Index"
+   class="header-pill-link header-cart-pill"
+   title="장바구니">
+    <span class="header-pill-icon">🛒</span>
+    <span>장바구니</span>
+
+    @if (Model > 0)
+    {
+        <span class="header-cart-count">
+            @(Model > 99 ? "99+" : Model.ToString())
+        </span>
+    }
+</a>

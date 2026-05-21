@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "비회원 주문조회";
+    Layout = "_Layout";
+
+    var guestOrderMessage = TempData["GuestOrderMessage"] as string;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="guest-lookup-wrap">
+
+    <div class="guest-lookup-card">
+
+        <div class="guest-lookup-head">
+            <h2>비회원 주문조회</h2>
+            <p>
+                주문 완료 시 발급된 주문번호와<br />
+                비회원 주문 비밀번호를 입력해주세요.
+            </p>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(guestOrderMessage))
+        {
+            <div class="guest-order-message success">
+                @guestOrderMessage
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="order-error">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-controller="Order" asp-action="GuestLookup" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="guest-lookup-form">
+                <div>
+                    <label>주문번호</label>
+                    <input type="text"
+                           name="orderNo"
+                           placeholder="예: MOA202605121430001234" />
+                </div>
+
+                <div>
+                    <label>비회원 주문 비밀번호</label>
+                    <input type="password"
+                           name="guestOrderPassword"
+                           autocomplete="current-password"
+                           placeholder="주문 시 입력한 비밀번호" />
+                </div>
+            </div>
+
+            <button type="submit" class="guest-lookup-btn">
+                주문조회
+            </button>
+        </form>
+
+        <div class="guest-lookup-help">
+            주문번호를 잊으셨나요?
+            <a asp-controller="Order"
+               asp-action="FindGuestOrderNo"
+               class="guest-find-link">
+                비회원 주문번호 찾기
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+@if (!string.IsNullOrWhiteSpace(guestOrderMessage))
+{
+    <script>
+        alert(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(guestOrderMessage)));
+    </script>
+}

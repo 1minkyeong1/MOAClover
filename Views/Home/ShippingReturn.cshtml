@@ -1,0 +1,214 @@
+﻿@using Microsoft.EntityFrameworkCore
+@inject MOAClover.Data.ApplicationDbContext Db
+
+@{
+    ViewData["Title"] = "배송·교환·반품 안내";
+    Layout = "_Layout";
+
+    var setting = await Db.SiteSettings
+        .AsNoTracking()
+        .OrderBy(x => x.SiteSettingId)
+        .FirstOrDefaultAsync();
+
+    var defaultDeliveryCompany = setting?.DefaultDeliveryCompany?.Trim();
+    var shippingNotice = setting?.ShippingNotice?.Trim();
+    var freeShippingNotice = setting?.FreeShippingNotice?.Trim();
+
+    var returnAddress = setting?.ReturnAddress?.Trim();
+    var returnShippingFeeNotice = setting?.ReturnShippingFeeNotice?.Trim();
+    var returnNotice = setting?.ReturnExchangeNotice?.Trim();
+
+    var returnShippingFee = setting?.ReturnShippingFee ?? 3000;
+    var exchangeShippingFee = setting?.ExchangeShippingFee ?? 6000;
+    var returnExchangeAvailableDays = setting?.ReturnExchangeAvailableDays ?? 7;
+
+    var jejuExtraShippingFeeNotice = setting?.JejuExtraShippingFeeNotice?.Trim();
+    var remoteAreaExtraShippingFeeNotice = setting?.RemoteAreaExtraShippingFeeNotice?.Trim();
+
+    string[] ToLines(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return Array.Empty<string>();
+
+        return text
+            .Replace("\r", "")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToArray();
+    }
+
+    var policyStyleParts = new List<string>();
+
+    if (!string.IsNullOrWhiteSpace(setting?.PolicyPageBackgroundColor))
+    {
+        policyStyleParts.Add($"background-color:{setting.PolicyPageBackgroundColor}");
+    }
+
+    if (setting?.UsePolicyPageBackgroundImage == true
+        && !string.IsNullOrWhiteSpace(setting.PolicyPageBackgroundImageUrl))
+    {
+        policyStyleParts.Add($"background-image:url('{setting.PolicyPageBackgroundImageUrl}')");
+        policyStyleParts.Add("background-size:cover");
+        policyStyleParts.Add("background-position:center top");
+        policyStyleParts.Add("background-repeat:no-repeat");
+    }
+
+    if (!string.IsNullOrWhiteSpace(setting?.PolicyPageTextColor))
+    {
+        policyStyleParts.Add($"--policy-text-color:{setting.PolicyPageTextColor}");
+    }
+
+    if (!string.IsNullOrWhiteSpace(setting?.PolicyPageBoxBackgroundColor))
+    {
+        policyStyleParts.Add($"--policy-box-bg-color:{setting.PolicyPageBoxBackgroundColor}");
+    }
+
+    var policyStyle = string.Join(";", policyStyleParts);
+}
+
+<link rel="stylesheet" href="~/css/Policy.css" asp-append-version="true" />
+
+<div class="policy-wrap" style="@policyStyle">
+    <div class="policy-head">
+        <h2>배송·교환·반품 안내</h2>
+        <p>주문 전 배송, 교환, 반품 기준을 확인해주세요.</p>
+    </div>
+
+    <section class="policy-section">
+        <h3>배송 안내</h3>
+
+        <p>
+            주문 상품은 결제 완료 또는 무통장입금 확인 후 상품 준비가 시작됩니다.
+            상품 재고 및 택배사 사정에 따라 배송 기간은 달라질 수 있습니다.
+        </p>
+
+        <p>
+            제주 및 도서산간 지역은 추가 배송비가 발생할 수 있으며,
+            일부 상품은 착불 또는 별도 배송비 안내가 필요할 수 있습니다.
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(defaultDeliveryCompany))
+        {
+            <p>
+                <strong>기본 택배사:</strong> @defaultDeliveryCompany
+            </p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(freeShippingNotice))
+        {
+            <p>
+                <strong>무료배송 안내:</strong> @freeShippingNotice
+            </p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(shippingNotice))
+        {
+            <div class="policy-notice-box">
+                @foreach (var line in ToLines(shippingNotice))
+                {
+                    <p>@line</p>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="policy-section">
+        <h3>주문취소 안내</h3>
+
+        <p>
+            결제 전 주문은 고객이 직접 취소할 수 있습니다.
+            결제 완료 후 배송 전 주문은 취소/환불 요청으로 접수되며, 관리자 확인 후 처리됩니다.
+        </p>
+    </section>
+
+    <section class="policy-section">
+        <h3>교환 및 반품 안내</h3>
+
+        @if (!string.IsNullOrWhiteSpace(returnAddress))
+        {
+            <p>
+                <strong>반품 주소:</strong> @returnAddress
+            </p>
+        }
+
+        <div class="policy-notice-box policy-notice-box-merged">
+            <div class="policy-notice-group">
+                <strong>교환/반품 배송비 안내</strong>
+
+                <p>
+                    단순 변심 반품 배송비
+                    <b class="policy-highlight">@(returnShippingFee.ToString("N0"))원</b>,
+                    교환 왕복 배송비
+                    <b class="policy-highlight">@(exchangeShippingFee.ToString("N0"))원</b>
+                    / 상품 불량 또는 오배송은 판매자 부담
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(returnShippingFeeNotice))
+                {
+                    foreach (var line in ToLines(returnShippingFeeNotice))
+                    {
+                        <p class="policy-extra-line">@line</p>
+                    }
+                }
+            </div>
+
+            <div class="policy-notice-group">
+                <strong>반품/교환 안내</strong>
+
+                <p>
+                    상품 수령 후
+                    <b class="policy-highlight">@(returnExchangeAvailableDays)일</b>
+                    이내 고객센터로 문의해주세요.
+                    사용 흔적이 있는 상품은 반품/교환이 어려울 수 있습니다.
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(returnNotice))
+                {
+                    foreach (var line in ToLines(returnNotice))
+                    {
+                        <p class="policy-extra-line">@line</p>
+                    }
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(jejuExtraShippingFeeNotice)
+                        || !string.IsNullOrWhiteSpace(remoteAreaExtraShippingFeeNotice))
+            {
+                <div class="policy-notice-group">
+                    <strong>제주/도서산간 추가 배송비 안내</strong>
+
+                    @if (!string.IsNullOrWhiteSpace(jejuExtraShippingFeeNotice))
+                    {
+                        <p>@jejuExtraShippingFeeNotice</p>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(remoteAreaExtraShippingFeeNotice))
+                    {
+                        <p>@remoteAreaExtraShippingFeeNotice</p>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="policy-section">
+        <h3>교환·반품이 어려운 경우</h3>
+
+        <ul>
+            <li>상품 수령 후 교환·반품 가능 기간이 지난 경우</li>
+            <li>고객의 사용 또는 부주의로 상품 가치가 훼손된 경우</li>
+            <li>구성품, 사은품, 포장재 등이 누락된 경우</li>
+            <li>상품 특성상 개봉 후 재판매가 어려운 경우</li>
+        </ul>
+    </section>
+
+    <section class="policy-section">
+        <h3>환불 안내</h3>
+
+        <p>
+            카드결제는 결제취소 승인 후 카드사 사정에 따라 실제 환불 반영까지 시간이 걸릴 수 있습니다.
+            무통장입금 환불은 고객 환불계좌 확인 후 수동으로 처리됩니다.
+        </p>
+    </section>
+</div>

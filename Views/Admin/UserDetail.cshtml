@@ -1,0 +1,281 @@
+﻿@model MOAClover.Models.ViewModels.AdminUserDetailViewModel
+
+@{
+    ViewData["Title"] = "회원상세";
+    Layout = "_Layout";
+
+    int currentPage = Model.CurrentPage;
+    int totalPages = Model.TotalPages;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="admin-user-detail-wrap">
+
+    <div class="admin-user-detail-head">
+        <div>
+            <h2>회원상세</h2>
+            <p>@Model.UserName</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="Users"
+           class="admin-user-back-btn">
+            회원목록
+        </a>
+    </div>
+
+    @if (TempData["AdminUserMessage"] != null)
+    {
+        <div class="order-message">
+            @TempData["AdminUserMessage"]
+        </div>
+    }
+
+    <div class="admin-user-detail-grid">
+
+        <section class="admin-user-detail-card">
+            <h3>회원 정보</h3>
+
+            <div class="admin-user-info-list">
+                <div>
+                    <span>이름</span>
+                    <strong>@Model.Name</strong>
+                </div>
+
+                <div>
+                    <span>아이디</span>
+                    <strong>@Model.UserName</strong>
+                </div>
+
+                <div>
+                    <span>이메일</span>
+                    <strong>@Model.Email</strong>
+                </div>
+
+                <div>
+                    <span>연락처</span>
+                    <strong>@Model.Phone</strong>
+                </div>
+
+                <div>
+                    <span>가입일</span>
+                    <strong>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+                </div>
+
+                <div>
+                    <span>상태</span>
+                    @if (Model.IsActive)
+                    {
+                        <strong class="admin-user-status active">활성</strong>
+                    }
+                    else
+                    {
+                        <strong class="admin-user-status inactive">비활성</strong>
+                    }
+                </div>
+
+                <div>
+                    <span>권한</span>
+                    <strong>@(Model.IsAdmin ? "관리자" : "일반회원")</strong>
+                </div>
+
+                @if (!Model.IsAdmin)
+                {
+                    <div class="admin-user-action-row">
+                        <span>회원상태 변경</span>
+
+                        <form asp-controller="Admin"
+                              asp-action="ToggleUserActive"
+                              method="post"
+                              onsubmit="return confirm('@(Model.IsActive ? "이 회원을 비활성화하시겠습니까?" : "이 회원을 활성화하시겠습니까?")');">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            @if (Model.IsActive)
+                            {
+                                <button type="submit" class="admin-user-toggle-btn inactive">
+                                    회원 비활성화
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="admin-user-toggle-btn active">
+                                    회원 활성화
+                                </button>
+                            }
+                        </form>
+                    </div>
+                }
+
+            </div>
+        </section>
+
+        <section class="admin-user-detail-card">
+            <h3>주문 요약</h3>
+
+            <div class="admin-user-stat-grid">
+                <div>
+                    <span>전체 주문</span>
+                    <strong>@Model.OrderCount.ToString("N0")건</strong>
+                </div>
+
+                <div>
+                    <span>결제 주문</span>
+                    <strong>@Model.PaidOrderCount.ToString("N0")건</strong>
+                </div>
+
+                <div>
+                    <span>총 결제금액</span>
+                    <strong>@Model.TotalPaidAmount.ToString("N0")원</strong>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <section class="admin-user-detail-card">
+        <h3>배송지</h3>
+
+        @if (Model.Addresses == null || !Model.Addresses.Any())
+        {
+            <div class="admin-user-empty-box">
+                저장된 배송지가 없습니다.
+            </div>
+        }
+        else
+        {
+            <div class="admin-user-address-list">
+                @foreach (var addr in Model.Addresses)
+                {
+                    <div class="admin-user-address-item">
+                        <div>
+                            <strong>
+                                @addr.ReceiverName
+
+                                @if (addr.IsDefault)
+                                {
+                                    <span>기본배송지</span>
+                                }
+                            </strong>
+
+                            <p>@addr.ReceiverPhone</p>
+                            <p>(@addr.ZipCode) @addr.Address @addr.AddressDetail</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="admin-user-detail-card">
+        <h3>회원 주문내역</h3>
+
+        @if (Model.Orders == null || !Model.Orders.Any())
+        {
+            <div class="admin-user-empty-box">
+                주문내역이 없습니다.
+            </div>
+        }
+        else
+        {
+            <div class="admin-user-order-list">
+                @foreach (var order in Model.Orders)
+                {
+                    var firstItem = order.Items?.FirstOrDefault();
+                    var itemCount = order.Items?.Count ?? 0;
+
+                    <article class="admin-user-order-item">
+                        <div>
+                            <strong>@order.OrderNo</strong>
+                            <span>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+
+                            @if (firstItem != null)
+                            {
+                                <p>
+                                    @firstItem.ProductName
+                                    @if (itemCount > 1)
+                                    {
+                                        <span> 외 @(itemCount - 1)건</span>
+                                    }
+                                </p>
+                            }
+                        </div>
+
+                        <div class="admin-user-order-status">
+                            <span class="order-status-badge @OrderStatusHelper.OrderStatusClass(order.OrderStatus)">
+                                @OrderStatusHelper.OrderStatusText(order.OrderStatus)
+                            </span>
+
+                            <span class="payment-status-badge @OrderStatusHelper.PaymentStatusClass(order.PaymentStatus)">
+                                @OrderStatusHelper.PaymentStatusText(order.PaymentStatus)
+                            </span>
+
+                            <strong>@order.TotalPayAmount.ToString("N0")원</strong>
+                        </div>
+
+                        <a asp-controller="Order"
+                           asp-action="AdminOrderDetail"
+                           asp-route-orderNo="@order.OrderNo"
+                           class="admin-user-order-detail-btn">
+                            주문상세
+                        </a>
+                    </article>
+                }
+            </div>
+        }
+
+        @if (totalPages > 1)
+        {
+            var startPage = Math.Max(1, currentPage - 2);
+            var endPage = Math.Min(totalPages, currentPage + 2);
+
+            <div class="admin-users-pagination-wrap">
+                <div class="admin-users-page-info">
+                    @currentPage / @totalPages 페이지
+                </div>
+
+                <div class="admin-users-pagination">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="Admin"
+                           asp-action="UserDetail"
+                           asp-route-id="@Model.Id"
+                           asp-route-page="1">«</a>
+
+                        <a asp-controller="Admin"
+                           asp-action="UserDetail"
+                           asp-route-id="@Model.Id"
+                           asp-route-page="@(currentPage - 1)">‹</a>
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <a asp-controller="Admin"
+                           asp-action="UserDetail"
+                           asp-route-id="@Model.Id"
+                           asp-route-page="@i"
+                           class="@(i == currentPage ? "active" : "")">
+                            @i
+                        </a>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="Admin"
+                           asp-action="UserDetail"
+                           asp-route-id="@Model.Id"
+                           asp-route-page="@(currentPage + 1)">›</a>
+
+                        <a asp-controller="Admin"
+                           asp-action="UserDetail"
+                           asp-route-id="@Model.Id"
+                           asp-route-page="@totalPages">»</a>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+</div>

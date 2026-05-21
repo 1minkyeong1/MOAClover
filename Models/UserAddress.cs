@@ -9,6 +9,9 @@ namespace MOAClover.Models
         public string? UserId { get; set; }   // User연결 FK
         public User? User { get; set; }       // Navigation Property
 
+        public string ReceiverName { get; set; } = "";     // 배송 이름
+        public string ReceiverPhone { get; set; } = "";    // 배송 전화번호
+
         public string Address { get; set; } = string.Empty;            // 주소 (전체 주소)
         public string ZipCode { get; set; } = string.Empty;            // 우편번호
         public string? AddressDetail { get; set; }      // 상세주소 (선택)

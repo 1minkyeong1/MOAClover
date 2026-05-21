@@ -22,6 +22,37 @@ namespace MOAClover.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("MOAClover.Models.CartItem", b =>
+                {
+                    b.Property<int>("CartItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartItemId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GuestCartId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CartItemId");
+
+                    b.ToTable("CartItems");
+                });
+
             modelBuilder.Entity("MOAClover.Models.Category", b =>
                 {
                     b.Property<int>("CategoryId")
@@ -96,6 +127,252 @@ namespace MOAClover.Migrations
                     b.ToTable("Media");
                 });
 
+            modelBuilder.Entity("MOAClover.Models.Order", b =>
+                {
+                    b.Property<int>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
+
+                    b.Property<string>("Address1")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Address2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AdminMemo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AdminMemoUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AdminMemoUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BuyerEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BuyerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BuyerPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerMemo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeliveryMemo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExtraShippingFee")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GuestCartId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GuestOrderPasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCollectShipping")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsGuestOrder")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsIncludedShipping")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OrderEmailSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductTotal")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ShippingFee")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("StockDeducted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TotalPayAmount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrackingCompany")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("OrderId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("MOAClover.Models.OrderItem", b =>
+                {
+                    b.Property<int>("OrderItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DiscountRate")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FinalUnitPrice")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FreeShippingMinAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("JejuExtraFee")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LineTotal")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MainImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RemoteAreaExtraFee")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShippingFee")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ShippingType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UnitPrice")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrderItemId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("MOAClover.Models.OrderStatusHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminMemo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AfterOrderStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AfterPaymentStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BeforeOrderStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BeforePaymentStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ChangedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrderNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingCompany")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderStatusHistories");
+                });
+
             modelBuilder.Entity("MOAClover.Models.PasswordResetToken", b =>
                 {
                     b.Property<int>("Id")
@@ -123,6 +400,72 @@ namespace MOAClover.Migrations
                     b.ToTable("PasswordResetTokens");
                 });
 
+            modelBuilder.Entity("MOAClover.Models.Payment", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CardCompany")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CardNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FailureCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Method")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrderNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PayMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RawResponse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiptUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("MOAClover.Models.Product", b =>
                 {
                     b.Property<int>("ProductId")
@@ -133,6 +476,9 @@ namespace MOAClover.Migrations
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
+
+                    b.Property<string>("CoupangUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -146,8 +492,14 @@ namespace MOAClover.Migrations
                     b.Property<int?>("DiscountRate")
                         .HasColumnType("int");
 
+                    b.Property<int?>("FreeShippingMinAmount")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
+
+                    b.Property<int>("JejuExtraFee")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -156,8 +508,27 @@ namespace MOAClover.Migrations
                     b.Property<int>("Price")
                         .HasColumnType("int");
 
+                    b.Property<int>("RemoteAreaExtraFee")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShippingFee")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ShippingType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SmartStoreUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("UseStock")
+                        .HasColumnType("bit");
 
                     b.HasKey("ProductId");
 
@@ -207,6 +578,205 @@ namespace MOAClover.Migrations
                     b.ToTable("ProductQnA");
                 });
 
+            modelBuilder.Entity("MOAClover.Models.SiteSetting", b =>
+                {
+                    b.Property<int>("SiteSettingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SiteSettingId"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankAccountHolder")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankAccountNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankTransferNotice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BusinessNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryActiveBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryActiveTextColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryBackgroundImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryTextColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerServiceHours")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DefaultDeliveryCompany")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExchangeShippingFee")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FooterBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FooterBackgroundImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FooterTextColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FreeShippingNotice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeaderBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeaderBackgroundImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeaderTextColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JejuExtraShippingFeeNotice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MailOrderSalesNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroButtonText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroLinkUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroSliderImageUrls")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroSliderLinkUrls")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroSubtitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MainHeroVideoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PolicyPageBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PolicyPageBackgroundImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PolicyPageBoxBackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PolicyPageTextColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RemoteAreaExtraShippingFeeNotice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReturnAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ReturnExchangeAvailableDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReturnExchangeNotice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ReturnShippingFee")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReturnShippingFeeNotice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingNotice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShopName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("UseCategoryBackgroundImage")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseFooterBackgroundImage")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseHeaderBackgroundImage")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseMainHeroBanner")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseMainHeroSlider")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UsePolicyPageBackgroundImage")
+                        .HasColumnType("bit");
+
+                    b.HasKey("SiteSettingId");
+
+                    b.ToTable("SiteSettings");
+                });
+
             modelBuilder.Entity("MOAClover.Models.UserAddress", b =>
                 {
                     b.Property<int>("Id")
@@ -224,6 +794,14 @@ namespace MOAClover.Migrations
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -477,6 +1055,39 @@ namespace MOAClover.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MOAClover.Models.OrderItem", b =>
+                {
+                    b.HasOne("MOAClover.Models.Order", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("MOAClover.Models.OrderStatusHistory", b =>
+                {
+                    b.HasOne("MOAClover.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("MOAClover.Models.Payment", b =>
+                {
+                    b.HasOne("MOAClover.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("MOAClover.Models.Product", b =>
                 {
                     b.HasOne("MOAClover.Models.Category", null)
@@ -554,6 +1165,11 @@ namespace MOAClover.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MOAClover.Models.Order", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("User", b =>

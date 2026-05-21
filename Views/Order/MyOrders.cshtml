@@ -1,0 +1,283 @@
+﻿@model List<MOAClover.Models.Order>
+
+@{
+    ViewData["Title"] = "내 주문내역";
+    Layout = "_Layout";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="my-orders-wrap">
+
+    <div class="my-orders-head">
+        <h2>내 주문내역</h2>
+        <p>주문한 상품과 배송상태를 확인할 수 있습니다.</p>
+    </div>
+
+    @if (TempData["MyOrderMessage"] != null)
+    {
+        <div class="order-message">
+            @TempData["MyOrderMessage"]
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="my-orders-empty">
+            <div>아직 주문내역이 없습니다.</div>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="my-orders-main-btn">
+                상품 보러가기
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="my-orders-list compact">
+            @foreach (var order in Model)
+            {
+                var firstItem = order.Items?.FirstOrDefault();
+                var itemCount = order.Items?.Count ?? 0;
+
+                var productSummary = firstItem == null
+                ? "주문 상품 정보가 없습니다."
+                : firstItem.ProductName;
+
+                if (itemCount > 1)
+                {
+                    productSummary += $" 외 {itemCount - 1}건";
+                }
+
+                <article class="my-order-row">
+
+                    <div class="my-order-row-top">
+                        <div class="my-order-no">
+                            @order.OrderNo
+                        </div>
+
+                        <div class="my-order-date">
+                            @order.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                        </div>
+                    </div>
+
+                    <div class="my-order-row-main">
+
+                        <div class="my-order-row-col product with-thumb">
+                            @if (firstItem != null)
+                            {
+                                <a asp-controller="Home"
+                                   asp-action="Detail"
+                                   asp-route-id="@firstItem.ProductId"
+                                   class="my-order-thumb">
+                                    @if (!string.IsNullOrWhiteSpace(firstItem.MainImageUrl))
+                                    {
+                                        <img src="@firstItem.MainImageUrl" alt="@firstItem.ProductName" />
+                                    }
+                                    else
+                                    {
+                                        <div class="my-order-no-img">이미지 없음</div>
+                                    }
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="my-order-thumb">
+                                    <div class="my-order-no-img">이미지 없음</div>
+                                </div>
+                            }
+
+                            <div class="my-order-product-text">
+                                <span>주문상품</span>
+
+                                @if (firstItem != null)
+                                {
+                                    <a asp-controller="Home"
+                                       asp-action="Detail"
+                                       asp-route-id="@firstItem.ProductId"
+                                       class="my-order-product-link">
+                                        @productSummary
+                                    </a>
+
+                                    <em>수량 @firstItem.Quantity.ToString("N0")개</em>
+
+                                    @if (!string.IsNullOrWhiteSpace(order.CustomerMemo))
+                                    {
+                                        <a asp-controller="Order"
+                                           asp-action="MyOrderDetail"
+                                           asp-route-orderNo="@order.OrderNo"
+                                           class="my-order-seller-message-chip">
+                                            판매자 메세지 확인
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    <strong>@productSummary</strong>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="my-order-row-col amount">
+                            <span>결제금액</span>
+                            <strong>@order.TotalPayAmount.ToString("N0")원</strong>
+                        </div>
+
+                        <div class="my-order-row-col status">
+                            <span>상태</span>
+
+                            <strong class="order-status-badge @OrderStatusHelper.OrderStatusClass(order.OrderStatus)">
+                                @OrderStatusHelper.OrderStatusText(order.OrderStatus)
+                            </strong>
+
+                            <strong class="payment-status-badge @OrderStatusHelper.PaymentStatusClass(order.PaymentStatus)">
+                                @OrderStatusHelper.PaymentStatusText(order.PaymentStatus)
+                            </strong>
+                        </div>
+
+                        <div class="my-order-row-col shipping">
+                            <span>배송</span>
+
+                            @if (!string.IsNullOrWhiteSpace(order.TrackingNumber))
+                            {
+                                <strong>@order.TrackingCompany</strong>
+                                <em>@order.TrackingNumber</em>
+                            }
+                            else
+                            {
+                                <strong class="muted">배송 정보 준비중</strong>
+                            }
+                        </div>
+
+                        <div class="my-order-row-actions">
+                            <a asp-controller="Order"
+                               asp-action="MyOrderDetail"
+                               asp-route-orderNo="@order.OrderNo"
+                               class="my-order-detail-btn">
+                                주문상세 보기
+                            </a>
+                        </div>
+
+                    </div>
+
+                    @if (order.OrderStatus == "CancelRequested"
+                                || order.OrderStatus == "ReturnRequested"
+                                || order.OrderStatus == "ExchangeRequested"
+                                || order.PaymentStatus == "Refunded")
+                    {
+                        <div class="my-order-row-notice">
+                            @if (order.OrderStatus == "CancelRequested")
+                            {
+                                <strong>취소/환불 요청 접수</strong>
+                                <span>판매자가 요청 내용을 확인 중입니다.</span>
+                            }
+                            else if (order.OrderStatus == "ReturnRequested")
+                            {
+                                <strong>반품 요청 접수</strong>
+                                <span>판매자가 반품 요청을 확인 중입니다.</span>
+                            }
+                            else if (order.OrderStatus == "ExchangeRequested")
+                            {
+                                <strong>교환 요청 접수</strong>
+                                <span>판매자가 교환 요청을 확인 중입니다.</span>
+                            }
+                            else if (order.PaymentStatus == "Refunded")
+                            {
+                                <strong>환불 완료</strong>
+                                <span>환불 처리가 완료되었습니다.</span>
+                            }
+                        </div>
+                    }
+
+                </article>
+            }
+        </div>
+    }
+
+    @if (totalPages > 1)
+    {
+        <div class="my-orders-pagination">
+            @if (currentPage > 1)
+            {
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="1"
+                   title="첫 페이지">
+                    «
+                </a>
+
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="@(currentPage - 1)"
+                   title="이전 페이지">
+                    ‹
+                </a>
+            }
+
+            @{
+                var startPage = Math.Max(1, currentPage - 2);
+                var endPage = Math.Min(totalPages, currentPage + 2);
+            }
+
+            @if (startPage > 1)
+            {
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="1">
+                    1
+                </a>
+
+                @if (startPage > 2)
+                {
+                    <span class="pagination-ellipsis">...</span>
+                }
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="@i"
+                   class="@(i == currentPage ? "active" : "")">
+                    @i
+                </a>
+            }
+
+            @if (endPage < totalPages)
+            {
+                @if (endPage < totalPages - 1)
+                {
+                    <span class="pagination-ellipsis">...</span>
+                }
+
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="@totalPages">
+                    @totalPages
+                </a>
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="@(currentPage + 1)"
+                   title="다음 페이지">
+                    ›
+                </a>
+
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   asp-route-page="@totalPages"
+                   title="마지막 페이지">
+                    »
+                </a>
+            }
+        </div>
+    }
+
+</div>

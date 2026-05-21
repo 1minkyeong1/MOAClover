@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using MOAClover.Data;
@@ -32,7 +31,12 @@ namespace MOAClover.Controllers
 
 
         // Index화면
-        public IActionResult Index(int page = 1, int? categoryId = null, string? q = null, bool showHidden = false)
+        public IActionResult Index(
+            int page = 1,
+            int? categoryId = null,
+            string? q = null,
+            bool showHidden = false,
+            string? productFilter = null)
         {
             const int pageSize = 20;
             page = Math.Max(1, page);
@@ -44,15 +48,36 @@ namespace MOAClover.Controllers
                 .AsNoTracking()
                 .Where(p => p.DeletedAt == null);
 
-            // 2) 노출/숨김
-            if (!isAdmin || !showHidden)
-                query = query.Where(p => p.IsVisible);
+            productFilter = productFilter?.Trim();
 
-            if (isAdmin)
+            if (!isAdmin)
             {
+                query = query.Where(p => p.IsVisible);
+            }
+            else
+            {
+                if (productFilter == "hidden")
+                {
+                    query = query.Where(p => !p.IsVisible);
+                }
+                else if (productFilter == "soldout")
+                {
+                    query = query.Where(p => p.UseStock && p.StockQuantity <= 0);
+                }
+                else if (!showHidden)
+                {
+                    query = query.Where(p => p.IsVisible);
+                }
+
                 ViewBag.HiddenCount = _context.Products
                     .AsNoTracking()
                     .Count(p => p.DeletedAt == null && !p.IsVisible);
+
+                ViewBag.SoldoutCount = _context.Products
+                    .AsNoTracking()
+                    .Count(p => p.DeletedAt == null && p.UseStock && p.StockQuantity <= 0);
+
+                ViewBag.ProductFilter = productFilter;
             }
 
             // 3) 카테고리 트리 로드(검색/하위포함 위해)
@@ -155,6 +180,18 @@ namespace MOAClover.Controllers
                     Price = p.Price,
                     DiscountRate = p.DiscountRate,
                     IsVisible = p.IsVisible,
+
+                    // 재고
+                    UseStock = p.UseStock,
+                    StockQuantity = p.StockQuantity,
+
+                    // 배송비
+                    ShippingType = p.ShippingType,
+                    ShippingFee = p.ShippingFee,
+                    FreeShippingMinAmount = p.FreeShippingMinAmount,
+                    JejuExtraFee = p.JejuExtraFee,
+                    RemoteAreaExtraFee = p.RemoteAreaExtraFee,
+
                     ImageUrls = new List<string>() // 아래에서 채움
                 })
                 .ToList();
@@ -227,12 +264,34 @@ namespace MOAClover.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductCreateViewModel vm)
         {
+            var shippingType = NormalizeShippingType(vm.ShippingType);
+
+            // 파일 업로드 항목은 기본 ModelState 검증에서 제외합니다.
+            ModelState.Remove(nameof(vm.ThumbImages));
+            ModelState.Remove(nameof(vm.DetailImages));
+            ModelState.Remove(nameof(vm.Videos));
+
             if (vm.CategoryId <= 0)
                 ModelState.AddModelError(nameof(vm.CategoryId), "카테고리를 선택해주세요.");
 
-            //  썸네일 8장 제한
-            if (vm.ThumbImages != null && vm.ThumbImages.Count > 8)
+            // 썸네일은 상품 등록 시 필수
+            var thumbFiles = (vm.ThumbImages ?? new List<IFormFile>())
+                .Where(x => x != null && x.Length > 0)
+                .ToList();
+
+            if (!thumbFiles.Any())
+            {
+                ModelState.AddModelError(nameof(vm.ThumbImages), "상단 썸네일을 1장 이상 등록해주세요.");
+            }
+
+            if (thumbFiles.Count > 8)
+            {
                 ModelState.AddModelError(nameof(vm.ThumbImages), "상단 썸네일은 최대 8장까지 가능합니다.");
+            }
+
+            // 상세이미지/동영상은 선택사항
+            // 배송비 검증
+            ValidateShipping(vm, shippingType);
 
             if (!ModelState.IsValid)
             {
@@ -253,8 +312,32 @@ namespace MOAClover.Controllers
                 Description = vm.Description,
                 Price = vm.Price,
                 DiscountRate = vm.DiscountRate,
+                UseStock = vm.UseStock,
+                StockQuantity = vm.UseStock ? vm.StockQuantity : 0,
                 CategoryId = vm.CategoryId,
                 IsVisible = vm.IsVisible,
+
+                ShippingType = shippingType,
+
+                ShippingFee = shippingType == "Fixed" || shippingType == "ConditionalFree"
+                    ? vm.ShippingFee ?? 0
+                    : 0,
+
+                FreeShippingMinAmount = shippingType == "ConditionalFree"
+                    ? vm.FreeShippingMinAmount
+                    : null,
+
+                JejuExtraFee = shippingType == "Fixed" || shippingType == "ConditionalFree"
+                    ? vm.JejuExtraFee ?? 0
+                    : 0,
+
+                RemoteAreaExtraFee = shippingType == "Fixed" || shippingType == "ConditionalFree"
+                    ? vm.RemoteAreaExtraFee ?? 0
+                    : 0,
+
+                SmartStoreUrl = vm.SmartStoreUrl,
+                CoupangUrl = vm.CoupangUrl,
+
                 CreatedAt = DateTime.Now
             };
 
@@ -282,7 +365,7 @@ namespace MOAClover.Controllers
 
             //  1) 상단 썸네일 저장 (thumb)
             int tOrder = 0;
-            foreach (var f in (vm.ThumbImages ?? new()).Where(x => x != null && x.Length > 0))
+            foreach (var f in thumbFiles)
             {
                 var url = SaveFile(f, baseFolder);
                 _context.Media.Add(new Media
@@ -361,8 +444,19 @@ namespace MOAClover.Controllers
                 Description = product.Description,
                 Price = product.Price,
                 DiscountRate = product.DiscountRate,
+                UseStock = product.UseStock,
+                StockQuantity = product.StockQuantity,
                 CategoryId = product.CategoryId,
                 IsVisible = product.IsVisible,
+
+                ShippingType = product.ShippingType,
+                ShippingFee = product.ShippingFee,
+                FreeShippingMinAmount = product.FreeShippingMinAmount,
+                JejuExtraFee = product.JejuExtraFee,
+                RemoteAreaExtraFee = product.RemoteAreaExtraFee,
+
+                SmartStoreUrl = product.SmartStoreUrl,
+                CoupangUrl = product.CoupangUrl,
 
                 ExistingMedia = medias.Select(m => new MediaEditItemVm
                 {
@@ -388,6 +482,15 @@ namespace MOAClover.Controllers
             var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == vm.ProductId);
             if (product == null) return NotFound();
 
+            var shippingType = NormalizeShippingType(vm.ShippingType);
+
+            ModelState.Remove(nameof(vm.NewImages));
+            ModelState.Remove(nameof(vm.NewDetailImages));
+            ModelState.Remove(nameof(vm.NewVideos));
+            ModelState.Remove(nameof(vm.NewThumbnail));
+
+            ValidateShipping(vm, shippingType);
+
             if (!ModelState.IsValid)
             {
                 await Build4LevelCategoryViewBag(vm.CategoryId);
@@ -399,8 +502,32 @@ namespace MOAClover.Controllers
             product.Description = vm.Description;
             product.Price = vm.Price;
             product.DiscountRate = vm.DiscountRate;
+            product.UseStock = vm.UseStock;
+            product.StockQuantity = vm.UseStock ? vm.StockQuantity : 0;
             product.CategoryId = vm.CategoryId;
             product.IsVisible = vm.IsVisible;
+
+            product.ShippingType = shippingType;
+
+            product.ShippingFee = shippingType == "Fixed" || shippingType == "ConditionalFree"
+                ? vm.ShippingFee ?? 0
+                : 0;
+
+            product.FreeShippingMinAmount = shippingType == "ConditionalFree"
+                ? vm.FreeShippingMinAmount
+                : null;
+
+            product.JejuExtraFee = shippingType == "Fixed" || shippingType == "ConditionalFree"
+                ? vm.JejuExtraFee ?? 0
+                : 0;
+
+            product.RemoteAreaExtraFee = shippingType == "Fixed" || shippingType == "ConditionalFree"
+                ? vm.RemoteAreaExtraFee ?? 0
+                : 0;
+
+            product.SmartStoreUrl = vm.SmartStoreUrl;
+            product.CoupangUrl = vm.CoupangUrl;
+
             product.UpdatedAt = DateTime.Now;
 
             // 2) 기존 미디어 로드
@@ -660,16 +787,32 @@ namespace MOAClover.Controllers
                 Name = product.Name,
                 Price = product.Price,
                 DiscountRate = product.DiscountRate,
+
+                // 재고 관리
+                UseStock = product.UseStock,
+                StockQuantity = product.StockQuantity,
+
                 Description = product.Description,
                 CategoryPath = categoryPath,
 
-                // ✅ 상단 썸네일 영역(최대 8)
+                // 외부몰 상품 URL
+                SmartStoreUrl = product.SmartStoreUrl,
+                CoupangUrl = product.CoupangUrl,
+
+                // 배송비 설정
+                ShippingType = product.ShippingType,
+                ShippingFee = product.ShippingFee,
+                FreeShippingMinAmount = product.FreeShippingMinAmount,
+                JejuExtraFee = product.JejuExtraFee,
+                RemoteAreaExtraFee = product.RemoteAreaExtraFee,
+
+                // 상단 썸네일 영역(최대 8)
                 ImageUrls = thumbUrls,
 
-                // ✅ 상세 탭 이미지
+                // 상세 탭 이미지
                 DetailImageUrls = detailImages,
 
-                // ✅ 동영상
+                // 동영상
                 VideoUrls = videos,
 
                 QnAs = qnaPageItems
@@ -679,7 +822,6 @@ namespace MOAClover.Controllers
         }
 
         // QnA
-        // Qna Ajax 저장 – AddQnAAjax
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult AddQnAAjax(ProductQnA qna)
@@ -888,39 +1030,180 @@ namespace MOAClover.Controllers
         // 관리자 Q&A 관리(미답변 목록)
         [Authorize(Roles = "admin")]
         [HttpGet]
-        public async Task<IActionResult> QnAAdmin(int page = 1, bool showAnswered = false)
+        public async Task<IActionResult> QnAAdmin(string filter = "waiting", string? keyword = null, int page = 1)
         {
-            const int pageSize = 20;
-            page = Math.Max(1, page);
+            const int pageSize = 10;
 
-            var q = _context.ProductQnA
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted);
+            if (page < 1)
+                page = 1;
 
-            // 기본은 미답변만, showAnswered=true면 전체(답변포함)
-            if (!showAnswered)
+            filter = string.IsNullOrWhiteSpace(filter) ? "waiting" : filter.Trim();
+            keyword = keyword?.Trim();
+
+            var baseQuery =
+                from q in _context.ProductQnA.AsNoTracking()
+                join p in _context.Products.AsNoTracking()
+                    on q.ProductId equals p.ProductId
+                where !q.IsDeleted
+                select new
+                {
+                    q.QnAId,
+                    q.ProductId,
+                    ProductName = p.Name,
+                    q.UserName,
+                    q.Question,
+                    q.Answer,
+                    q.IsSecret,
+                    q.CreatedAt,
+                    q.AnsweredAt
+                };
+
+            var waitingCount = await baseQuery
+                .CountAsync(x => x.Answer == null || x.Answer == "");
+
+            var answeredCount = await baseQuery
+                .CountAsync(x => x.Answer != null && x.Answer != "");
+
+            if (filter == "waiting")
             {
-                q = q.Where(x => x.Answer == null || x.Answer == "");
+                baseQuery = baseQuery.Where(x => x.Answer == null || x.Answer == "");
+            }
+            else if (filter == "answered")
+            {
+                baseQuery = baseQuery.Where(x => x.Answer != null && x.Answer != "");
+            }
+            else if (filter == "secret")
+            {
+                baseQuery = baseQuery.Where(x => x.IsSecret);
             }
 
-            int totalCount = await q.CountAsync();
-            int totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
-            if (page > totalPages) page = totalPages;
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                baseQuery = baseQuery.Where(x =>
+                    x.ProductName.Contains(keyword)
+                    || x.UserName.Contains(keyword)
+                    || x.Question.Contains(keyword)
+                    || (x.Answer != null && x.Answer.Contains(keyword))
+                );
+            }
 
-            var items = await q
+            var totalCount = await baseQuery.CountAsync();
+
+            var rows = await baseQuery
                 .OrderByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.ShowAnswered = showAnswered;
+            var model = new AdminQnAListViewModel
+            {
+                Filter = filter,
+                Keyword = keyword,
+                CurrentPage = page,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                WaitingCount = waitingCount,
+                AnsweredCount = answeredCount,
+                Items = rows.Select(x => new AdminQnAListItemViewModel
+                {
+                    QnAId = x.QnAId,
+                    ProductId = x.ProductId,
+                    ProductName = x.ProductName,
+                    UserName = x.UserName,
+                    Question = x.Question,
+                    Answer = x.Answer,
+                    IsSecret = x.IsSecret,
+                    CreatedAt = x.CreatedAt,
+                    AnsweredAt = x.AnsweredAt
+                }).ToList()
+            };
 
-            return View(items);
+            if (model.TotalPages < 1)
+                model.TotalPages = 1;
+
+            return View(model);
         }
 
+        // 이용약관, 개인정보, 배송교환안내페이지
+        [HttpGet]
+        public IActionResult Terms()
+        {
+            return View();
+        }
 
+        [HttpGet]
+        public IActionResult PrivacyPolicy()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ShippingReturn()
+        {
+            return View();
+        }
+
+        // 고객센터 안내페이지
+        [HttpGet]
+        public IActionResult CustomerService()
+        {
+            return View();
+        }
+
+        // 배송비
+        private string NormalizeShippingType(string? shippingType)
+        {
+            if (string.IsNullOrWhiteSpace(shippingType))
+                return "Included";
+
+            var allowed = new[] { "Included", "Free", "Fixed", "ConditionalFree", "Collect" };
+
+            return allowed.Contains(shippingType)
+                ? shippingType
+                : "Included";
+        }
+
+        private void ValidateShipping(ProductCreateViewModel vm, string shippingType)
+        {
+            if (shippingType == "ConditionalFree"
+                && (!vm.FreeShippingMinAmount.HasValue || vm.FreeShippingMinAmount.Value <= 0))
+            {
+                ModelState.AddModelError(
+                    nameof(vm.FreeShippingMinAmount),
+                    "조건부 무료배송은 무료배송 기준금액을 입력해주세요."
+                );
+            }
+
+            if ((shippingType == "Fixed" || shippingType == "ConditionalFree")
+                && (!vm.ShippingFee.HasValue || vm.ShippingFee.Value < 0))
+            {
+                ModelState.AddModelError(
+                    nameof(vm.ShippingFee),
+                    "기본 배송비를 입력해주세요."
+                );
+            }
+        }
+
+        private void ValidateShipping(ProductEditViewModel vm, string shippingType)
+        {
+            if (shippingType == "ConditionalFree"
+                && (!vm.FreeShippingMinAmount.HasValue || vm.FreeShippingMinAmount.Value <= 0))
+            {
+                ModelState.AddModelError(
+                    nameof(vm.FreeShippingMinAmount),
+                    "조건부 무료배송은 무료배송 기준금액을 입력해주세요."
+                );
+            }
+
+            if ((shippingType == "Fixed" || shippingType == "ConditionalFree")
+                && (!vm.ShippingFee.HasValue || vm.ShippingFee.Value < 0))
+            {
+                ModelState.AddModelError(
+                    nameof(vm.ShippingFee),
+                    "기본 배송비를 입력해주세요."
+                );
+            }
+        }
 
         //  4단 카테고리 ViewBag 구성 메서드(중복 제거용)
         private async Task Build4LevelCategoryViewBag(int leafCategoryId)

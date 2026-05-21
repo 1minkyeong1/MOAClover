@@ -12,14 +12,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Model Identity 등록
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    options.Password.RequiredLength = 6;
+    // 비밀번호 정책
+    options.Password.RequiredLength = 8;
+
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
 })
+.AddErrorDescriber<KoreanIdentityErrorDescriber>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
 // MVC
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<OrderStockService>();
 
 // Identity 쿠키 인증 설정 “로그인 안 한 사용자를 어디로 보낼지 정하는 설정”
 // 비로그인 사용자가 접근하면 자동으로 / Account / Login으로 보내라
@@ -58,7 +66,7 @@ using (var scope = app.Services.CreateScope())
             UserName = "admin",
             Email = "moaclover@naver.com",
             Name = "관리자",
-            Phone = "01040330394",
+            Phone = "01074658622",
             IsActive = true
         };
 

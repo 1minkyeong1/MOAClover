@@ -1,0 +1,230 @@
+﻿@model MOAClover.Models.ViewModels.CartViewModel
+
+@{
+    ViewData["Title"] = "장바구니";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/Cart.css" asp-append-version="true" />
+
+<div class="cart-wrap">
+
+    <div class="cart-head">
+        <h2>장바구니</h2>
+        <p>담아둔 상품을 확인하고 주문을 진행할 수 있습니다.</p>
+    </div>
+
+    @if (TempData["CartMessage"] != null)
+    {
+        <div class="cart-message">
+            @TempData["CartMessage"]
+        </div>
+    }
+    else if (TempData["SuccessMessage"] != null)
+    {
+        <div class="cart-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <div class="cart-empty">
+            <div class="cart-empty-title">장바구니가 비어 있습니다.</div>
+            <a asp-controller="Home" asp-action="Index" class="cart-main-btn">
+                상품 보러가기
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-layout">
+
+            <div class="cart-list">
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item">
+
+                        <a asp-controller="Home"
+                           asp-action="Detail"
+                           asp-route-id="@item.ProductId"
+                           class="cart-img-box">
+                            @if (!string.IsNullOrWhiteSpace(item.MainImageUrl))
+                            {
+                                <img src="@item.MainImageUrl" alt="@item.ProductName" />
+                            }
+                            else
+                            {
+                                <div class="cart-no-img">이미지 없음</div>
+                            }
+                        </a>
+
+                        <div class="cart-info">
+                            <a asp-controller="Home"
+                               asp-action="Detail"
+                               asp-route-id="@item.ProductId"
+                               class="cart-product-name">
+                                @item.ProductName
+                            </a>
+
+                            <div class="cart-price-row">
+                                @if (item.DiscountRate.HasValue && item.DiscountRate.Value > 0)
+                                {
+                                    <span class="cart-rate">@item.DiscountRate%</span>
+                                }
+
+                                <span class="cart-price">@item.FinalPrice.ToString("N0")원</span>
+                            </div>
+
+                            <div class="cart-item-shipping">
+                                🚚
+                                @if (item.ShippingType == "Included")
+                                {
+                                    <span>배송비 포함</span>
+                                }
+                                else if (item.ShippingType == "Free")
+                                {
+                                    <span>무료배송</span>
+                                }
+                                else if (item.ShippingType == "Collect")
+                                {
+                                    <span class="cart-shipping-alert">착불/별도</span>
+                                }
+                                else if (item.ShippingType == "ConditionalFree")
+                                {
+                                    if (item.FreeShippingMinAmount.HasValue && item.FreeShippingMinAmount.Value > 0)
+                                    {
+                                        if (item.LineTotal >= item.FreeShippingMinAmount.Value)
+                                        {
+                                            <span>무료배송</span>
+                                        }
+                                        else
+                                        {
+                                            <span>
+                                                @item.ShippingFee.ToString("N0")원
+                                                / @item.FreeShippingMinAmount.Value.ToString("N0")원 이상 무료배송
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>@item.ShippingFee.ToString("N0")원</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>@item.ShippingFee.ToString("N0")원</span>
+                                }
+                            </div>
+
+                            <form asp-controller="Cart"
+                                  asp-action="UpdateQuantity"
+                                  method="post"
+                                  class="cart-qty-form">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+
+                                <button type="submit"
+                                        name="quantity"
+                                        value="@(item.Quantity - 1)"
+                                        class="cart-qty-btn"
+                                        @(item.Quantity <= 1 ? "disabled" : "")>
+                                    -
+                                </button>
+
+                                <input type="number"
+                                       value="@item.Quantity"
+                                       min="1"
+                                       readonly
+                                       class="cart-qty-input" />
+
+                                <button type="submit"
+                                        name="quantity"
+                                        value="@(item.Quantity + 1)"
+                                        class="cart-qty-btn">
+                                    +
+                                </button>
+                            </form>
+
+                            <div class="cart-line-total">
+                                상품합계 <strong>@item.LineTotal.ToString("N0")원</strong>
+                            </div>
+                        </div>
+
+                        <form asp-controller="Cart"
+                              asp-action="Remove"
+                              method="post"
+                              class="cart-remove-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <button type="submit">삭제</button>
+                        </form>
+
+                    </div>
+                }
+
+            </div>
+
+            <div class="cart-summary">
+                <h3>결제 예정 금액</h3>
+
+                <div class="summary-row">
+                    <span>상품 금액</span>
+                    <strong>@Model.ProductTotal.ToString("N0")원</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>배송비</span>
+
+                    @if (Model.HasCollectShipping)
+                    {
+                        <strong class="cart-shipping-alert">착불/별도</strong>
+                    }
+                    else if (Model.HasIncludedShipping && Model.ShippingFee == 0)
+                    {
+                        <strong>배송비 포함</strong>
+                    }
+                    else if (Model.ShippingFee == 0)
+                    {
+                        <strong>무료배송</strong>
+                    }
+                    else
+                    {
+                        <strong>@Model.ShippingFee.ToString("N0")원</strong>
+                    }
+                </div>
+
+                @if (Model.HasCollectShipping)
+                {
+                    <div class="cart-shipping-notice">
+                        착불/별도 배송 상품이 포함되어 있습니다. 실제 배송비는 별도 안내될 수 있습니다.
+                    </div>
+                }
+
+                <div class="summary-total">
+                    <span>총 결제금액</span>
+                    <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+                </div>
+
+                <a asp-controller="Order"
+                   asp-action="Start"
+                   class="cart-order-btn">
+                    주문하기
+                </a>
+
+                <form asp-controller="Cart"
+                      asp-action="Clear"
+                      method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="cart-clear-btn">
+                        장바구니 비우기
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    }
+
+</div>

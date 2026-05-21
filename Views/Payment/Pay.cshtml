@@ -1,0 +1,105 @@
+﻿@model MOAClover.Models.Order
+
+@{
+    ViewData["Title"] = "카드결제";
+    Layout = "_Layout";
+
+    var clientKey = ViewBag.TossClientKey as string ?? "";
+
+    var rawOrderName = Model.Items != null && Model.Items.Any()
+        ? Model.Items.First().ProductName + (Model.Items.Count > 1 ? $" 외 {Model.Items.Count - 1}건" : "")
+        : "MOAClover 주문";
+
+    var orderName = rawOrderName.Length > 90
+        ? rawOrderName.Substring(0, 90)
+        : rawOrderName;
+
+    var customerName = string.IsNullOrWhiteSpace(Model.BuyerName)
+        ? "고객"
+        : Model.BuyerName;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="payment-pay-wrap">
+    <div class="payment-pay-card">
+        <h2>카드결제</h2>
+
+        <p>
+            주문번호 <strong>@Model.OrderNo</strong><br />
+            결제금액 <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+        </p>
+
+        <div class="payment-pay-summary">
+            <div>
+                <span>상품금액</span>
+                <strong>@Model.ProductTotal.ToString("N0")원</strong>
+            </div>
+
+            <div>
+                <span>배송비</span>
+                <strong>@Model.ShippingFee.ToString("N0")원</strong>
+            </div>
+
+            <div class="total">
+                <span>총 결제금액</span>
+                <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+            </div>
+        </div>
+
+        <button type="button"
+                id="paymentButton"
+                class="payment-pay-btn"
+                data-client-key="@clientKey"
+                data-amount="@Model.TotalPayAmount"
+                data-order-id="@Model.OrderNo"
+                data-order-name="@orderName"
+                data-customer-name="@customerName">
+            결제하기
+        </button>
+
+        <a asp-controller="Order"
+           asp-action="Complete"
+           asp-route-orderNo="@Model.OrderNo"
+           class="payment-pay-cancel">
+            결제하지 않고 주문완료 화면으로 이동
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+
+    <script>
+        const paymentButton = document.getElementById("paymentButton");
+
+        paymentButton?.addEventListener("click", function () {
+            const clientKey = paymentButton.dataset.clientKey;
+            const amount = Number(paymentButton.dataset.amount || 0);
+            const orderId = paymentButton.dataset.orderId;
+            const orderName = paymentButton.dataset.orderName;
+            const customerName = paymentButton.dataset.customerName || "고객";
+
+            if (!clientKey) {
+                alert("토스페이먼츠 ClientKey가 없습니다.");
+                return;
+            }
+
+            if (!amount || !orderId || !orderName) {
+                alert("결제 정보가 올바르지 않습니다.");
+                return;
+            }
+
+            const tossPayments = TossPayments(clientKey);
+
+            tossPayments.requestPayment("카드", {
+                amount: amount,
+                orderId: orderId,
+                orderName: orderName,
+                customerName: customerName,
+                successUrl: window.location.origin + "/Payment/Success",
+                failUrl: window.location.origin + "/Payment/Fail"
+            });
+        });
+    </script>
+}

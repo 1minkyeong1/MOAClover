@@ -7,6 +7,7 @@ using MOAClover.Models;
 using MOAClover.Models.ViewModels;
 using MOAClover.Services;
 
+
 namespace MOAClover.Controllers
 {
     public class AccountController : Controller
@@ -32,12 +33,18 @@ namespace MOAClover.Controllers
         // 로그인
         // =========================
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login(string? returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string username, string password)
+        public async Task<IActionResult> Login(string username, string password, string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 ModelState.AddModelError("", "아이디와 비밀번호를 입력해주세요.");
@@ -46,9 +53,15 @@ namespace MOAClover.Controllers
 
             var user = await _userManager.FindByNameAsync(username);
 
-            if (user == null || !user.IsActive || user.DeletedAt != null)
+            if (user == null || user.DeletedAt != null)
             {
                 ModelState.AddModelError("", "아이디 또는 비밀번호가 올바르지 않습니다.");
+                return View();
+            }
+
+            if (!user.IsActive)
+            {
+                ModelState.AddModelError("", "비활성화된 계정입니다. 고객센터로 문의해주세요.");
                 return View();
             }
 
@@ -58,6 +71,16 @@ namespace MOAClover.Controllers
             {
                 ModelState.AddModelError("", "아이디 또는 비밀번호가 올바르지 않습니다.");
                 return View();
+            }
+
+            // 비회원 장바구니 → 회원 장바구니로 병합
+            var cartUserId = user.UserName ?? username;
+            await MergeGuestCartToUserCartAsync(cartUserId);
+
+            // 로그인 전 요청한 주소가 있으면 그곳으로 이동
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
             }
 
             return RedirectToAction("Index", "Home");
@@ -70,6 +93,53 @@ namespace MOAClover.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        // 장바구니 병합
+        private async Task MergeGuestCartToUserCartAsync(string userId)
+        {
+            const string cookieName = "MOA_GUEST_CART_SESSION_ID";
+
+            if (!Request.Cookies.TryGetValue(cookieName, out var guestCartId)
+                || string.IsNullOrWhiteSpace(guestCartId))
+            {
+                return;
+            }
+
+            var guestItems = await _context.CartItems
+                .Where(x => x.GuestCartId == guestCartId)
+                .ToListAsync();
+
+            if (!guestItems.Any())
+            {
+                Response.Cookies.Delete(cookieName);
+                return;
+            }
+
+            foreach (var guestItem in guestItems)
+            {
+                var existing = await _context.CartItems
+                    .FirstOrDefaultAsync(x => x.UserId == userId
+                                              && x.ProductId == guestItem.ProductId);
+
+                if (existing != null)
+                {
+                    existing.Quantity += guestItem.Quantity;
+                    existing.UpdatedAt = DateTime.Now;
+
+                    _context.CartItems.Remove(guestItem);
+                }
+                else
+                {
+                    guestItem.UserId = userId;
+                    guestItem.GuestCartId = null;
+                    guestItem.UpdatedAt = DateTime.Now;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            Response.Cookies.Delete(cookieName);
         }
 
         // =========================
@@ -133,6 +203,10 @@ namespace MOAClover.Controllers
                 var address = new UserAddress
                 {
                     UserId = user.Id,
+
+                    ReceiverName = model.Name ?? "",
+                    ReceiverPhone = model.Phone ?? "",
+
                     Address = model.Address ?? "",
                     AddressDetail = model.AddressDetail,
                     ZipCode = model.ZipCode ?? "",
@@ -362,6 +436,8 @@ namespace MOAClover.Controllers
                 .Select(a => new AddressItemVm
                 {
                     Id = a.Id,
+                    ReceiverName = a.ReceiverName,
+                    ReceiverPhone = a.ReceiverPhone,
                     ZipCode = a.ZipCode,
                     Address = a.Address,
                     AddressDetail = a.AddressDetail,
@@ -481,6 +557,12 @@ namespace MOAClover.Controllers
             var addr = new UserAddress
             {
                 UserId = user.Id,
+                ReceiverName = string.IsNullOrWhiteSpace(vm.ReceiverName)
+                    ? user.Name ?? ""
+                    : vm.ReceiverName.Trim(),
+                ReceiverPhone = string.IsNullOrWhiteSpace(vm.ReceiverPhone)
+                    ? user.Phone ?? ""
+                    : vm.ReceiverPhone.Trim(),
                 ZipCode = vm.ZipCode.Trim(),
                 Address = vm.Address.Trim(),
                 AddressDetail = vm.AddressDetail?.Trim(),
@@ -521,6 +603,14 @@ namespace MOAClover.Controllers
                 var olds = await _context.UserAddresses.Where(a => a.UserId == user.Id && a.IsDefault).ToListAsync();
                 foreach (var o in olds) o.IsDefault = false;
             }
+
+            addr.ReceiverName = string.IsNullOrWhiteSpace(vm.ReceiverName)
+                ? user.Name ?? ""
+                : vm.ReceiverName.Trim();
+
+            addr.ReceiverPhone = string.IsNullOrWhiteSpace(vm.ReceiverPhone)
+                ? user.Phone ?? ""
+                : vm.ReceiverPhone.Trim();
 
             addr.ZipCode = vm.ZipCode.Trim();
             addr.Address = vm.Address.Trim();

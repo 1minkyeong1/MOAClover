@@ -5,14 +5,15 @@
     Layout = "_Layout";
 }
 
+<link rel="stylesheet" href="~/css/create.css" asp-append-version="true" />
 
-<div class="container" style="max-width:920px; margin:60px auto;">
-    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,0.06);">
-        <h3 style="margin:0 0 18px; font-weight:900;">상품 등록</h3>
+<div class="create-page-wrap">
+    <div class="create-card">
+        <h3 class="create-title">상품 등록</h3>
 
         @if (!ViewData.ModelState.IsValid)
         {
-            <div style="margin-bottom:12px; padding:12px; border-radius:12px; background:#fff5f5; border:1px solid #ffd0d0; color:#d00; font-weight:800;">
+            <div class="create-error-box">
                 @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                 {
                     <div>@error.ErrorMessage</div>
@@ -45,6 +46,81 @@
                 <div class="col-md-4">
                     <label class="form-label fw-bold">할인율(%)</label>
                     <input class="form-control" asp-for="DiscountRate" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">재고 관리</label>
+
+                    <div class="stock-check-box">
+                        <input asp-for="UseStock"
+                               class="form-check-input"
+                               id="UseStock" />
+
+                        <label class="form-check-label" for="UseStock">
+                            재고 수량 관리하기
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">재고 수량</label>
+                    <input asp-for="StockQuantity"
+                           class="form-control"
+                           id="StockQuantity"
+                           min="0" />
+                    <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">배송 방식</label>
+                    <select class="form-select" asp-for="ShippingType">
+                        <option value="Included">배송비 포함</option>
+                        <option value="Free">무료배송</option>
+                        <option value="Fixed">고정 배송비</option>
+                        <option value="ConditionalFree">조건부 무료배송</option>
+                        <option value="Collect">착불/별도</option>
+                    </select>
+                    <span asp-validation-for="ShippingType" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field shipping-fee-field">
+                    <label class="form-label fw-bold">기본 배송비</label>
+                    <input class="form-control" asp-for="ShippingFee" placeholder="예: 4000" />
+                    <span asp-validation-for="ShippingFee" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field free-min-field">
+                    <label class="form-label fw-bold">무료배송 기준금액</label>
+                    <input class="form-control" asp-for="FreeShippingMinAmount" placeholder="예: 30000" />
+                    <span asp-validation-for="FreeShippingMinAmount" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field extra-fee-field">
+                    <label class="form-label fw-bold">제주 추가배송비</label>
+                    <input class="form-control" asp-for="JejuExtraFee" placeholder="예: 3000" />
+                    <span asp-validation-for="JejuExtraFee" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field extra-fee-field">
+                    <label class="form-label fw-bold">도서산간 추가배송비</label>
+                    <input class="form-control" asp-for="RemoteAreaExtraFee" placeholder="예: 5000" />
+                    <span asp-validation-for="RemoteAreaExtraFee" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">스마트스토어 상품 URL</label>
+                    <input class="form-control"
+                           asp-for="SmartStoreUrl"
+                           placeholder="https://smartstore.naver.com/moaclover/products/상품번호" />
+                    <span asp-validation-for="SmartStoreUrl" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">쿠팡 상품 URL</label>
+                    <input class="form-control"
+                           asp-for="CoupangUrl"
+                           placeholder="https://www.coupang.com/vp/products/상품번호" />
+                    <span asp-validation-for="CoupangUrl" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-12">
@@ -93,7 +169,7 @@
                     </select>
                 </div>
 
-                <div class="col-12" style="color:#6b7280; font-size:13px;">
+                <div class="col-12 create-help-text">
                     가장 마지막으로 선택된 값이 저장됩니다. (세부가 없으면 소분류/중분류/대분류까지 가능)
                 </div>
             </div>
@@ -101,26 +177,77 @@
             <hr class="my-4" />
 
             <!-- ✅ 미디어 업로드 -->
-            <div class="row g-3">
-                <h5 style="font-weight:900;">미디어 업로드</h5>
+            <div class="product-media-box">
+                <h5 class="product-media-title">미디어 업로드</h5>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">상단 썸네일(최대 8장)</label>
-                        <input type="file" class="form-control" asp-for="ThumbImages" multiple accept="image/*" />
-                        <div style="font-size:12px;color:#6b7280;margin-top:6px;">상단 슬라이드/썸네일에만 사용</div>
+                <!-- 상품 이미지 -->
+                <div class="product-media-section">
+                    <div class="product-media-head">
+                        <div>
+                            <strong>상품 이미지</strong>
+                            <p>첫 번째 이미지가 대표 이미지로 사용됩니다. 최대 8장까지 등록 가능합니다.</p>
+                        </div>
+                        <span class="product-media-required">필수</span>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">상세페이지 이미지(여러장)</label>
-                        <input type="file" class="form-control" asp-for="DetailImages" multiple accept="image/*" />
-                        <div style="font-size:12px;color:#6b7280;margin-top:6px;">상세정보 탭에서만 표시</div>
+                    <input type="file"
+                           class="form-control product-media-input"
+                           asp-for="ThumbImages"
+                           id="ThumbImages"
+                           multiple
+                           accept="image/*"
+                           data-val="false"
+                           data-media-kind="image"
+                           data-preview-target="thumbPreview"
+                           data-max-count="8" />
+
+                    <div id="thumbPreview" class="product-media-grid"></div>
+                </div>
+
+                <!-- 상세페이지 이미지 -->
+                <div class="product-media-section">
+                    <div class="product-media-head">
+                        <div>
+                            <strong>상세페이지 이미지</strong>
+                            <p>상세정보 탭에 표시됩니다. 없으면 비워둬도 됩니다.</p>
+                        </div>
+                        <span class="product-media-optional">선택</span>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">동영상(여러개)</label>
-                        <input type="file" class="form-control" asp-for="Videos" multiple accept="video/*" />
+                    <input type="file"
+                           class="form-control product-media-input"
+                           asp-for="DetailImages"
+                           id="DetailImages"
+                           multiple
+                           accept="image/*"
+                           data-val="false"
+                           data-media-kind="image"
+                           data-preview-target="detailPreview" />
+
+                    <div id="detailPreview" class="product-media-grid"></div>
+                </div>
+
+                <!-- 동영상 -->
+                <div class="product-media-section">
+                    <div class="product-media-head">
+                        <div>
+                            <strong>동영상</strong>
+                            <p>동영상이 있으면 등록하고, 없으면 비워둬도 됩니다.</p>
+                        </div>
+                        <span class="product-media-optional">선택</span>
                     </div>
+
+                    <input type="file"
+                           class="form-control product-media-input"
+                           asp-for="Videos"
+                           id="Videos"
+                           multiple
+                           accept="video/*"
+                           data-val="false"
+                           data-media-kind="video"
+                           data-preview-target="videoPreview" />
+
+                    <div id="videoPreview" class="product-media-grid"></div>
                 </div>
             </div>
 
@@ -137,4 +264,8 @@
 
 @section Scripts {
     <script src="~/js/category4level.js" asp-append-version="true"></script>
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/js/product-create.js" asp-append-version="true"></script>
 }

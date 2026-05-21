@@ -1,0 +1,249 @@
+﻿@model MOAClover.Models.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "관리자 대시보드";
+    Layout = "_Layout";
+}
+
+<link rel="stylesheet" href="~/css/AdminDashboard.css" asp-append-version="true" />
+
+<div class="admin-dashboard-wrap">
+
+    <div class="admin-dashboard-head">
+        <div>
+            <h2>관리자 대시보드</h2>
+            <p>주문, 상품, Q&A 상태를 한눈에 확인합니다.</p>
+        </div>
+
+        <div class="admin-dashboard-actions">
+            <a asp-controller="Order" asp-action="AdminOrders">주문관리</a>
+            <a asp-controller="Admin" asp-action="Products">상품관리</a>
+            <a asp-controller="Home" asp-action="QnAAdmin" asp-route-filter="waiting">Q&A</a>
+        </div>
+    </div>
+
+    <div class="admin-dashboard-stats">
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-dateFilter="today"
+           class="dashboard-stat-card">
+            <span>오늘 주문</span>
+            <strong>@Model.TodayOrderCount.ToString("N0")건</strong>
+        </a>
+
+        <div class="dashboard-stat-card">
+            <span>오늘 결제금액</span>
+            <strong>@Model.TodayPaidAmount.ToString("N0")원</strong>
+        </div>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="cancelRequested"
+           class="dashboard-stat-card danger">
+            <span>취소요청</span>
+            <strong>@Model.CancelRequestedCount.ToString("N0")건</strong>
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-specialFilter="returnExchange"
+           class="dashboard-stat-card blue">
+            <span>반품/교환 요청</span>
+            <strong>@Model.ReturnExchangeRequestedCount.ToString("N0")건</strong>
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="AdminOrders"
+           asp-route-status="Preparing"
+           class="dashboard-stat-card blue">
+            <span>배송준비중</span>
+            <strong>@Model.PreparingCount.ToString("N0")건</strong>
+        </a>
+
+        <a asp-controller="Home"
+           asp-action="QnAAdmin"
+           asp-route-filter="waiting"
+           class="dashboard-stat-card warning">
+            <span>미답변 Q&A</span>
+            <strong>@Model.WaitingQnaCount.ToString("N0")건</strong>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="soldout"
+           class="dashboard-stat-card danger">
+            <span>품절상품</span>
+            <strong>@Model.SoldoutProductCount.ToString("N0")개</strong>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="lowstock"
+           class="dashboard-stat-card warning">
+            <span>재고부족</span>
+            <strong>@Model.LowStockProductCount.ToString("N0")개</strong>
+        </a>
+
+        <a asp-controller="Admin"
+           asp-action="Products"
+           asp-route-filter="hidden"
+           class="dashboard-stat-card muted">
+            <span>숨김상품</span>
+            <strong>@Model.HiddenProductCount.ToString("N0")개</strong>
+        </a>
+    </div>
+
+    <div class="admin-dashboard-grid">
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>최근 주문</h3>
+                <a asp-controller="Order" asp-action="AdminOrders">전체보기</a>
+            </div>
+
+            @if (!Model.RecentOrders.Any())
+            {
+                <div class="dashboard-empty">최근 주문이 없습니다.</div>
+            }
+            else
+            {
+                <div class="dashboard-list">
+                    @foreach (var order in Model.RecentOrders)
+                    {
+                        <a asp-controller="Order"
+                           asp-action="AdminOrderDetail"
+                           asp-route-orderNo="@order.OrderNo"
+                           class="dashboard-order-item">
+                            <div>
+                                <strong>@order.OrderNo</strong>
+                                <span>@order.BuyerName · @order.CreatedAt.ToString("MM-dd HH:mm")</span>
+                            </div>
+
+                            <div>
+                                <em>@order.TotalPayAmount.ToString("N0")원</em>
+                                <span>@OrderStatusHelper.OrderStatusText(order.OrderStatus)</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>처리 필요 주문</h3>
+
+                <a asp-controller="Order"
+                   asp-action="AdminOrders"
+                   asp-route-specialFilter="issue">
+                    전체보기
+                </a>
+            </div>
+
+            @if (Model.IssueOrders == null || !Model.IssueOrders.Any())
+            {
+                <div class="dashboard-empty">
+                    처리할 주문이 없습니다.
+                </div>
+            }
+            else
+            {
+                <div class="dashboard-issue-order-list">
+                    @foreach (var order in Model.IssueOrders)
+                    {
+                        <a asp-controller="Order"
+                           asp-action="AdminOrderDetail"
+                           asp-route-orderNo="@order.OrderNo"
+                           class="dashboard-issue-order-item">
+
+                            <div>
+                                <strong>@order.OrderNo</strong>
+                                <span>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm") · @order.BuyerName</span>
+                            </div>
+
+                            <div>
+                                <em class="order-status-badge @OrderStatusHelper.OrderStatusClass(order.OrderStatus)">
+                                    @OrderStatusHelper.OrderStatusText(order.OrderStatus)
+                                </em>
+
+                                <b>@order.TotalPayAmount.ToString("N0")원</b>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>미답변 Q&A</h3>
+                <a asp-controller="Home" asp-action="QnAAdmin" asp-route-filter="waiting">전체보기</a>
+            </div>
+
+            @if (!Model.WaitingQnas.Any())
+            {
+                <div class="dashboard-empty">미답변 문의가 없습니다.</div>
+            }
+            else
+            {
+                <div class="dashboard-list">
+                    @foreach (var qna in Model.WaitingQnas)
+                    {
+                        <a asp-controller="Home"
+                           asp-action="Detail"
+                           asp-route-id="@qna.ProductId"
+                           asp-fragment="qnaArea"
+                           class="dashboard-qna-item">
+                            <strong>@qna.ProductName</strong>
+                            <span>
+                                @qna.UserName · @qna.CreatedAt.ToString("MM-dd HH:mm")
+                                @if (qna.IsSecret)
+                                {
+                                    <em>비밀글</em>
+                                }
+                            </span>
+                            <p>@qna.Question</p>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>재고 확인 필요</h3>
+                <a asp-controller="Admin" asp-action="Products" asp-route-filter="soldout">전체보기</a>
+            </div>
+
+            @if (!Model.StockIssues.Any())
+            {
+                <div class="dashboard-empty">재고 이슈 상품이 없습니다.</div>
+            }
+            else
+            {
+                <div class="dashboard-list">
+                    @foreach (var product in Model.StockIssues)
+                    {
+                        <a asp-controller="Admin"
+                           asp-action="Products"
+                           asp-route-keyword="@product.Name"
+                           class="dashboard-stock-item">
+                            <strong>@product.Name</strong>
+
+                            @if (product.IsSoldout)
+                            {
+                                <span class="soldout">품절</span>
+                            }
+                            else
+                            {
+                                <span>재고 @product.StockQuantity.ToString("N0")개</span>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+
+    </div>
+
+</div>

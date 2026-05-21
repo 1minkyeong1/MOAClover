@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "결제 실패";
+    Layout = "_Layout";
+
+    var code = ViewBag.Code as string;
+    var message = ViewBag.Message as string;
+    var orderNo = ViewBag.OrderNo as string;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="payment-fail-wrap">
+    <div class="payment-fail-card">
+        <div class="payment-fail-icon">!</div>
+
+        <h2>결제에 실패했습니다.</h2>
+
+        <p>
+            결제가 완료되지 않았습니다.<br />
+            다시 결제를 시도하거나 주문내역에서 확인해주세요.
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="payment-fail-message">
+                <strong>@code</strong>
+                <span>@message</span>
+            </div>
+        }
+
+        <div class="payment-fail-actions">
+            @if (!string.IsNullOrWhiteSpace(orderNo))
+            {
+                <a asp-controller="Payment"
+                   asp-action="Pay"
+                   asp-route-orderNo="@orderNo"
+                   class="btn-main">
+                    다시 결제하기
+                </a>
+            }
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="payment-secondary-btn">
+                홈으로
+            </a>
+        </div>
+    </div>
+</div>

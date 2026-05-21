@@ -21,6 +21,8 @@
     <form asp-controller="Account" asp-action="Login" method="post">
         @Html.AntiForgeryToken()
 
+        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
         <input type="text" name="username" placeholder="사용자 아이디" required>
         <input type="password" name="password" placeholder="비밀번호" required>
 

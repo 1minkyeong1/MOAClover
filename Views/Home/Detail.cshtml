@@ -4,7 +4,8 @@
     ViewData["Title"] = "상품페이지";
 }
 
-<link rel="stylesheet" href="~/css/Detail.css" />
+<link rel="stylesheet" href="~/css/Detail.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/QnA.css" asp-append-version="true" />
 
 <div class="detail-wrap">
 
@@ -13,12 +14,12 @@
 
         <!-- 왼쪽 이미지 -->
         <div class="detail-left">
-            <img src="@Model.MainImageUrl" class="main-img" />
+            <img src="@Model.MainImageUrl" class="main-img" alt="@Model.Name" />
 
             <div class="thumbnail-wrap">
-                @foreach (var img in Model.ImageUrls)  // 이제 8장만 들어있음
+                @foreach (var img in Model.ImageUrls)
                 {
-                    <img src="@img" class="thumb" onclick="changeImage(this.src)" />
+                    <img src="@img" class="thumb" onclick="changeImage(this.src)" alt="@Model.Name" />
                 }
             </div>
         </div>
@@ -30,6 +31,39 @@
             </div>
 
             <h1>@Model.Name</h1>
+
+            <!-- 배송비 정보 -->
+            @{
+                string shippingText;
+
+                if (Model.ShippingType == "Included")
+                {
+                    shippingText = "배송비 포함";
+                }
+                else if (Model.ShippingType == "Free")
+                {
+                    shippingText = "무료배송";
+                }
+                else if (Model.ShippingType == "ConditionalFree")
+                {
+                    if (Model.FreeShippingMinAmount.HasValue && Model.FreeShippingMinAmount.Value > 0)
+                    {
+                        shippingText = $"{Model.FreeShippingMinAmount.Value:N0}원 이상 무료배송";
+                    }
+                    else
+                    {
+                        shippingText = $"{Model.ShippingFee:N0}원";
+                    }
+                }
+                else if (Model.ShippingType == "Collect")
+                {
+                    shippingText = "착불/별도";
+                }
+                else
+                {
+                    shippingText = $"{Model.ShippingFee:N0}원";
+                }
+            }
 
             <!-- 가격 -->
             <div class="detail-price">
@@ -46,8 +80,15 @@
 
                             <div class="ship-line">
                                 <span class="ship-icon">🚚</span>
-                                <span class="ship-text">무료배송</span>
+                                <span class="ship-text">@shippingText</span>
                             </div>
+
+                            @if (Model.JejuExtraFee > 0 || Model.RemoteAreaExtraFee > 0)
+                            {
+                                <div class="ship-extra-line">
+                                    제주/도서산간 추가배송비가 있을 수 있습니다.
+                                </div>
+                            }
                         </div>
                     </div>
                 }
@@ -61,36 +102,164 @@
 
                             <div class="ship-line">
                                 <span class="ship-icon">🚚</span>
-                                <span class="ship-text">4,000원</span>
+                                <span class="ship-text">@shippingText</span>
                             </div>
+
+                            @if (Model.JejuExtraFee > 0 || Model.RemoteAreaExtraFee > 0)
+                            {
+                                <div class="ship-extra-line">
+                                    제주/도서산간 추가배송비가 있을 수 있습니다.
+                                </div>
+                            }
                         </div>
+                    </div>
+                }
+
+                @if (Model.UseStock)
+                {
+                    if (Model.StockQuantity > 0)
+                    {
+                        <div class="detail-stock-line">
+                            <span class="stock-ok">재고 @Model.StockQuantity 개</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="detail-stock-line">
+                            <span class="stock-soldout">품절</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="detail-stock-line">
+                        <span class="stock-free">재고 여유</span>
                     </div>
                 }
             </div>
 
-            <a href="https://smartstore.naver.com"
-               target="_blank"
-               class="external-link">
-                스마트스토어
-            </a>
+            <!-- 구매 영역 -->
+            <div class="detail-purchase-area">
 
-            <!-- 수정,삭제 버튼 -->
+                <div class="detail-buy-actions">
+                    @if (Model.UseStock && Model.StockQuantity <= 0)
+                    {
+                        <div class="detail-soldout-box">
+                            <div class="detail-soldout-title">품절된 상품입니다.</div>
+                            <div class="detail-soldout-desc">
+                                현재 이 상품은 구매할 수 없습니다.
+                            </div>
+
+                            <div class="detail-soldout-actions">
+                                <button type="button" class="detail-cart-btn disabled" disabled>
+                                    장바구니 담기
+                                </button>
+
+                                <button type="button" class="detail-buy-btn disabled" disabled>
+                                    바로 구매하기
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Cart"
+                              asp-action="Add"
+                              method="post"
+                              class="detail-cart-form">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="productId" value="@Model.ProductId" />
+                            <input type="hidden"
+                                   name="returnUrl"
+                                   value="@Url.Action("Detail", "Home", new { id = Model.ProductId })" />
+
+                            <div class="detail-buy-inner">
+                                <div class="detail-qty-row">
+                                    <label>수량</label>
+
+                                    <input type="number"
+                                           name="quantity"
+                                           value="1"
+                                           min="1"
+                                           max="@(Model.UseStock? Model.StockQuantity: 999)" />
+                                </div>
+
+                                @if (Model.UseStock && Model.StockQuantity > 0)
+                                {
+                                    <div class="detail-stock-help">
+                                        최대 @Model.StockQuantity 개까지 구매할 수 있습니다.
+                                    </div>
+                                }
+
+                                <button type="submit" class="detail-cart-btn">
+                                    장바구니 담기
+                                </button>
+
+                                <button type="submit"
+                                        name="directBuy"
+                                        value="true"
+                                        class="detail-buy-btn">
+                                    바로 구매하기
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+
+                <div class="external-links">
+                    @if (!string.IsNullOrWhiteSpace(Model.SmartStoreUrl))
+                    {
+                        <a href="@Model.SmartStoreUrl"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="external-link smartstore-link">
+                            스마트스토어에서 구매하기
+                        </a>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CoupangUrl))
+                    {
+                        <a href="@Model.CoupangUrl"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="external-link coupang-link">
+                            쿠팡에서 구매하기
+                        </a>
+                    }
+
+                    @if (string.IsNullOrWhiteSpace(Model.SmartStoreUrl)
+                                        && string.IsNullOrWhiteSpace(Model.CoupangUrl))
+                    {
+                        <div class="external-link-empty">
+                            연결된 외부 판매처가 없습니다.
+                        </div>
+                    }
+                </div>
+
+            </div>
+
+            <!-- 수정, 삭제 버튼 -->
             @if (User.IsInRole("admin"))
             {
-                <div style="margin-top:120px; display:flex; justify-content: flex-end; gap:12px; padding-top: 16px;">
-                    <a class="btn btn-outline-primary" style="padding: 8px 27px;"
-                       asp-controller="Home" asp-action="Edit" asp-route-id="@Model.ProductId">
+                <div class="detail-admin-actions">
+                    <a class="btn btn-outline-primary"
+                       asp-controller="Home"
+                       asp-action="Edit"
+                       asp-route-id="@Model.ProductId">
                         수정
                     </a>
 
-                    <a class="btn btn-outline-danger" style="padding: 8px 27px;"
-                       asp-controller="Home" asp-action="Delete" asp-route-id="@Model.ProductId">
+                    <a class="btn btn-outline-danger"
+                       asp-controller="Home"
+                       asp-action="Delete"
+                       asp-route-id="@Model.ProductId">
                         삭제
                     </a>
                 </div>
             }
 
-        </div>       
+        </div>
     </div>
 
     <!-- 탭 -->
@@ -110,7 +279,7 @@
             {
                 foreach (var img in Model.DetailImageUrls)
                 {
-                    <img src="@img" />
+                    <img src="@img" alt="@Model.Name" />
                 }
             }
 
@@ -129,10 +298,16 @@
                 </div>
             }
 
+            <div class="policy-block">
+                <img src="~/images/PrivacyProvide.jpg" class="policy-img" alt="개인정보 제공 안내" />
+            </div>
+
         </div>
 
         <!-- Q&A 탭 -->
         <div id="qa" class="tab-panel">
+            <div id="qnaArea" class="qna-scroll-anchor"></div>
+
             <div id="qna-root" data-product-id="@Model.ProductId">
 
                 <div class="qna-toolbar">
@@ -152,56 +327,49 @@
 
         <!-- 반품/교환 -->
         <div id="return" class="tab-panel return-policy">
-
-            <h3>반품 / 교환 안내</h3>
-
-            <ul>
-                <li>
-                    <strong>반품/교환 가능 기간</strong><br />
-                    상품 수령일로부터 <b>7일 이내</b>에 신청 가능합니다.
-                </li>
-
-                <li>
-                    <strong>반품/교환 불가 사유</strong>
-                    <ul class="sub">
-                        <li>고객 부주의로 인한 상품 훼손 또는 사용 흔적이 있는 경우</li>
-                        <li>상품 택(tag) 및 구성품이 분실 또는 훼손된 경우</li>
-                        <li>주문 제작 상품 및 세일 상품</li>
-                    </ul>
-                </li>
-
-                <li>
-                    <strong>배송비 안내</strong><br />
-                    단순 변심에 의한 반품/교환 시 왕복 배송비는 고객 부담입니다.<br />
-                    상품 불량 및 오배송의 경우 배송비는 <b>판매자 부담</b>입니다.
-                </li>
-
-                <li>
-                    <strong>반품/교환 방법</strong><br />
-                    고객센터 또는 Q&A를 통해 접수 후 안내에 따라 반품해 주세요.
-                </li>
-
-                <li>
-                    <strong>환불 처리 안내</strong><br />
-                    반품 상품 확인 후 <b>영업일 기준 3~5일 이내</b> 환불 처리됩니다.
-                </li>
-            </ul>
-
+            <img src="/images/ReturnExchange.jpg" class="return-img" alt="반품/교환 안내" />
         </div>
-
-        <!-- 반품/교환 - IMAGE VERSION -->
-        @* 
-        <div id="return" class="tab-panel return-policy">
-            <img src="/images/return-policy.jpg" class="return-img" />
-        </div>
-        *@
 
     </div>
 </div>
 
+@if ((TempData["CartAdded"] as string) == "true")
+{
+    <div class="cart-added-modal" id="cartAddedModal">
+        <div class="cart-added-box">
+            <div class="cart-added-icon">✓</div>
+
+            <h3>장바구니가 업데이트되었습니다.</h3>
+
+            <p>
+                @(TempData["CartMessage"] ?? "장바구니에 상품을 담았습니다.")<br />
+                장바구니로 이동하시겠습니까?
+            </p>
+
+            <div class="cart-added-actions">
+                <a asp-controller="Cart"
+                   asp-action="Index"
+                   class="cart-added-go">
+                    장바구니로 이동
+                </a>
+
+                <button type="button"
+                        class="cart-added-stay"
+                        onclick="closeCartAddedModal()">
+                    계속 쇼핑하기
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 <script>
     function changeImage(src) {
-        document.querySelector(".main-img").src = src;
+        const mainImage = document.querySelector(".main-img");
+
+        if (mainImage) {
+            mainImage.src = src;
+        }
     }
 
     function openTab(el, id) {
@@ -212,8 +380,57 @@
             .forEach(p => p.classList.remove("active"));
 
         el.classList.add("active");
-        document.getElementById(id).classList.add("active");
+
+        const panel = document.getElementById(id);
+
+        if (panel) {
+            panel.classList.add("active");
+        }
     }
+
+    function closeCartAddedModal() {
+        const modal = document.getElementById("cartAddedModal");
+
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            closeCartAddedModal();
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.location.hash === "#qnaArea") {
+            const tabs = document.querySelectorAll(".tab");
+            let qnaTab = null;
+
+            tabs.forEach(function (tab) {
+                const onclickValue = tab.getAttribute("onclick") || "";
+
+                if (onclickValue.includes("'qa'") || onclickValue.includes('"qa"')) {
+                    qnaTab = tab;
+                }
+            });
+
+            if (qnaTab) {
+                openTab(qnaTab, "qa");
+            }
+
+            setTimeout(function () {
+                const qnaArea = document.getElementById("qnaArea");
+
+                if (qnaArea) {
+                    qnaArea.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
+            }, 250);
+        }
+    });
 </script>
 
 @section Scripts {

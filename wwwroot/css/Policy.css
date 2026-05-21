@@ -1,0 +1,131 @@
+﻿.policy-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 34px 18px 60px;
+    border-radius: 22px;
+    background-color: transparent;
+}
+
+.policy-head {
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid var(--policy-text-color, #111827);
+}
+
+    .policy-head h2 {
+        margin: 0 0 8px;
+        color: var(--policy-text-color, #111827);
+        font-size: 28px;
+        font-weight: 900;
+    }
+
+    .policy-head p {
+        margin: 0;
+        color: var(--policy-text-color, #6b7280);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+.policy-section {
+    margin-bottom: 22px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: var(--policy-box-bg-color, #fff);
+}
+
+    .policy-section h3 {
+        margin: 0 0 10px;
+        color: var(--policy-text-color, #111827);
+        font-size: 18px;
+        font-weight: 900;
+    }
+
+    .policy-section p {
+        margin: 0 0 8px;
+        color: var(--policy-text-color, #374151);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.7;
+    }
+
+        .policy-section p:last-child {
+            margin-bottom: 0;
+        }
+
+    .policy-section ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .policy-section li {
+        margin-bottom: 7px;
+        color: var(--policy-text-color, #374151);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+.policy-notice-box {
+    padding: 15px;
+    border-radius: 14px;
+    background: rgba(249, 250, 251, 0.88);
+    border: 1px solid #e5e7eb;
+}
+
+    .policy-notice-box p {
+        margin-bottom: 6px;
+    }
+
+/* =========================
+   안내 페이지 - 묶음 안내 박스
+   ========================= */
+
+.policy-notice-box-merged {
+    display: grid;
+    gap: 12px;
+}
+
+.policy-notice-group {
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #d1d5db;
+}
+
+    .policy-notice-group:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .policy-notice-group strong {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--policy-text-color, #111827);
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .policy-notice-group p {
+        margin-bottom: 5px;
+    }
+
+
+.policy-extra-line {
+    color: var(--policy-text-color, #4b5563);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.policy-notice-group p + p {
+    margin-top: 6px;
+}
+
+/* =========================
+   안내 페이지 숫자 강조
+   ========================= */
+.policy-highlight {
+    padding: 1px 4px;
+    border-radius: 5px;
+    background: rgba(254, 240, 138, 0.55);
+    color: var(--policy-text-color, #111827);
+    font-weight: 900;
+}

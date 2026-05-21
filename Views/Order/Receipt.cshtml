@@ -1,0 +1,225 @@
+﻿@model MOAClover.Models.Order
+
+@{
+    ViewData["Title"] = "구매내역 영수증";
+    Layout = "_Layout";
+
+    var payment = ViewBag.Payment as MOAClover.Models.Payment;
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="receipt-wrap">
+
+    <div class="receipt-card" id="receiptArea">
+
+        <div class="receipt-head">
+            <div>
+                <h2>구매내역 영수증</h2>
+                <p>MOAClover 주문 결제 내역입니다.</p>
+            </div>
+
+            <div class="receipt-status">
+                @OrderStatusHelper.PaymentStatusText(Model.PaymentStatus)
+            </div>
+        </div>
+
+        <div class="receipt-shop">
+            <div>
+                <span>주문번호</span>
+                <strong>@Model.OrderNo</strong>
+            </div>
+
+            <div>
+                <span>주문일시</span>
+                <strong>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</strong>
+            </div>
+
+            @if (Model.PaidAt.HasValue)
+            {
+                <div>
+                    <span>결제일시</span>
+                    <strong>@Model.PaidAt.Value.ToString("yyyy-MM-dd HH:mm")</strong>
+                </div>
+            }
+        </div>
+
+        <div class="receipt-section">
+            <h3>구매 상품</h3>
+
+            <div class="receipt-items">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="receipt-item">
+                        <div class="receipt-item-main">
+                            <strong>@item.ProductName</strong>
+                            <span>수량 @item.Quantity 개 · 단가 @item.FinalUnitPrice.ToString("N0")원</span>
+                        </div>
+
+                        <div class="receipt-item-price">
+                            @item.LineTotal.ToString("N0")원
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h3>결제 정보</h3>
+
+            <div class="receipt-info-list">
+                <div>
+                    <span>결제수단</span>
+                    <strong>
+                        @(
+                                                Model.PaymentMethod == "BankTransfer" ? "무통장입금" :
+                                                Model.PaymentMethod == "TossPayments" ? "카드결제" :
+                                                Model.PaymentMethod
+                                                )
+                    </strong>
+                </div>
+
+                <div>
+                    <span>결제상태</span>
+                    <strong>@OrderStatusHelper.PaymentStatusText(Model.PaymentStatus)</strong>
+                </div>
+
+                @if (payment != null && !string.IsNullOrWhiteSpace(payment.PayMethod))
+                {
+                    <div>
+                        <span>결제방식</span>
+                        <strong>@payment.PayMethod</strong>
+                    </div>
+                }
+
+                @if (payment != null && !string.IsNullOrWhiteSpace(payment.CardCompany))
+                {
+                    <div>
+                        <span>카드사</span>
+                        <strong>@payment.CardCompany</strong>
+                    </div>
+                }
+
+                @if (payment != null && !string.IsNullOrWhiteSpace(payment.CardNumber))
+                {
+                    <div>
+                        <span>카드번호</span>
+                        <strong>@payment.CardNumber</strong>
+                    </div>
+                }
+
+                @if (payment != null && !string.IsNullOrWhiteSpace(payment.PaymentKey))
+                {
+                    <div>
+                        <span>결제키</span>
+                        <strong class="receipt-payment-key">@payment.PaymentKey</strong>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h3>금액 정보</h3>
+
+            <div class="receipt-total-box">
+                <div>
+                    <span>상품금액</span>
+                    <strong>@Model.ProductTotal.ToString("N0")원</strong>
+                </div>
+
+                <div>
+                    <span>배송비</span>
+
+                    @if (Model.IsCollectShipping)
+                    {
+                        <strong>착불/별도</strong>
+                    }
+                    else if (Model.IsIncludedShipping)
+                    {
+                        <strong>배송비 포함</strong>
+                    }
+                    else
+                    {
+                        <strong>@Model.ShippingFee.ToString("N0")원</strong>
+                    }
+                </div>
+
+                @if (!Model.IsCollectShipping && !Model.IsIncludedShipping && Model.ExtraShippingFee > 0)
+                {
+                    <div>
+                        <span>지역 추가배송비</span>
+                        <strong>@Model.ExtraShippingFee.ToString("N0")원</strong>
+                    </div>
+                }
+
+                <div class="receipt-grand-total">
+                    <span>총 결제금액</span>
+                    <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="receipt-section">
+            <h3>배송 정보</h3>
+
+            <div class="receipt-info-list">
+                <div>
+                    <span>받는 사람</span>
+                    <strong>@Model.ReceiverName</strong>
+                </div>
+
+                <div>
+                    <span>연락처</span>
+                    <strong>@Model.ReceiverPhone</strong>
+                </div>
+
+                <div>
+                    <span>주소</span>
+                    <strong>(@Model.ZipCode) @Model.Address1 @Model.Address2</strong>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.PaymentStatus == "Refunded")
+        {
+            <div class="receipt-refund-box">
+                <strong>결제취소/환불 완료</strong>
+
+                @if (!string.IsNullOrWhiteSpace(Model.CancelReason))
+                {
+                    <span>취소 사유: @Model.CancelReason</span>
+                }
+            </div>
+        }
+
+        <div class="receipt-notice">
+            이 화면은 구매내역 확인용 영수증입니다. 카드 매출전표가 필요한 경우 카드 영수증 보기를 이용해주세요.
+        </div>
+    </div>
+
+    <div class="receipt-actions">
+        <button type="button"
+                class="receipt-print-btn"
+                onclick="window.print()">
+            인쇄하기
+        </button>
+
+        @if (payment != null && !string.IsNullOrWhiteSpace(payment.ReceiptUrl))
+        {
+            <a href="@payment.ReceiptUrl"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="receipt-card-btn">
+                카드 영수증 보기
+            </a>
+        }
+
+        <a asp-controller="Order"
+           asp-action="MyOrderDetail"
+           asp-route-orderNo="@Model.OrderNo"
+           class="receipt-back-btn">
+            주문상세로 돌아가기
+        </a>
+    </div>
+
+</div>

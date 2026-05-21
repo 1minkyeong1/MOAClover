@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MOAClover.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitMoacloverSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -58,6 +58,24 @@ namespace MOAClover.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CartItems",
+                columns: table => new
+                {
+                    CartItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GuestCartId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CartItems", x => x.CartItemId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
@@ -83,6 +101,54 @@ namespace MOAClover.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    OrderId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GuestCartId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsGuestOrder = table.Column<bool>(type: "bit", nullable: false),
+                    GuestOrderPasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BuyerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BuyerPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BuyerEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReceiverName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReceiverPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ZipCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeliveryMemo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProductTotal = table.Column<int>(type: "int", nullable: false),
+                    ShippingFee = table.Column<int>(type: "int", nullable: false),
+                    ExtraShippingFee = table.Column<int>(type: "int", nullable: false),
+                    TotalPayAmount = table.Column<int>(type: "int", nullable: false),
+                    IsCollectShipping = table.Column<bool>(type: "bit", nullable: false),
+                    IsIncludedShipping = table.Column<bool>(type: "bit", nullable: false),
+                    OrderStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StockDeducted = table.Column<bool>(type: "bit", nullable: false),
+                    TrackingCompany = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TrackingNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ShippedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    OrderEmailSentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AdminMemo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CustomerMemo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AdminMemoUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AdminMemoUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CancelReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.OrderId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PasswordResetTokens",
                 columns: table => new
                 {
@@ -96,6 +162,74 @@ namespace MOAClover.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SiteSettings",
+                columns: table => new
+                {
+                    SiteSettingId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShopName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OwnerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BusinessNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MailOrderSalesNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CustomerPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CustomerEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankAccountNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankAccountHolder = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankTransferNotice = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CustomerServiceHours = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DefaultDeliveryCompany = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShippingNotice = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FreeShippingNotice = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReturnAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReturnShippingFeeNotice = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReturnExchangeNotice = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReturnShippingFee = table.Column<int>(type: "int", nullable: false),
+                    ExchangeShippingFee = table.Column<int>(type: "int", nullable: false),
+                    ReturnExchangeAvailableDays = table.Column<int>(type: "int", nullable: false),
+                    JejuExtraShippingFeeNotice = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RemoteAreaExtraShippingFeeNotice = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    HeaderBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HeaderTextColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    HeaderBackgroundImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UseHeaderBackgroundImage = table.Column<bool>(type: "bit", nullable: false),
+                    LogoImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CategoryBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CategoryBackgroundImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UseCategoryBackgroundImage = table.Column<bool>(type: "bit", nullable: false),
+                    CategoryTextColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CategoryActiveTextColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CategoryActiveBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FooterBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FooterTextColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FooterBackgroundImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UseFooterBackgroundImage = table.Column<bool>(type: "bit", nullable: false),
+                    UseMainHeroBanner = table.Column<bool>(type: "bit", nullable: false),
+                    MainHeroTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroSubtitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroVideoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroLinkUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroButtonText = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UseMainHeroSlider = table.Column<bool>(type: "bit", nullable: false),
+                    MainHeroSliderImageUrls = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MainHeroSliderLinkUrls = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PolicyPageBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PolicyPageTextColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PolicyPageBoxBackgroundColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PolicyPageBackgroundImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UsePolicyPageBackgroundImage = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SiteSettings", x => x.SiteSettingId);
                 });
 
             migrationBuilder.CreateTable(
@@ -211,6 +345,8 @@ namespace MOAClover.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ReceiverName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReceiverPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ZipCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AddressDetail = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -237,7 +373,16 @@ namespace MOAClover.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<int>(type: "int", nullable: false),
                     DiscountRate = table.Column<int>(type: "int", nullable: true),
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
+                    UseStock = table.Column<bool>(type: "bit", nullable: false),
+                    ShippingType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShippingFee = table.Column<int>(type: "int", nullable: false),
+                    FreeShippingMinAmount = table.Column<int>(type: "int", nullable: true),
+                    JejuExtraFee = table.Column<int>(type: "int", nullable: false),
+                    RemoteAreaExtraFee = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
+                    SmartStoreUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CoupangUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsVisible = table.Column<bool>(type: "bit", nullable: false),
@@ -252,6 +397,103 @@ namespace MOAClover.Migrations
                         principalTable: "Categories",
                         principalColumn: "CategoryId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderItems",
+                columns: table => new
+                {
+                    OrderItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MainImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UnitPrice = table.Column<int>(type: "int", nullable: false),
+                    DiscountRate = table.Column<int>(type: "int", nullable: true),
+                    FinalUnitPrice = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    LineTotal = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ShippingType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShippingFee = table.Column<int>(type: "int", nullable: false),
+                    FreeShippingMinAmount = table.Column<int>(type: "int", nullable: true),
+                    JejuExtraFee = table.Column<int>(type: "int", nullable: false),
+                    RemoteAreaExtraFee = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItems", x => x.OrderItemId);
+                    table.ForeignKey(
+                        name: "FK_OrderItems_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderStatusHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    OrderNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BeforeOrderStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AfterOrderStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BeforePaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AfterPaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TrackingCompany = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TrackingNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AdminMemo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CancelReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ChangedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderStatusHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderStatusHistories_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                columns: table => new
+                {
+                    PaymentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    OrderNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Provider = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Amount = table.Column<int>(type: "int", nullable: false),
+                    PaymentKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PayMethod = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CardCompany = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReceiptUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FailureCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FailureMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Method = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RawResponse = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.PaymentId);
+                    table.ForeignKey(
+                        name: "FK_Payments_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -355,6 +597,21 @@ namespace MOAClover.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_OrderId",
+                table: "OrderItems",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderStatusHistories_OrderId",
+                table: "OrderStatusHistories",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_OrderId",
+                table: "Payments",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductQnA_ProductId",
                 table: "ProductQnA",
                 column: "ProductId");
@@ -389,19 +646,37 @@ namespace MOAClover.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CartItems");
+
+            migrationBuilder.DropTable(
                 name: "Media");
+
+            migrationBuilder.DropTable(
+                name: "OrderItems");
+
+            migrationBuilder.DropTable(
+                name: "OrderStatusHistories");
 
             migrationBuilder.DropTable(
                 name: "PasswordResetTokens");
 
             migrationBuilder.DropTable(
+                name: "Payments");
+
+            migrationBuilder.DropTable(
                 name: "ProductQnA");
+
+            migrationBuilder.DropTable(
+                name: "SiteSettings");
 
             migrationBuilder.DropTable(
                 name: "UserAddresses");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Products");

@@ -1,188 +1,423 @@
-﻿
-.detail-wrap {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 16px;
-}
-
+﻿/* =========================================================
+   MOAClover Product Detail
+   ========================================================= */
 
 /* =========================
-   Product Detail (상단)
+   전체 래퍼
+   ========================= */
+
+.detail-wrap {
+    max-width: 1180px;
+    margin: 36px auto;
+    padding: 0 18px;
+}
+
+/* =========================
+   상단 레이아웃
    ========================= */
 
 .detail-top {
-    display: flex;
-    gap: 30px;
-    /* align-items: center;*/
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(420px, 560px) minmax(360px, 1fr);
+    gap: 36px;
+    align-items: start;
 }
 
-/* 왼쪽 이미지 영역 */
 .detail-left {
-    flex-shrink: 0;
-    flex: 1;
-    max-width: 50%;
+    min-width: 0;
 }
 
-/* 메인 이미지 */
+.detail-right {
+    min-width: 0;
+    padding: 26px 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
+}
+
+/* =========================
+   이미지 영역
+   ========================= */
+
 .main-img {
     width: 100%;
-    height: auto;
-    max-height: 500px;
+    aspect-ratio: 1 / 0.86;
     object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #eee;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #f3f4f6;
+    display: block;
 }
-
-/* 썸네일 */
-.thumb {
-    width: 18%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    transition: border-color 0.2s;
-}
-
-    .thumb:hover {
-        border-color: #d92121;
-    }
 
 .thumbnail-wrap {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
-/* 오른쪽 상품정보 */
-.detail-right {
-    flex: 1;
-    display: flex;
-    max-width: 50%;
-    flex-direction: column;
-    position: relative;
-    padding-top: 28px;
-
+.thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-/* 카테고리 */
+    .thumb:hover {
+        border-color: #111827;
+        transform: translateY(-1px);
+    }
+
+/* =========================
+   상품 정보
+   ========================= */
+
 .category-info {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 0;
-    padding: 0;
-    text-align: right;
-    font-size: 13px;
+    margin-bottom: 20px;
     color: #9ca3af;
-    line-height: 1.2;
-}
-
-/* 상품 제목 */
-.detail-right h1 {
-    font-size: 26px;
-    font-weight: 700;
-    color: #222;
-    margin: 50px 0 20px 10px;
+    font-size: 13px;
     line-height: 1.4;
-    word-break: keep-all; /* 글자단락나뉨 keep-all,  글자단위 break-all */
-    text-align: left;
+    text-align: right;
 }
 
-/*  상세 가격 영역 */
+.detail-right h1 {
+    margin: 0 0 22px;
+    color: #111827;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.42;
+    letter-spacing: -0.4px;
+    word-break: keep-all;
+}
+
+/* =========================
+   가격 영역
+   ========================= */
+
 .detail-price {
-    margin-top: 14px;
+    padding: 18px 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 22px;
 }
 
 .detail-price-row {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 14px;
 }
 
-/* 왼쪽 할인율 크게 */
 .rate-big {
+    min-width: 76px;
+    color: #dc2626;
     font-size: 28px;
-/*    font-weight: 900;*/
-    color: #d92121;
-    letter-spacing: -0.5px;
+    font-weight: 900;
     line-height: 1;
-    min-width: 90px; /* 자리 고정(원하면 조절) */
-    margin-left: 20px;
+    letter-spacing: -0.5px;
 }
 
-/* 오른쪽(원가+판매가+배송) */
 .price-right {
     margin-left: auto;
-    text-align: right;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
+    text-align: right;
 }
 
 .price-line {
     display: flex;
     justify-content: flex-end;
     align-items: baseline;
-    gap: 10px;
+    gap: 9px;
     line-height: 1.1;
 }
 
-/* 원가 */
 .origin {
-    font-size: 14px;
     color: #9ca3af;
+    font-size: 14px;
+    font-weight: 700;
     text-decoration: line-through;
 }
 
-/* 판매가 */
 .sale {
-    font-size: 22px;
+    color: #dc2626;
+    font-size: 23px;
     font-weight: 900;
-    color: #d92121;
 }
 
-/* 배송 */
 .ship-line {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
     color: #6b7280;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .ship-icon {
     font-size: 13px;
-    opacity: .85;
+    opacity: 0.9;
 }
 
-.detail-price {
-    margin-bottom: 60px;
-}
-
-/* 구매 링크 버튼 */
-.external-link {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 50%;
-    height: 60px;
-    background-color: #03c75a;
-    color: #fff;
-    font-size: 18px;
+.ship-extra-line {
+    margin-top: 2px;
+    color: #9ca3af;
+    font-size: 12px;
     font-weight: 700;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: background-color 0.2s ease;
-    margin: 0 auto;
+    text-align: right;
 }
 
-    .external-link:hover {
-        background-color: #02b351;
+/* =========================
+   재고 표시
+   ========================= */
+
+.detail-stock-line {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.stock-ok {
+    color: #15803d;
+}
+
+.stock-soldout {
+    color: #dc2626;
+}
+
+.stock-free {
+    color: #6b7280;
+}
+
+.detail-stock-help {
+    margin-top: 0;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.detail-soldout-box {
+    padding: 16px;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+    background: #fff5f5;
+}
+
+.detail-soldout-title {
+    color: #dc2626;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.detail-soldout-desc {
+    margin-top: 4px;
+    margin-bottom: 12px;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.detail-soldout-actions {
+    display: grid;
+    grid-template-columns: 150px minmax(150px, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+}
+
+    .detail-soldout-actions .detail-cart-btn,
+    .detail-soldout-actions .detail-buy-btn {
+        width: 100%;
     }
+
+/* =========================
+   구매 영역
+   ========================= */
+
+.detail-purchase-area {
+    width: 100%;
+}
+
+.detail-buy-actions {
+    width: 100%;
+}
+
+.detail-cart-form {
+    width: 100%;
+}
+
+.detail-buy-inner {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 96px 150px minmax(150px, 1fr);
+    gap: 10px;
+    align-items: end;
+}
+
+    .detail-buy-inner .detail-qty-row {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .detail-buy-inner .detail-cart-btn {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .detail-buy-inner .detail-buy-btn {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .detail-buy-inner .detail-stock-help {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+.detail-qty-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+    .detail-qty-row label {
+        color: #374151;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .detail-qty-row input {
+        width: 100%;
+        height: 46px;
+        box-sizing: border-box;
+        padding: 0 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 11px;
+        outline: none;
+        text-align: center;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+.detail-cart-btn,
+.detail-buy-btn {
+    width: 100%;
+    height: 46px;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+    word-break: keep-all;
+    line-height: 1.2;
+}
+
+.detail-cart-btn {
+    border: 1px solid #111827;
+    background: #fff;
+    color: #111827;
+}
+
+.detail-buy-btn {
+    border: 1px solid #111827;
+    background: #111827;
+    color: #fff;
+}
+
+    .detail-cart-btn:hover,
+    .detail-buy-btn:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+
+.detail-cart-btn.disabled {
+    background: #fff !important;
+    color: #9ca3af !important;
+    border: 1px solid #d1d5db !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.detail-buy-btn.disabled {
+    background: #d1d5db !important;
+    color: #6b7280 !important;
+    border: 1px solid #d1d5db !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* =========================
+   외부몰 버튼
+   ========================= */
+
+.external-links {
+    width: 100%;
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+    .external-links .external-link {
+        width: 100%;
+        min-height: 48px;
+        box-sizing: border-box;
+        padding: 0 14px;
+        border-radius: 11px;
+        color: #fff !important;
+        text-align: center;
+        text-decoration: none !important;
+        font-size: 14px;
+        font-weight: 900;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+        .external-links .external-link:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            color: #fff !important;
+        }
+
+    .external-links .smartstore-link {
+        background: #03c75a;
+    }
+
+    .external-links .coupang-link {
+        background: #346aff;
+    }
+
+.external-link-empty {
+    grid-column: 1 / -1;
+    padding: 12px 14px;
+    border-radius: 11px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* =========================
+   관리자 버튼
+   ========================= */
+
+.detail-admin-actions {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
 
 /* =========================
    탭 메뉴
@@ -192,29 +427,29 @@
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 40px;
-    border-bottom: 1px solid #ddd;
+    margin-top: 42px;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .tab {
     min-width: 160px;
-    text-align: center;
     padding: 14px 0;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 15px;
-    color: #555;
     border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
+    color: #555;
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    transition: color 0.15s ease, border-color 0.15s ease;
 }
 
     .tab.active {
-        color: #d92121;
-        border-bottom-color: #d92121;
+        color: #dc2626;
+        border-bottom-color: #dc2626;
     }
 
     .tab:hover {
-        color: #d92121;
+        color: #dc2626;
     }
 
 .tab-panel {
@@ -234,670 +469,324 @@
     margin: 20px auto;
 }
 
-/* =========================
-   QnA (게시판 스타일) 
-   ========================= */
-
-#qa {
-    padding: 24px 0;
-}
-
-#qna-root {
-    max-width: 820px;
-    margin: 0 auto;
-    padding: 0 16px;
-}
-
-.hidden {
-    display: none;
-}
-
-/* 툴바 */
-.qna-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 12px;
-}
-
-    .qna-toolbar button {
-        border: 1px solid #ddd;
-        background: #fff;
-        padding: 10px 14px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-        .qna-toolbar button:hover {
-            border-color: #bbb;
-            background: #fafafa;
-        }
-
-/* 폼 박스 */
-.qna-form-box {
-    border: 1px solid #eee;
-    background: #fff;
-    border-radius: 14px;
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-}
-
-    .qna-form-box h4 {
-        margin: 0 0 14px 0;
-        font-size: 18px;
-    }
-
-.qna-user-display {
-    margin-bottom: 10px;
-    color: #666;
-    font-size: 14px;
-}
-
-.qna-form-box label {
-    display: block;
-    margin: 12px 0 6px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-}
-
-.qna-form-box input[type="text"] {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    outline: none;
-}
-
-.qna-form-box textarea[name="Question"] {
-    width: 100%;
-    min-height: 110px;
-    resize: vertical;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    outline: none;
-}
-
-.qna-form-box input[type="text"]:focus,
-.qna-form-box textarea:focus {
-    border-color: #999;
-}
-
-.secret-label {
-    display: inline-flex !important;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    font-size: 14px;
-    color: #444;
-}
-
-.qna-form-box .qna-submit-btn,
-.qna-form-box #btnCancelQnaForm {
-    margin-top: 14px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    border: 1px solid #ddd;
-}
-
-.qna-form-box .qna-submit-btn {
-    background: #111;
-    color: #fff;
-    border-color: #111;
-    margin-right: 8px;
-}
-
-    .qna-form-box .qna-submit-btn:hover {
-        background: #000;
-    }
-
-.qna-form-box #btnCancelQnaForm {
-    background: #fff;
-    color: #333;
-}
-
-    .qna-form-box #btnCancelQnaForm:hover {
-        background: #f5f5f5;
-    }
-
-/* 목록 박스 */
-.qna-list-box {
-    border: 1px solid #eee;
-    background: #fff;
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-}
-
-    .qna-list-box h4 {
-        margin: 0 0 12px 0;
-        font-size: 18px;
-    }
-
-.qna-empty {
-    margin: 14px 0 0;
-    color: #777;
-    font-size: 14px;
-}
-
-/* 글 하나 */
-.qna-item {
-    border-top: 1px solid #f0f0f0;
-    padding: 14px 0;
-}
-
-    .qna-item:first-of-type {
-        border-top: none;
-        padding-top: 6px;
-    }
-
-/* 헤더 */
-.qna-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.qna-user {
-    font-weight: 800;
-    color: #222;
-}
-
-.qna-date {
-    font-size: 13px;
-    color: #888;
-    margin-left: 8px;
-}
-
-.qna-actions {
-    margin-left: auto;
-    display: inline-flex;
-    gap: 8px;
-}
-
-    .qna-actions button {
-        border: 1px solid #696969;
-        background: #696969;
-        padding: 6px 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 12px;
-        color: #fff;
-    }
-
-        .qna-actions button:hover {
-            background: #000;
-        }
-
-/*  삭제 버튼만 경고 톤 */
-.qna-actions button:last-child {
-    border-color: #d92121;
-    background: #d92121;
-}
-
-    .qna-actions button:last-child:hover {
-        background: #b91616;
-    }
-
-/* ✅ 질문 박스 */
-.qna-question {
-    background: #fafafa;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    padding: 12px;
-    line-height: 1.55;
-    color: #222;
-    text-align: left;
-    display: block; 
-}
-
-/* ✅ 답변 박스 */
-.qna-answer {
-    margin-top: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid #e9e9e9;
-    background: #fff;
-    line-height: 1.55;
-    text-align: left;
-    display: block; 
-}
-
-    .qna-answer.wait {
-        color: #888;
-        background: #fcfcfc;
-    }
-
-/* ✅ Q/A 라인 통일 (들여쓰기 핵심) */
-.qna-line {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.qna-prefix {
-    font-weight: 800;
-    flex: 0 0 24px; 
-}
-
-.qna-body {
-    flex: 1;
-    white-space: pre-line; 
-}
-
-/* 비밀글만 가운데 */
-.qna-question.is-secret {
+.policy-block {
+    margin-top: 30px;
     text-align: center;
 }
 
-.secret-text {
-    color: #777;
-    font-weight: 700;
-    display: inline-block;
+.policy-img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
 }
-
-/* 관리자 답변 폼 */
-.qna-answer-form {
-    margin-top: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-}
-
-    .qna-answer-form textarea {
-        flex: 1;
-        min-height: 80px;
-        resize: vertical;
-        padding: 10px 12px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        outline: none;
-    }
-
-        .qna-answer-form textarea:focus {
-            border-color: #999;
-        }
-
-    .qna-answer-form button {
-        white-space: nowrap;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid #111;
-        background: #111;
-        color: #fff;
-        font-weight: 800;
-        cursor: pointer;
-    }
-
-        .qna-answer-form button:hover {
-            background: #000;
-        }
-
-.qna-answer-actions {
-    margin-top: 10px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-}
-
-    .qna-answer-actions button {
-        border: 1px solid #ddd;
-        background: #fff;
-        padding: 6px 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 12px;
-        color: #333;
-    }
-
-        .qna-answer-actions button:hover {
-            background: #f6f6f6;
-        }
-
-        /* 답변 수정폼 */
-        .qna-edit-answer-form {
-    margin-top: 10px;
-    padding: 12px;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    background: #fafafa;
-}
-
-    .qna-edit-answer-form textarea {
-        width: 100%;
-        min-height: 90px;
-        resize: vertical;
-        padding: 10px 12px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        outline: none;
-        background: #fff;
-        white-space: pre-line;
-        box-sizing: border-box;
-    }
-
-
-
-
-/* 페이징 */
-.qna-pagination {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid #f0f0f0;
-}
-
-    .qna-pagination a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 34px;
-        height: 34px;
-        padding: 0 10px;
-        border-radius: 10px;
-        border: 1px solid #ddd;
-        color: #333;
-        text-decoration: none;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-        .qna-pagination a:hover {
-            background: #f6f6f6;
-        }
-
-        .qna-pagination a.active {
-            background: #111;
-            border-color: #111;
-            color: #fff;
-        }
 
 /* =========================
-   반품정책
+   반품/교환
    ========================= */
 
 .return-policy {
     padding: 20px;
     line-height: 1.8;
     color: #333;
+    text-align: center;
 }
 
-    .return-policy h3 {
-        font-size: 18px;
-        margin-bottom: 14px;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 8px;
-    }
-
-    .return-policy ul {
-        list-style: none;
-        padding-left: 0;
-    }
-
-    .return-policy > ul > li {
-        margin-bottom: 18px;
-    }
-
-    .return-policy strong {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 15px;
-    }
-
-    .return-policy ul.sub {
-        margin-top: 8px;
-        padding-left: 14px;
-    }
-
-        .return-policy ul.sub li {
-            font-size: 14px;
-            color: #555;
-            position: relative;
-            padding-left: 10px;
-        }
-
-            .return-policy ul.sub li::before {
-                content: "•";
-                position: absolute;
-                left: 0;
-                color: #d92121;
-            }
+.return-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(18, 38, 63, 0.06);
+}
 
 /* =========================
-   반응형 (모바일/태블릿)
+   장바구니 담기 완료 팝업
    ========================= */
 
-/* 태블릿 */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .detail-left {
-        width: 450px;
-    }
-
-    .main-img {
-        height: 450px;
-    }
-
-    .thumb {
-        width: 75px;
-        height: 75px;
-    }
-
-    .detail-right h1 {
-        font-size: 24px;
-    }
-
-    .final-price {
-        font-size: 28px;
-    }
+.cart-added-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 모바일 */
-@media (max-width: 768px) {
+.cart-added-box {
+    width: 100%;
+    max-width: 380px;
+    padding: 30px 24px;
+    border-radius: 20px;
+    background: #fff;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+}
+
+.cart-added-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: #03c75a;
+    color: #fff;
+    font-size: 30px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-added-box h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.cart-added-box p {
+    margin: 12px 0 22px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.cart-added-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cart-added-go,
+.cart-added-stay {
+    height: 44px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-added-go {
+    border: none;
+    background: #111827;
+    color: #fff;
+}
+
+    .cart-added-go:hover {
+        color: #fff;
+        opacity: 0.9;
+    }
+
+.cart-added-stay {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+}
+
+    .cart-added-stay:hover {
+        background: #f9fafb;
+    }
+
+/* =========================
+   반응형
+   ========================= */
+
+@media (max-width: 1024px) {
     .detail-top {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .detail-left {
-        width: 100%;
-        max-width: 100%;
-    }
-
-    .main-img {
-        height: auto;
-        max-height: 400px;
-    }
-
-    .thumb {
-        width: 65px;
-        height: 65px;
+        grid-template-columns: minmax(0, 1fr) minmax(340px, 0.9fr);
+        gap: 24px;
     }
 
     .detail-right {
-        width: 100%;
-        max-width: 100%;
-        padding-left: 0;
-        margin-top: 0;
+        padding: 22px;
     }
 
         .detail-right h1 {
-            font-size: 20px;
-            margin-bottom: 15px;
-            text-align: center;
+            font-size: 22px;
         }
 
-    .price-box {
-        justify-content: center;
+    .detail-buy-inner {
+        grid-template-columns: 90px 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .detail-wrap {
+        margin: 24px auto;
+        padding: 0 14px;
     }
 
-    .delivery {
-        text-align: center;
-        margin-bottom: 20px;
+    .detail-top {
+        grid-template-columns: 1fr;
+        gap: 18px;
     }
 
-    .external-link {
-        width: 80%;
-        margin: 0 auto;
-        height: 50px;
-        font-size: 16px;
+    .detail-right {
+        padding: 20px 16px;
+        border-radius: 16px;
     }
 
     .category-info {
-        text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        text-align: left;
     }
 
+    .detail-right h1 {
+        margin-bottom: 18px;
+        font-size: 20px;
+    }
+
+    .main-img {
+        aspect-ratio: 1 / 0.86;
+    }
+
+    .thumb {
+        width: 64px;
+        height: 64px;
+    }
+
+    .detail-price-row {
+        align-items: flex-end;
+    }
+
+    .rate-big {
+        min-width: auto;
+        font-size: 24px;
+    }
+
+    .sale {
+        font-size: 21px;
+    }
+
+    .detail-buy-inner {
+        grid-template-columns: 1fr;
+    }
+
+        .detail-buy-inner .detail-qty-row,
+        .detail-buy-inner .detail-cart-btn,
+        .detail-buy-inner .detail-buy-btn,
+        .detail-buy-inner .detail-stock-help {
+            grid-column: 1;
+            grid-row: auto;
+        }
+
+    .detail-soldout-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-stock-help {
+        grid-column: auto;
+    }
+
+    .external-links {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-admin-actions {
+        justify-content: stretch;
+    }
+
+        .detail-admin-actions a {
+            flex: 1;
+        }
+
     .tab-menu {
-        margin-top: 30px;
+        margin-top: 32px;
     }
 
     .tab {
         min-width: 100px;
-        font-size: 14px;
         padding: 12px 0;
+        font-size: 14px;
     }
 
-    /* QnA 모바일 */
-    #qna-root {
-        padding: 0 12px;
+    .return-policy {
+        padding: 14px 0;
     }
 
-    .qna-header {
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .qna-actions {
-        margin-left: 0;
-    }
-
-    .qna-answer-form {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-        .qna-answer-form button {
-            width: 100%;
-        }
-
-    .qna-toolbar {
-        justify-content: stretch;
-    }
-
-        .qna-toolbar button {
-            width: 100%;
-        }
-
-    .hidden {
-        display: none !important;
+    .return-img {
+        max-width: 100%;
+        border-radius: 10px;
     }
 }
 
-/* QnA 더 작은 화면 */
-@media (max-width: 600px) {
-    #qna-root {
-        padding: 0 12px;
+@media (max-width: 480px) {
+    .cart-added-actions {
+        grid-template-columns: 1fr;
     }
 }
 
 /* =========================
-   QnA 수정폼(EDIT FORM) 스타일
+   상품 상세 Q&A 페이징
    ========================= */
 
-.qna-edit-form {
-    margin-top: 12px;
-    padding: 12px;
-    border: 1px solid #e9e9e9;
-    border-radius: 12px;
-    background: #fff;
-}
-
-    .qna-edit-form label {
-        display: block;
-        margin: 0 0 8px 0;
-        font-size: 14px;
-        font-weight: 800;
-        color: #333;
-    }
-
-    .qna-edit-form textarea {
-        width: 100%;
-        min-height: 90px;
-        resize: vertical;
-        padding: 10px 12px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        outline: none;
-        line-height: 1.55;
-        white-space: pre-line; /* 엔터 유지 */
-        box-sizing: border-box;
-    }
-
-        .qna-edit-form textarea:focus {
-            border-color: #999;
-        }
-
-    /* 비밀글 체크박스 라인(수정폼 안에서는 왼쪽 정렬 + 간격) */
-    .qna-edit-form .secret-label {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 8px;
-        margin-top: 10px;
-        margin-bottom: 12px;
-        font-size: 14px;
-        color: #444;
-    }
-
-/* 저장/취소 버튼 영역 */
-.qna-edit-actions {
+.qna-pagination-wrap {
+    margin: 28px 0 10px;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 10px;
 }
 
-    /* 버튼 기본 */
-    .qna-edit-actions button {
-        padding: 10px 12px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 800;
-        border: 1px solid #ddd;
+.qna-pagination-info {
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.qna-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+    .qna-pagination a,
+    .qna-pagination .pagination-ellipsis {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 10px;
+        border-radius: 9px;
         background: #fff;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 900;
+        line-height: 34px;
+        text-align: center;
     }
 
-        /* 저장 버튼만 강조 */
-        .qna-edit-actions button:first-child {
-            border-color: #111;
-            background: #111;
+    .qna-pagination a {
+        border: 1px solid #e5e7eb;
+    }
+
+        .qna-pagination a:hover {
+            background: #f3f4f6;
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .qna-pagination a.active {
+            background: #111827;
+            border-color: #111827;
             color: #fff;
         }
 
-            .qna-edit-actions button:first-child:hover {
-                background: #000;
-            }
-
-        .qna-edit-actions button:last-child:hover {
-            background: #f5f5f5;
-        }
-
-/* 모바일에서 버튼 줄바꿈 */
-@media (max-width: 600px) {
-    .qna-edit-actions {
-        flex-direction: column;
-        align-items: stretch;
+    .qna-pagination .pagination-ellipsis {
+        background: transparent;
+        color: #9ca3af;
+        padding: 0 4px;
     }
 
-        .qna-edit-actions button {
-            width: 100%;
-        }
+.qna-scroll-anchor {
+    scroll-margin-top: 120px;
 }
-

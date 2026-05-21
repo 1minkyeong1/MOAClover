@@ -1,0 +1,150 @@
+﻿@model MOAClover.Models.Order
+
+@{
+    ViewData["Title"] = "주문 완료";
+    Layout = "_Layout";
+
+    var bank = ViewBag.BankTransfer as MOAClover.Models.ViewModels.BankTransferViewModel
+        ?? new MOAClover.Models.ViewModels.BankTransferViewModel();
+}
+
+<link rel="stylesheet" href="~/css/Order.css" asp-append-version="true" />
+
+<div class="order-complete-wrap">
+
+    <div class="complete-card">
+        <div class="complete-icon">✓</div>
+
+        <h2>주문이 저장되었습니다.</h2>
+
+        <p>
+            주문번호 <strong>@Model.OrderNo</strong><br />
+
+            @if (Model.PaymentMethod == "BankTransfer")
+            {
+                <span>무통장입금 확인 후 상품 준비가 시작됩니다.</span>
+            }
+            else if (Model.PaymentStatus == "Paid")
+            {
+                <span>결제가 완료되었습니다. 상품 준비가 시작됩니다.</span>
+            }
+            else
+            {
+                <span>현재 주문 상태는 결제대기입니다.</span>
+            }
+        </p>
+
+        <div class="complete-summary">
+            <div>
+                <span>상품 금액</span>
+                <strong>@Model.ProductTotal.ToString("N0")원</strong>
+            </div>
+
+            <div>
+                <span>배송비</span>
+
+                @if (Model.IsCollectShipping)
+                {
+                    <strong>착불/별도</strong>
+                }
+                else if (Model.IsIncludedShipping)
+                {
+                    <strong>배송비 포함</strong>
+                }
+                else
+                {
+                    <strong>@Model.ShippingFee.ToString("N0")원</strong>
+                }
+            </div>
+
+            @if (!Model.IsCollectShipping && !Model.IsIncludedShipping && Model.ExtraShippingFee > 0)
+            {
+                <div class="small">
+                    <span>지역 추가배송비</span>
+                    <strong>@Model.ExtraShippingFee.ToString("N0")원</strong>
+                </div>
+            }
+
+            <div class="total">
+                <span>총 결제금액</span>
+                <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+            </div>
+        </div>
+
+        @if (Model.IsCollectShipping)
+        {
+            <div class="complete-notice">
+                이 주문에는 착불/별도 배송 상품이 포함되어 있습니다.
+                실제 배송비는 별도 안내될 수 있습니다.
+            </div>
+        }
+
+        @if (Model.PaymentMethod == "BankTransfer" && Model.PaymentStatus == "Ready")
+        {
+            <div class="bank-transfer-box">
+                <h3>무통장입금 안내</h3>
+
+                <div class="bank-transfer-row">
+                    <span>은행명</span>
+                    <strong>@bank.BankName</strong>
+                </div>
+
+                <div class="bank-transfer-row">
+                    <span>예금주</span>
+                    <strong>@bank.AccountHolder</strong>
+                </div>
+
+                <div class="bank-transfer-row">
+                    <span>계좌번호</span>
+                    <strong>@bank.AccountNumber</strong>
+                </div>
+
+                <div class="bank-transfer-row total">
+                    <span>입금금액</span>
+                    <strong>@Model.TotalPayAmount.ToString("N0")원</strong>
+                </div>
+
+                <p>@bank.Notice</p>
+
+            </div>
+        }
+
+        <div class="complete-actions">
+            @if (Model.PaymentMethod == "TossPayments"
+                        && Model.PaymentStatus != "Paid"
+                        && Model.OrderStatus != "Cancelled")
+            {
+                <a asp-controller="Payment"
+                   asp-action="Pay"
+                   asp-route-orderNo="@Model.OrderNo"
+                   class="btn-main payment-retry-btn">
+                    다시 결제하기
+                </a>
+            }
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="btn-main btn-continue-shopping">
+                계속 쇼핑하기
+            </a>
+
+            @if (!Model.IsGuestOrder)
+            {
+                <a asp-controller="Order"
+                   asp-action="MyOrders"
+                   class="btn-main btn-my-orders">
+                    주문내역 보기
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Order"
+                   asp-action="GuestLookup"
+                   class="btn-main btn-my-orders">
+                    비회원 주문조회
+                </a>
+            }
+        </div>
+    </div>
+
+</div>

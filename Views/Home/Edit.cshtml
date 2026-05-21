@@ -4,9 +4,11 @@
     Layout = "_Layout";
 }
 
-<div class="container" style="max-width:920px; margin:60px auto;">
-    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:24px; box-shadow:0 8px 25px rgba(0,0,0,0.06);">
-        <h3 style="margin:0 0 18px; font-weight:900;">상품 수정</h3>
+<link rel="stylesheet" href="~/css/Edit.css" asp-append-version="true" />
+
+<div class="edit-page-wrap">
+    <div class="edit-card">
+        <h3 class="edit-title">상품 수정</h3>
 
         <form asp-controller="Home" asp-action="Edit" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
@@ -18,6 +20,14 @@
                 <div class="col-12">
                     <label class="form-label fw-bold">상품명</label>
                     <input class="form-control" asp-for="Name" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">노출</label>
+                    <select class="form-select" asp-for="IsVisible">
+                        <option value="true">노출</option>
+                        <option value="false">숨김</option>
+                    </select>
                 </div>
 
                 <!-- ✅ 카테고리(대/중/소/세부) 한 줄 -->
@@ -76,7 +86,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-1" style="font-size:12px; color:#6b7280;">
+                    <div class="mt-1 edit-help-text">
                         마지막으로 선택된 값이 저장됩니다.
                     </div>
                 </div>
@@ -93,11 +103,78 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">노출</label>
-                    <select class="form-select" asp-for="IsVisible">
-                        <option value="true">노출</option>
-                        <option value="false">숨김</option>
+                    <label class="form-label fw-bold">재고 관리</label>
+
+                    <div class="stock-check-box">
+                        <input asp-for="UseStock"
+                               class="form-check-input"
+                               id="UseStock" />
+
+                        <label class="form-check-label" for="UseStock">
+                            재고 수량 관리하기
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">재고 수량</label>
+                    <input asp-for="StockQuantity"
+                           class="form-control"
+                           id="StockQuantity"
+                           min="0" />
+                    <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">배송 방식</label>
+                    <select class="form-select" asp-for="ShippingType">
+                        <option value="Included">배송비 포함</option>
+                        <option value="Free">무료배송</option>
+                        <option value="Fixed">고정 배송비</option>
+                        <option value="ConditionalFree">조건부 무료배송</option>
+                        <option value="Collect">착불/별도</option>
                     </select>
+                    <span asp-validation-for="ShippingType" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field shipping-fee-field">
+                    <label class="form-label fw-bold">기본 배송비</label>
+                    <input class="form-control" asp-for="ShippingFee" placeholder="예: 4000" />
+                    <span asp-validation-for="ShippingFee" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field free-min-field">
+                    <label class="form-label fw-bold">무료배송 기준금액</label>
+                    <input class="form-control" asp-for="FreeShippingMinAmount" placeholder="예: 30000" />
+                    <span asp-validation-for="FreeShippingMinAmount" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field extra-fee-field">
+                    <label class="form-label fw-bold">제주 추가배송비</label>
+                    <input class="form-control" asp-for="JejuExtraFee" placeholder="예: 3000" />
+                    <span asp-validation-for="JejuExtraFee" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 shipping-field extra-fee-field">
+                    <label class="form-label fw-bold">도서산간 추가배송비</label>
+                    <input class="form-control" asp-for="RemoteAreaExtraFee" placeholder="예: 5000" />
+                    <span asp-validation-for="RemoteAreaExtraFee" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">스마트스토어 상품 URL</label>
+                    <input class="form-control"
+                           asp-for="SmartStoreUrl"
+                           placeholder="https://smartstore.naver.com/moaclover/products/상품번호" />
+                    <span asp-validation-for="SmartStoreUrl" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">쿠팡 상품 URL</label>
+                    <input class="form-control"
+                           asp-for="CoupangUrl"
+                           placeholder="https://www.coupang.com/vp/products/상품번호" />
+                    <span asp-validation-for="CoupangUrl" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-12">
@@ -109,92 +186,407 @@
             <hr class="my-4" />
 
             <!-- 기존 미디어 목록 -->
-            <h5 style="font-weight:900;">기존 미디어 관리</h5>
-            <div style="color:#6b7280; font-size:13px; margin-bottom:10px;">
-                - 정렬(SortOrder) 숫자가 낮을수록 먼저 보입니다. 삭제 체크 시 소프트삭제 됩니다.
+            <!-- 기존 미디어 목록 -->
+            <h5 class="edit-section-title">기존 미디어 관리</h5>
+            <div class="edit-section-desc">
+                - 순서 숫자가 낮을수록 먼저 보입니다. 삭제 체크 시 소프트삭제 됩니다.
             </div>
 
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th style="width:80px;">종류</th>
-                            <th>미리보기</th>
-                            <th style="width:120px;">정렬</th>
-                            <th style="width:90px;">활성</th>
-                            <th style="width:90px;">삭제</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (int i = 0; i < Model.ExistingMedia.Count; i++)
+            @{
+                var thumbItems = Model.ExistingMedia
+                .Select((item, index) => new { item, index })
+                .Where(x => x.item.MediaType == "thumb" || x.item.MediaType == "thumbnail")
+                .ToList();
+
+                var detailItems = Model.ExistingMedia
+                .Select((item, index) => new { item, index })
+                .Where(x => x.item.MediaType == "detail")
+                .ToList();
+
+                var videoItems = Model.ExistingMedia
+                .Select((item, index) => new { item, index })
+                .Where(x => x.item.MediaType == "video")
+                .ToList();
+
+                var otherItems = Model.ExistingMedia
+                .Select((item, index) => new { item, index })
+                .Where(x => x.item.MediaType != "thumb"
+                && x.item.MediaType != "thumbnail"
+                && x.item.MediaType != "detail"
+                && x.item.MediaType != "video")
+                .ToList();
+            }
+
+            <div class="edit-media-group">
+                <div class="edit-media-group-head">
+                    <div>
+                        <strong>상단 썸네일</strong>
+                        <p>상품 상단 슬라이드/썸네일에 표시되는 이미지입니다.</p>
+                    </div>
+                    <span class="edit-media-count">@thumbItems.Count 장</span>
+                </div>
+
+                @if (!thumbItems.Any())
+                {
+                    <div class="edit-media-empty">등록된 상단 썸네일이 없습니다.</div>
+                }
+                else
+                {
+                    <div class="edit-media-card-grid">
+                        @foreach (var x in thumbItems)
                         {
-                            var m = Model.ExistingMedia[i];
+                            var i = x.index;
+                            var m = x.item;
 
-                            <tr>
-                                <td>
-                                    <input type="hidden" asp-for="ExistingMedia[@i].MediaId" />
-                                    <input type="hidden" asp-for="ExistingMedia[@i].MediaType" />
-                                    <input type="hidden" asp-for="ExistingMedia[@i].FileUrl" />
-                                    <span class="badge bg-secondary">@m.MediaType</span>
-                                </td>
+                            <div class="edit-media-card js-existing-media-card" data-media-group="thumb">
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaId" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaType" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].FileUrl" />
 
-                                <td>
-                                    @if (m.MediaType == "video")
-                                    {
-                                        <video src="@m.FileUrl" controls style="max-width:220px; border-radius:10px;"></video>
-                                    }
-                                    else
-                                    {
-                                        <img src="@m.FileUrl" style="max-width:220px; border-radius:10px; border:1px solid #e5e7eb;" />
-                                    }
-                                    <div style="font-size:12px; color:#6b7280; margin-top:6px;">@m.FileUrl</div>
-                                </td>
+                                <div class="edit-media-preview">
+                                    <img src="@m.FileUrl" />
+                                    <span class="edit-media-order-badge">@m.SortOrder</span>
+                                </div>
 
-                                <td>
-                                    <input class="form-control" asp-for="ExistingMedia[@i].SortOrder" />
-                                </td>
+                                <div class="edit-media-card-body">
+                                    <label>순서</label>
 
-                                <td class="text-center">
-                                    <input class="form-check-input js-active" type="checkbox"
-                                           asp-for="ExistingMedia[@i].IsActive" />
-                                </td>
+                                    <div class="edit-media-order-control">
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, -1)">
+                                            ▲
+                                        </button>
 
-                                <td class="text-center">
-                                    <input class="form-check-input js-delete" type="checkbox"
-                                           asp-for="ExistingMedia[@i].Delete" />
-                                </td>
-                            </tr>
+                                        <input class="form-control form-control-sm js-sort-order"
+                                               asp-for="ExistingMedia[@i].SortOrder" />
+
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, 1)">
+                                            ▼
+                                        </button>
+                                    </div>
+
+                                    <div class="edit-media-checks">
+                                        <label>
+                                            <input class="form-check-input js-active"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].IsActive" />
+                                            활성
+                                        </label>
+
+                                        <label class="danger">
+                                            <input class="form-check-input js-delete"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].Delete" />
+                                            삭제
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         }
-                    </tbody>
-                </table>
+                    </div>
+                }
             </div>
+
+            <div class="edit-media-group">
+                <div class="edit-media-group-head">
+                    <div>
+                        <strong>상세페이지 이미지</strong>
+                        <p>상세정보 탭에 표시되는 이미지입니다.</p>
+                    </div>
+                    <span class="edit-media-count">@detailItems.Count 장</span>
+                </div>
+
+                @if (!detailItems.Any())
+                {
+                    <div class="edit-media-empty">등록된 상세페이지 이미지가 없습니다.</div>
+                }
+                else
+                {
+                    <div class="edit-media-card-grid detail">
+                        @foreach (var x in detailItems)
+                        {
+                            var i = x.index;
+                            var m = x.item;
+
+                            <div class="edit-media-card js-existing-media-card" data-media-group="detail">
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaId" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaType" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].FileUrl" />
+
+                                <div class="edit-media-preview detail">
+                                    <img src="@m.FileUrl" />
+                                    <span class="edit-media-order-badge">@m.SortOrder</span>
+                                </div>
+
+                                <div class="edit-media-card-body">
+                                    <label>순서</label>
+
+                                    <div class="edit-media-order-control">
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, -1)">
+                                            ▲
+                                        </button>
+
+                                        <input class="form-control form-control-sm js-sort-order"
+                                               asp-for="ExistingMedia[@i].SortOrder" />
+
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, 1)">
+                                            ▼
+                                        </button>
+                                    </div>
+
+                                    <div class="edit-media-checks">
+                                        <label>
+                                            <input class="form-check-input js-active"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].IsActive" />
+                                            활성
+                                        </label>
+
+                                        <label class="danger">
+                                            <input class="form-check-input js-delete"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].Delete" />
+                                            삭제
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="edit-media-group">
+                <div class="edit-media-group-head">
+                    <div>
+                        <strong>동영상</strong>
+                        <p>상품 상세에 표시되는 동영상입니다.</p>
+                    </div>
+                    <span class="edit-media-count">@videoItems.Count 개</span>
+                </div>
+
+                @if (!videoItems.Any())
+                {
+                    <div class="edit-media-empty">등록된 동영상이 없습니다.</div>
+                }
+                else
+                {
+                    <div class="edit-media-card-grid video">
+                        @foreach (var x in videoItems)
+                        {
+                            var i = x.index;
+                            var m = x.item;
+
+                            <div class="edit-media-card video js-existing-media-card" data-media-group="video">
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaId" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaType" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].FileUrl" />
+
+                                <div class="edit-media-preview video">
+                                    <video src="@m.FileUrl" controls></video>
+                                    <span class="edit-media-order-badge">@m.SortOrder</span>
+                                </div>
+
+                                <div class="edit-media-card-body">
+                                    <label>순서</label>
+
+                                    <div class="edit-media-order-control">
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, -1)">
+                                            ▲
+                                        </button>
+
+                                        <input class="form-control form-control-sm js-sort-order"
+                                               asp-for="ExistingMedia[@i].SortOrder" />
+
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, 1)">
+                                            ▼
+                                        </button>
+                                    </div>
+
+                                    <div class="edit-media-checks">
+                                        <label>
+                                            <input class="form-check-input js-active"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].IsActive" />
+                                            활성
+                                        </label>
+
+                                        <label class="danger">
+                                            <input class="form-check-input js-delete"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].Delete" />
+                                            삭제
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (otherItems.Any())
+            {
+                <div class="edit-media-group">
+                    <div class="edit-media-group-head">
+                        <div>
+                            <strong>기타 미디어</strong>
+                            <p>기존 데이터 호환용 미디어입니다.</p>
+                        </div>
+                        <span class="edit-media-count">@otherItems.Count 개</span>
+                    </div>
+
+                    <div class="edit-media-card-grid">
+                        @foreach (var x in otherItems)
+                        {
+                            var i = x.index;
+                            var m = x.item;
+
+                            <div class="edit-media-card js-existing-media-card" data-media-group="other">
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaId" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].MediaType" />
+                                <input type="hidden" asp-for="ExistingMedia[@i].FileUrl" />
+
+                                <div class="edit-media-preview">
+                                    <img src="@m.FileUrl" />
+                                    <span class="edit-media-order-badge">@m.SortOrder</span>
+                                </div>
+
+                                <div class="edit-media-card-body">
+                                    <label>순서</label>
+
+                                    <div class="edit-media-order-control">
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, -1)">
+                                            ▲
+                                        </button>
+
+                                        <input class="form-control form-control-sm js-sort-order"
+                                               asp-for="ExistingMedia[@i].SortOrder" />
+
+                                        <button type="button"
+                                                class="edit-media-move-btn"
+                                                onclick="moveExistingMediaCard(this, 1)">
+                                            ▼
+                                        </button>
+                                    </div>
+
+                                    <div class="edit-media-checks">
+                                        <label>
+                                            <input class="form-check-input js-active"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].IsActive" />
+                                            활성
+                                        </label>
+
+                                        <label class="danger">
+                                            <input class="form-check-input js-delete"
+                                                   type="checkbox"
+                                                   asp-for="ExistingMedia[@i].Delete" />
+                                            삭제
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
 
             <hr class="my-4" />
 
             <!-- 새 이미지/영상 업로드 -->
-            <div class="row g-3">
-                <h5 style="font-weight:900;">새 미디어 추가</h5>
+            <div class="edit-new-media-box">
+                <h5 class="edit-new-media-title">새 미디어 추가</h5>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">상단 썸네일(최대 8장)</label>
-                    <input type="file" class="form-control" asp-for="NewImages" multiple accept="image/*" />
+                <div class="edit-new-media-section">
+                    <div class="edit-new-media-head">
+                        <div>
+                            <strong>상단 썸네일</strong>
+                            <p>상품 상단 슬라이드/썸네일에 추가됩니다.</p>
+                        </div>
+                        <span class="edit-media-optional">선택</span>
+                    </div>
+
+                    <input type="file"
+                           class="form-control edit-new-media-input"
+                           asp-for="NewImages"
+                           id="NewImages"
+                           multiple
+                           accept="image/*"
+                           data-val="false"
+                           data-media-kind="image"
+                           data-preview-target="newThumbPreview" />
+
+                    <div id="newThumbPreview" class="edit-new-media-grid"></div>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">상세페이지 이미지(여러장)</label>
-                    <input type="file" class="form-control" asp-for="NewDetailImages" multiple accept="image/*" />
+                <div class="edit-new-media-section">
+                    <div class="edit-new-media-head">
+                        <div>
+                            <strong>상세페이지 이미지</strong>
+                            <p>상세정보 탭에 추가됩니다.</p>
+                        </div>
+                        <span class="edit-media-optional">선택</span>
+                    </div>
+
+                    <input type="file"
+                           class="form-control edit-new-media-input"
+                           asp-for="NewDetailImages"
+                           id="NewDetailImages"
+                           multiple
+                           accept="image/*"
+                           data-val="false"
+                           data-media-kind="image"
+                           data-preview-target="newDetailPreview" />
+
+                    <div id="newDetailPreview" class="edit-new-media-grid"></div>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">동영상(여러개)</label>
-                    <input type="file" class="form-control" asp-for="NewVideos" multiple accept="video/*" />
+                <div class="edit-new-media-section">
+                    <div class="edit-new-media-head">
+                        <div>
+                            <strong>동영상</strong>
+                            <p>상품 동영상을 추가합니다. 없으면 비워둬도 됩니다.</p>
+                        </div>
+                        <span class="edit-media-optional">선택</span>
+                    </div>
+
+                    <input type="file"
+                           class="form-control edit-new-media-input"
+                           asp-for="NewVideos"
+                           id="NewVideos"
+                           multiple
+                           accept="video/*"
+                           data-val="false"
+                           data-media-kind="video"
+                           data-preview-target="newVideoPreview" />
+
+                    <div id="newVideoPreview" class="edit-new-media-grid"></div>
                 </div>
             </div>
 
-            <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold">전체 수정 저장</button>
-                <a class="btn btn-outline-secondary flex-shrink-0" style="min-width:160px;"
-                   asp-controller="Home" asp-action="Detail" asp-route-id="@Model.ProductId">
+            <div class="edit-action-row">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    전체 수정 저장
+                </button>
+
+                <a class="btn btn-outline-secondary flex-shrink-0 edit-back-btn"
+                   asp-controller="Home"
+                   asp-action="Detail"
+                   asp-route-id="@Model.ProductId">
                     돌아가기
                 </a>
             </div>
@@ -203,79 +595,7 @@
 </div>
 
 @section Scripts {
-    <script>
-        const lv1 = document.getElementById('catLv1');
-        const lv2 = document.getElementById('catLv2');
-        const lv3 = document.getElementById('catLv3');
-        const lv4 = document.getElementById('catLv4');
-        const finalId = document.getElementById('FinalCategoryId');
+    <partial name="_ValidationScriptsPartial" />
 
-        function setFinalCategoryId(){
-          // 가장 깊게 선택된 값이 최종 CategoryId
-          finalId.value = lv4.value || lv3.value || lv2.value || lv1.value || "";
-        }
-
-        async function loadChildren(parentId, targetSelect){
-          targetSelect.innerHTML = `<option value="">선택</option>`;
-          if (!parentId){
-            targetSelect.disabled = true;
-            return;
-          }
-          const res = await fetch(`/Home/GetChildCategories?parentId=${parentId}`);
-          const data = await res.json();
-          data.forEach(x => {
-            const opt = document.createElement('option');
-            opt.value = x.id;
-            opt.textContent = x.name;
-            targetSelect.appendChild(opt);
-          });
-          targetSelect.disabled = false;
-        }
-
-        lv1.addEventListener('change', async () => {
-          await loadChildren(lv1.value, lv2);
-          lv3.innerHTML = `<option value="">선택</option>`; lv3.disabled = true;
-          lv4.innerHTML = `<option value="">선택</option>`; lv4.disabled = true;
-          setFinalCategoryId();
-        });
-
-        lv2.addEventListener('change', async () => {
-          await loadChildren(lv2.value, lv3);
-          lv4.innerHTML = `<option value="">선택</option>`; lv4.disabled = true;
-          setFinalCategoryId();
-        });
-
-        lv3.addEventListener('change', async () => {
-          await loadChildren(lv3.value, lv4);
-          setFinalCategoryId();
-        });
-
-        lv4.addEventListener('change', () => setFinalCategoryId());
-
-        // 페이지 최초 로드시 최종값 세팅
-        setFinalCategoryId();
-
-
-        // 활성, 삭제 체크박스 
-         function syncRow(row){
-          const del = row.querySelector('.js-delete');
-          const act = row.querySelector('.js-active');
-          if(!del || !act) return;
-
-          if(del.checked){
-            act.checked = false;     // 삭제면 활성 자동 해제
-            act.disabled = true;     // 활성 체크 못하게
-          }else{
-            act.disabled = false;
-          }
-        }
-
-        document.querySelectorAll('tbody tr').forEach(row => {
-          syncRow(row);
-          const del = row.querySelector('.js-delete');
-          if(del){
-            del.addEventListener('change', () => syncRow(row));
-          }
-        });
-    </script>
+    <script src="~/js/product-edit.js" asp-append-version="true"></script>
 }

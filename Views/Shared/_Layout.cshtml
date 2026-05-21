@@ -1,6 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
+@using Microsoft.EntityFrameworkCore
+@inject MOAClover.Data.ApplicationDbContext Db
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9,113 +12,304 @@
     <title>@ViewData["Title"] - MOAClover</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MOAClover.styles.css" asp-append-version="true" />
+@*     <link rel="stylesheet" href="~/MOAClover.styles.css" asp-append-version="true" /> *@
     <link rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
+
+@{
+        var layoutSetting = await Db.SiteSettings
+                .AsNoTracking()
+                .OrderBy(x => x.SiteSettingId)
+                .FirstOrDefaultAsync();
+
+        var headerBackgroundColor = layoutSetting?.HeaderBackgroundColor;
+        var headerTextColor = layoutSetting?.HeaderTextColor;
+        var headerBackgroundImageUrl = layoutSetting?.HeaderBackgroundImageUrl;
+        var useHeaderBackgroundImage = layoutSetting?.UseHeaderBackgroundImage == true;
+        var logoImageUrl = layoutSetting?.LogoImageUrl;
+        var categoryBackgroundColor = layoutSetting?.CategoryBackgroundColor;
+        var categoryBackgroundImageUrl = layoutSetting?.CategoryBackgroundImageUrl;
+        var useCategoryBackgroundImage = layoutSetting?.UseCategoryBackgroundImage == true;
+
+        var categoryTextColor = layoutSetting?.CategoryTextColor;
+        var categoryActiveTextColor = layoutSetting?.CategoryActiveTextColor;
+        var categoryActiveBackgroundColor = layoutSetting?.CategoryActiveBackgroundColor;
+
+        var headerStyleParts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(headerBackgroundColor))
+        {
+                headerStyleParts.Add($"background-color:{headerBackgroundColor}");
+        }
+
+        if (useHeaderBackgroundImage && !string.IsNullOrWhiteSpace(headerBackgroundImageUrl))
+        {
+                headerStyleParts.Add($"background-image:url('{headerBackgroundImageUrl}')");
+                headerStyleParts.Add("background-size:cover");
+                headerStyleParts.Add("background-position:center");
+                headerStyleParts.Add("background-repeat:no-repeat");
+        }
+
+        var headerStyle = string.Join(";", headerStyleParts);
+        var headerTextStyle = string.IsNullOrWhiteSpace(headerTextColor)
+                ? ""
+                : $"color:{headerTextColor};";
+
+            var categoryStyleParts = new List<string>();
+
+    if (!string.IsNullOrWhiteSpace(categoryBackgroundColor))
+    {
+            categoryStyleParts.Add($"background-color:{categoryBackgroundColor}");
+    }
+
+    if (useCategoryBackgroundImage && !string.IsNullOrWhiteSpace(categoryBackgroundImageUrl))
+    {
+            categoryStyleParts.Add($"background-image:url('{categoryBackgroundImageUrl}')");
+            categoryStyleParts.Add("background-size:cover");
+            categoryStyleParts.Add("background-position:center");
+            categoryStyleParts.Add("background-repeat:no-repeat");
+    }
+
+    if (!string.IsNullOrWhiteSpace(categoryTextColor))
+    {
+            categoryStyleParts.Add($"--category-text-color:{categoryTextColor}");
+    }
+
+    if (!string.IsNullOrWhiteSpace(categoryActiveTextColor))
+    {
+            categoryStyleParts.Add($"--category-active-text-color:{categoryActiveTextColor}");
+    }
+
+    if (!string.IsNullOrWhiteSpace(categoryActiveBackgroundColor))
+    {
+            categoryStyleParts.Add($"--category-active-bg-color:{categoryActiveBackgroundColor}");
+    }
+
+    var categoryStyle = string.Join(";", categoryStyleParts);
+}
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid d-flex flex-column align-items-center py-3">
 
                 <!-- 브랜드 로고 영역 -->
-                <div class="logo-box">
-                    <!-- 배경이미지 공간 
-                        <div class="logo-box" style="width:100%; height:180px; background-image:url('/images/logo-bg.jpg'); background-size:cover; background-position:center;
-                           display:flex; flex-direction:column; justify-content:center; align-items:center;"> 
-                     -->
+                <div class="logo-box" style="@headerStyle">
+                    <div class="header-main-container">
 
-                    <!-- 로고 이미지 공간 -->
-                    <!-- <img src="/images/mylogo.png" alt="로고 이미지" style="height:70px; margin-bottom:10px; display:none;" id="mainLogoImg"> -->
-
-                    <!-- 텍스트 로고 -->
-                    <!-- 1줄: 가운데 로고 / 오른쪽 로그인영역 -->
-                    <div class="header-top-row">
-                        <div></div>
-
-                        <!-- 로고(가운데 고정) -->
-                        <div class="header-logo-center">
-                            <a href="/Home/Index" class="header-logo-link">
-                                <div class="header-logo-text">모아클로버</div>
+                        <!-- 왼쪽 이미지 로고 -->
+                        <div class="header-left-section">
+                            <a asp-controller="Home"
+                               asp-action="Index"
+                               class="header-image-logo-link"
+                               title="모아클로버 홈">
+                                <img src="@(string.IsNullOrWhiteSpace(logoImageUrl) ? "/images/nonelogo.png" : logoImageUrl)"
+                                     alt="모아클로버 로고"
+                                     id="mainLogoImg" />
                             </a>
                         </div>
 
-                        <!-- 오른쪽 메뉴 -->
-                        <div class="header-right-menu">
-                            @if (User.Identity!.IsAuthenticated)
-                            {
-                                <a asp-controller="Account"
-                                   asp-action="MyPage"
-                                   class="header-right-link header-right-strong">
-                                    👤 @User.Identity.Name
-                                </a>
+                        <!-- 가운데/오른쪽 영역 -->
+                        <div class="header-right-section">
 
-                                <form asp-controller="Account"
-                                      asp-action="Logout"
-                                      method="post"
-                                      class="header-inline-form">
-                                    <button type="submit" class="header-right-btnlink">로그아웃</button>
+                            <!-- 1줄: 브랜드명 + 사용자 메뉴 -->
+                            <div class="header-top-row">
+
+                                <div class="header-logo-area">
+                                    <a asp-controller="Home"
+                                       asp-action="Index"
+                                       class="header-logo-link">
+                                        <span class="header-logo-text" style="@headerTextStyle">모아클로버</span>
+                                    </a>
+                                </div>
+
+                                <div class="header-menu-area">
+
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <!-- 관리자 메뉴 -->
+                                        <div class="header-admin-actions">
+                                            <a asp-controller="Admin"
+                                               asp-action="Dashboard"
+                                               class="header-admin-link">
+                                                대시보드
+                                            </a>
+
+                                            <a asp-controller="Home"
+                                               asp-action="Create"
+                                               class="header-admin-link">
+                                                상품등록
+                                            </a>
+
+                                            <a asp-controller="Admin"
+                                               asp-action="Products"
+                                               class="header-admin-link">
+                                                상품관리
+                                            </a>
+
+                                            <a asp-controller="Admin"
+                                               asp-action="Users"
+                                               class="header-admin-link">
+                                                회원관리
+                                            </a>
+
+                                            <a asp-controller="Admin"
+                                               asp-action="SiteSetting"
+                                               class="header-admin-link">
+                                                기본정보
+                                            </a>
+
+                                            <a asp-controller="Admin"
+                                               asp-action="SiteDesign"
+                                               class="header-admin-link">
+                                                디자인설정
+                                            </a>
+
+                                        </div>
+
+                                        <!-- 관리자 계정 메뉴 -->
+                                        <div class="header-account-actions">
+                                            <form asp-controller="Account"
+                                                  asp-action="Logout"
+                                                  method="post"
+                                                  class="header-inline-form">
+                                                <button type="submit" class="header-text-button">
+                                                    로그아웃
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <!-- 고객 메뉴 -->
+                                        @if (!User.IsInRole("admin"))
+                                        {
+                                            <div class="header-customer-actions">
+
+                                                @await Component.InvokeAsync("CartCount")
+
+                                                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                                                {
+                                                    <a asp-controller="Order"
+                                                       asp-action="MyOrders"
+                                                       class="header-pill-link"
+                                                       title="내 주문내역">
+                                                        <span class="header-pill-icon">📦</span>
+                                                        <span>주문내역</span>
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Order"
+                                                       asp-action="GuestLookup"
+                                                       class="header-pill-link"
+                                                       title="비회원 주문조회">
+                                                        <span class="header-pill-icon">📦</span>
+                                                        <span>주문조회</span>
+                                                    </a>
+                                                }
+
+                                            </div>
+                                        }
+
+                                        <!-- 고객 계정 메뉴 -->
+                                        <div class="header-account-actions">
+                                            @if (User.Identity != null && User.Identity.IsAuthenticated)
+                                            {
+                                                <a asp-controller="Account"
+                                                   asp-action="MyPage"
+                                                   class="header-text-link header-user-link">
+                                                    👤 @User.Identity.Name
+                                                </a>
+
+                                                <form asp-controller="Account"
+                                                      asp-action="Logout"
+                                                      method="post"
+                                                      class="header-inline-form">
+                                                    <button type="submit" class="header-text-button">
+                                                        로그아웃
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="Account"
+                                                   asp-action="Login"
+                                                   class="header-text-link">
+                                                    로그인
+                                                </a>
+                                            }
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+
+                            @if (User.IsInRole("admin"))
+                            {
+                                <div class="header-admin-alert-row">
+                                    <div class="header-admin-alert-left">
+                                        @await Component.InvokeAsync("AdminOrderAlert")
+                                        @await Component.InvokeAsync("AdminQnaAlert")
+                                    </div>
+
+                                    <div class="header-admin-alert-right">
+                                        <span class="header-admin-current-user">
+                                            관리자 @User.Identity?.Name
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- 2줄: 검색창 -->
+                            <div class="header-search-row">
+                                <form asp-controller="Home"
+                                      asp-action="Index"
+                                      method="get"
+                                      class="header-search-form">
+                                    <input type="hidden" name="page" value="1" />
+
+                                    @if (!string.IsNullOrWhiteSpace(Context.Request.Query["showHidden"]))
+                                    {
+                                        <input type="hidden"
+                                               name="showHidden"
+                                               value="@Context.Request.Query["showHidden"]" />
+                                    }
+
+                                    <input class="header-search-input"
+                                           type="text"
+                                           name="q"
+                                           value="@Context.Request.Query["q"]"
+                                           placeholder="상품 검색" />
+
+                                    <button class="header-search-btn" type="submit">
+                                        검색
+                                    </button>
                                 </form>
+                            </div>
 
-                               @*  @if (User.IsInRole("admin"))
-                                {
-                                    <a href="/Home/Create" class="header-right-link">
-                                        상품등록
-                                    </a>
-                                } *@
-                                @if (User.IsInRole("admin"))
-                                {
-
-                                    <a href="/Home/Create"
-                                       style="color:#777; text-decoration:none; margin-left:10px;">
-                                        상품등록
-                                    </a>
-
-                                    @await Component.InvokeAsync("AdminQnaAlert")
-                                   
-                                }
-                            }
-                            else
-                            {
-                                <a href="/Account/Login" class="header-right-link">
-                                    로그인
-                                </a>
-                            }
                         </div>
                     </div>
-
-                    <!-- 2줄: 가운데 검색창 -->
-                    <div class="header-search-row">
-                        <form asp-controller="Home" asp-action="Index" method="get" class="header-search-form">
-                            <input type="hidden" name="page" value="1" />
-
-                            @if (!string.IsNullOrWhiteSpace(Context.Request.Query["showHidden"]))
-                            {
-                                <input type="hidden" name="showHidden" value="@Context.Request.Query["showHidden"]" />
-                            }
-
-                            <input class="header-search-input"
-                                   type="text"
-                                   name="q"
-                                   value="@Context.Request.Query["q"]"
-                                   placeholder="상품 검색" />
-
-                            <button class="header-search-btn" type="submit">검색</button>
-                        </form>
-                    </div>
-
                 </div>
                
                 <!-- 카테고리 자동추가 -->
-                <div class="navbar-collapse collapse show d-flex justify-content-center mt-2">
+                <div class="header-category-row w-100 mt-2" style="@categoryStyle">
+                    <div class="navbar-collapse collapse show header-cat-collapse">
 
-                    <!-- ✅ 전체(카테고리 필터 해제) -->
-                    <a href="/Home/Index" class="cat-all-link @(string.IsNullOrEmpty(Context.Request.Query["categoryId"]) ? "active" : "")">
-                        전체
-                    </a>
+                        <div class="cat-all-wrap">
+                            <a href="/Home/Index"
+                               class="cat-all-link @(string.IsNullOrEmpty(Context.Request.Query["categoryId"]) ? "active" : "")">
+                                전체
+                            </a>
+                        </div>
 
-                    @await Component.InvokeAsync("CategoryMenu")
+                        <div class="cat-menu-wrap">
+                            @await Component.InvokeAsync("CategoryMenu")
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </nav>
@@ -127,15 +321,10 @@
         </main>
     </div>
 
-    <footer style="margin-top:80px; padding:40px 20px; background:#f7f7f7; text-align:center; color:#555;">
-        <div style="font-size:20px; font-weight:bold;">모아클로버</div>
-        <div style="margin-top:10px; line-height:1.6; font-size:14px;">
-            대표자: 홍길동 | 사업자등록번호: 000-00-00000<br>
-            Email: contact@myshop.com | 고객센터: 010-0000-0000<br>
-            주소: 서울특별시 어디구 어디동 123-45
-        </div>
-        <div style="margin-top:15px; font-size:13px; color:#888;">© 2025 MOAClover. All rights reserved.</div>
-    </footer>
+
+    @await Component.InvokeAsync("SiteFooter")
+
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
